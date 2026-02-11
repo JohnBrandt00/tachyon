@@ -1,0 +1,14 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "category": "misc",
+  "group": "thorium_ingot",
+  "ingredients": [
+    {
+      "item": "tachyon:thorium_block"
+    }
+  ],
+  "result": {
+    "count": 9,
+    "id": "tachyon:thorium_ingot"
+  }
+}

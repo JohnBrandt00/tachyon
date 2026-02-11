@@ -10,6 +10,24 @@
   "item.tachyon.raw_titanium": "Raw Titanium",
   "item.tachyon.titanium_ingot": "Titanium Ingot",
 
+  "block.tachyon.tungsten_ore": "Tungsten Ore",
+  "block.tachyon.deepslate_tungsten_ore": "Deepslate Tungsten Ore",
+  "block.tachyon.tungsten_block": "Block of Tungsten",
+  "item.tachyon.raw_tungsten": "Raw Tungsten",
+  "item.tachyon.tungsten_ingot": "Tungsten Ingot",
+
+  "block.tachyon.lithium_ore": "Lithium Ore",
+  "block.tachyon.deepslate_lithium_ore": "Deepslate Lithium Ore",
+  "block.tachyon.lithium_block": "Block of Lithium",
+  "item.tachyon.raw_lithium": "Raw Lithium",
+  "item.tachyon.lithium_ingot": "Lithium Ingot",
+
+  "block.tachyon.thorium_ore": "Thorium Ore",
+  "block.tachyon.deepslate_thorium_ore": "Deepslate Thorium Ore",
+  "block.tachyon.thorium_block": "Block of Thorium",
+  "item.tachyon.raw_thorium": "Raw Thorium",
+  "item.tachyon.thorium_ingot": "Thorium Ingot",
+
   "tachyon.configuration.title": "tachyon Configs",
   "tachyon.configuration.section.tachyon.common.toml": "tachyon Configs",
   "tachyon.configuration.section.tachyon.common.toml.title": "tachyon Configs",

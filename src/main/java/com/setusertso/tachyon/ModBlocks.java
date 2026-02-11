@@ -27,6 +27,45 @@ public class ModBlocks {
             BlockBehaviour.Properties.of().mapColor(MapColor.METAL).strength(5.0F, 6.0F).sound(SoundType.METAL).requiresCorrectToolForDrops());
     public static final DeferredItem<BlockItem> TITANIUM_BLOCK_ITEM = BLOCK_ITEMS.registerSimpleBlockItem("titanium_block", TITANIUM_BLOCK);
 
+    // Tungsten
+    public static final DeferredBlock<Block> TUNGSTEN_ORE = BLOCKS.registerSimpleBlock("tungsten_ore",
+            BlockBehaviour.Properties.of().mapColor(MapColor.STONE).strength(4.5F, 6.0F).sound(SoundType.STONE).requiresCorrectToolForDrops());
+    public static final DeferredItem<BlockItem> TUNGSTEN_ORE_ITEM = BLOCK_ITEMS.registerSimpleBlockItem("tungsten_ore", TUNGSTEN_ORE);
+
+    public static final DeferredBlock<Block> DEEPSLATE_TUNGSTEN_ORE = BLOCKS.registerSimpleBlock("deepslate_tungsten_ore",
+            BlockBehaviour.Properties.of().mapColor(MapColor.DEEPSLATE).strength(5.5F, 6.0F).sound(SoundType.DEEPSLATE).requiresCorrectToolForDrops());
+    public static final DeferredItem<BlockItem> DEEPSLATE_TUNGSTEN_ORE_ITEM = BLOCK_ITEMS.registerSimpleBlockItem("deepslate_tungsten_ore", DEEPSLATE_TUNGSTEN_ORE);
+
+    public static final DeferredBlock<Block> TUNGSTEN_BLOCK = BLOCKS.registerSimpleBlock("tungsten_block",
+            BlockBehaviour.Properties.of().mapColor(MapColor.METAL).strength(6.0F, 8.0F).sound(SoundType.METAL).requiresCorrectToolForDrops());
+    public static final DeferredItem<BlockItem> TUNGSTEN_BLOCK_ITEM = BLOCK_ITEMS.registerSimpleBlockItem("tungsten_block", TUNGSTEN_BLOCK);
+
+    // Lithium
+    public static final DeferredBlock<Block> LITHIUM_ORE = BLOCKS.registerSimpleBlock("lithium_ore",
+            BlockBehaviour.Properties.of().mapColor(MapColor.STONE).strength(2.5F, 2.5F).sound(SoundType.STONE).requiresCorrectToolForDrops());
+    public static final DeferredItem<BlockItem> LITHIUM_ORE_ITEM = BLOCK_ITEMS.registerSimpleBlockItem("lithium_ore", LITHIUM_ORE);
+
+    public static final DeferredBlock<Block> DEEPSLATE_LITHIUM_ORE = BLOCKS.registerSimpleBlock("deepslate_lithium_ore",
+            BlockBehaviour.Properties.of().mapColor(MapColor.DEEPSLATE).strength(3.5F, 2.5F).sound(SoundType.DEEPSLATE).requiresCorrectToolForDrops());
+    public static final DeferredItem<BlockItem> DEEPSLATE_LITHIUM_ORE_ITEM = BLOCK_ITEMS.registerSimpleBlockItem("deepslate_lithium_ore", DEEPSLATE_LITHIUM_ORE);
+
+    public static final DeferredBlock<Block> LITHIUM_BLOCK = BLOCKS.registerSimpleBlock("lithium_block",
+            BlockBehaviour.Properties.of().mapColor(MapColor.METAL).strength(4.0F, 5.0F).sound(SoundType.METAL).requiresCorrectToolForDrops());
+    public static final DeferredItem<BlockItem> LITHIUM_BLOCK_ITEM = BLOCK_ITEMS.registerSimpleBlockItem("lithium_block", LITHIUM_BLOCK);
+
+    // Thorium
+    public static final DeferredBlock<Block> THORIUM_ORE = BLOCKS.registerSimpleBlock("thorium_ore",
+            BlockBehaviour.Properties.of().mapColor(MapColor.STONE).strength(4.0F, 3.0F).sound(SoundType.STONE).requiresCorrectToolForDrops());
+    public static final DeferredItem<BlockItem> THORIUM_ORE_ITEM = BLOCK_ITEMS.registerSimpleBlockItem("thorium_ore", THORIUM_ORE);
+
+    public static final DeferredBlock<Block> DEEPSLATE_THORIUM_ORE = BLOCKS.registerSimpleBlock("deepslate_thorium_ore",
+            BlockBehaviour.Properties.of().mapColor(MapColor.DEEPSLATE).strength(5.0F, 3.0F).sound(SoundType.DEEPSLATE).requiresCorrectToolForDrops());
+    public static final DeferredItem<BlockItem> DEEPSLATE_THORIUM_ORE_ITEM = BLOCK_ITEMS.registerSimpleBlockItem("deepslate_thorium_ore", DEEPSLATE_THORIUM_ORE);
+
+    public static final DeferredBlock<Block> THORIUM_BLOCK = BLOCKS.registerSimpleBlock("thorium_block",
+            BlockBehaviour.Properties.of().mapColor(MapColor.METAL).strength(5.0F, 6.0F).sound(SoundType.METAL).requiresCorrectToolForDrops());
+    public static final DeferredItem<BlockItem> THORIUM_BLOCK_ITEM = BLOCK_ITEMS.registerSimpleBlockItem("thorium_block", THORIUM_BLOCK);
+
     public static void register(IEventBus modEventBus) {
         BLOCKS.register(modEventBus);
         BLOCK_ITEMS.register(modEventBus);

@@ -3,6 +3,12 @@
   "values": [
     "tachyon:titanium_ore",
     "tachyon:deepslate_titanium_ore",
-    "tachyon:titanium_block"
+    "tachyon:titanium_block",
+    "tachyon:tungsten_ore",
+    "tachyon:deepslate_tungsten_ore",
+    "tachyon:tungsten_block",
+    "tachyon:lithium_ore",
+    "tachyon:deepslate_lithium_ore",
+    "tachyon:lithium_block"
   ]
 }

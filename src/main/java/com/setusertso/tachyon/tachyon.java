@@ -74,6 +74,24 @@ public class tachyon {
                 output.accept(ModBlocks.TITANIUM_BLOCK_ITEM.get());
                 output.accept(ModItems.RAW_TITANIUM.get());
                 output.accept(ModItems.TITANIUM_INGOT.get());
+                // Tungsten
+                output.accept(ModBlocks.TUNGSTEN_ORE_ITEM.get());
+                output.accept(ModBlocks.DEEPSLATE_TUNGSTEN_ORE_ITEM.get());
+                output.accept(ModBlocks.TUNGSTEN_BLOCK_ITEM.get());
+                output.accept(ModItems.RAW_TUNGSTEN.get());
+                output.accept(ModItems.TUNGSTEN_INGOT.get());
+                // Lithium
+                output.accept(ModBlocks.LITHIUM_ORE_ITEM.get());
+                output.accept(ModBlocks.DEEPSLATE_LITHIUM_ORE_ITEM.get());
+                output.accept(ModBlocks.LITHIUM_BLOCK_ITEM.get());
+                output.accept(ModItems.RAW_LITHIUM.get());
+                output.accept(ModItems.LITHIUM_INGOT.get());
+                // Thorium
+                output.accept(ModBlocks.THORIUM_ORE_ITEM.get());
+                output.accept(ModBlocks.DEEPSLATE_THORIUM_ORE_ITEM.get());
+                output.accept(ModBlocks.THORIUM_BLOCK_ITEM.get());
+                output.accept(ModItems.RAW_THORIUM.get());
+                output.accept(ModItems.THORIUM_INGOT.get());
             }).build());
 
     // The constructor for the mod class is the first code that is run when your mod is loaded.

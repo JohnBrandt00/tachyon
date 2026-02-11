@@ -1,0 +1,7 @@
+{
+  "variants": {
+    "": {
+      "model": "tachyon:block/thorium_ore"
+    }
+  }
+}

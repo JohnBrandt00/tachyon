@@ -1,0 +1,14 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "category": "misc",
+  "group": "tungsten_ingot",
+  "ingredients": [
+    {
+      "item": "tachyon:tungsten_block"
+    }
+  ],
+  "result": {
+    "count": 9,
+    "id": "tachyon:tungsten_ingot"
+  }
+}

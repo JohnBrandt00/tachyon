@@ -1,0 +1,13 @@
+{
+  "type": "minecraft:blasting",
+  "category": "misc",
+  "cookingtime": 100,
+  "experience": 0.7,
+  "group": "thorium_ingot",
+  "ingredient": {
+    "item": "tachyon:raw_thorium"
+  },
+  "result": {
+    "id": "tachyon:thorium_ingot"
+  }
+}

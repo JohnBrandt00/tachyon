@@ -1,0 +1,7 @@
+{
+  "replace": false,
+  "values": [
+    "tachyon:lithium_ore",
+    "tachyon:deepslate_lithium_ore"
+  ]
+}
