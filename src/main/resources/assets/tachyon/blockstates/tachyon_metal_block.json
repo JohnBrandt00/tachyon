@@ -1,0 +1,7 @@
+{
+  "variants": {
+    "": {
+      "model": "tachyon:block/tachyon_metal_block"
+    }
+  }
+}

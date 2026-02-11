@@ -1,6 +1,7 @@
 {
   "itemGroup.tachyon": "Example Mod Tab",
   "block.tachyon.example_block": "Example Block",
+  "block.tachyon.tachyon_metal_block": "Tachyon Metal Block",
   "item.tachyon.example_item": "Example Item",
 
   "tachyon.configuration.title": "tachyon Configs",
