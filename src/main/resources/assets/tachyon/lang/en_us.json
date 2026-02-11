@@ -1,0 +1,13 @@
+{
+  "itemGroup.tachyon": "Example Mod Tab",
+  "block.tachyon.example_block": "Example Block",
+  "item.tachyon.example_item": "Example Item",
+
+  "tachyon.configuration.title": "tachyon Configs",
+  "tachyon.configuration.section.tachyon.common.toml": "tachyon Configs",
+  "tachyon.configuration.section.tachyon.common.toml.title": "tachyon Configs",
+  "tachyon.configuration.items": "Item List",
+  "tachyon.configuration.logDirtBlock": "Log Dirt Block",
+  "tachyon.configuration.magicNumberIntroduction": "Magic Number Text",
+  "tachyon.configuration.magicNumber": "Magic Number"
+}
