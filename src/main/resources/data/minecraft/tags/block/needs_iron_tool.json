@@ -9,6 +9,8 @@
     "tachyon:tungsten_block",
     "tachyon:lithium_ore",
     "tachyon:deepslate_lithium_ore",
-    "tachyon:lithium_block"
+    "tachyon:lithium_block",
+    "tachyon:superluminal_emitter",
+    "tachyon:tachyon_light_generator"
   ]
 }

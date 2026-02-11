@@ -3,6 +3,8 @@ package com.setusertso.tachyon;
 import org.slf4j.Logger;
 
 import com.mojang.logging.LogUtils;
+import com.setusertso.tachyon.init.ModBlockEntities;
+import com.setusertso.tachyon.init.ModMenuTypes;
 
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.core.registries.Registries;
@@ -92,6 +94,10 @@ public class tachyon {
                 output.accept(ModBlocks.THORIUM_BLOCK_ITEM.get());
                 output.accept(ModItems.RAW_THORIUM.get());
                 output.accept(ModItems.THORIUM_INGOT.get());
+                // Superluminal Emitter system
+                output.accept(ModBlocks.SUPERLUMINAL_EMITTER_ITEM.get());
+                output.accept(ModBlocks.TACHYON_LIGHT_GENERATOR_ITEM.get());
+                output.accept(ModItems.TACHYON_SHARD.get());
             }).build());
 
     // The constructor for the mod class is the first code that is run when your mod is loaded.
@@ -110,6 +116,10 @@ public class tachyon {
         // Register ore blocks and items
         ModBlocks.register(modEventBus);
         ModItems.register(modEventBus);
+
+        // Register block entities and menu types
+        ModBlockEntities.register(modEventBus);
+        ModMenuTypes.register(modEventBus);
 
         // Register ourselves for server and other game events we are interested in.
         // Note that this is necessary if and only if we want *this* class (tachyon) to respond directly to events.

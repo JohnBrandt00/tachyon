@@ -12,6 +12,8 @@
     "tachyon:lithium_block",
     "tachyon:thorium_ore",
     "tachyon:deepslate_thorium_ore",
-    "tachyon:thorium_block"
+    "tachyon:thorium_block",
+    "tachyon:superluminal_emitter",
+    "tachyon:tachyon_light_generator"
   ]
 }

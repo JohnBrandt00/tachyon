@@ -28,6 +28,11 @@
   "item.tachyon.raw_thorium": "Raw Thorium",
   "item.tachyon.thorium_ingot": "Thorium Ingot",
 
+  "block.tachyon.superluminal_emitter": "Superluminal Light-Wave Emitter",
+  "block.tachyon.tachyon_light_generator": "Tachyon Light Generator",
+  "item.tachyon.tachyon_shard": "Tachyon Shard",
+  "menu.tachyon.superluminal_emitter": "Superluminal Emitter",
+
   "tachyon.configuration.title": "tachyon Configs",
   "tachyon.configuration.section.tachyon.common.toml": "tachyon Configs",
   "tachyon.configuration.section.tachyon.common.toml.title": "tachyon Configs",

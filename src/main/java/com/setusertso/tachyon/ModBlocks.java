@@ -1,6 +1,10 @@
 package com.setusertso.tachyon;
 
+import com.setusertso.tachyon.block.SuperluminalEmitterBlock;
+import com.setusertso.tachyon.block.TachyonLightGeneratorBlock;
+
 import net.minecraft.world.item.BlockItem;
+import net.minecraft.world.item.Item;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.SoundType;
 import net.minecraft.world.level.block.state.BlockBehaviour;
@@ -65,6 +69,21 @@ public class ModBlocks {
     public static final DeferredBlock<Block> THORIUM_BLOCK = BLOCKS.registerSimpleBlock("thorium_block",
             BlockBehaviour.Properties.of().mapColor(MapColor.METAL).strength(5.0F, 6.0F).sound(SoundType.METAL).requiresCorrectToolForDrops());
     public static final DeferredItem<BlockItem> THORIUM_BLOCK_ITEM = BLOCK_ITEMS.registerSimpleBlockItem("thorium_block", THORIUM_BLOCK);
+
+    // Superluminal Light-Wave Emitter
+    public static final DeferredBlock<SuperluminalEmitterBlock> SUPERLUMINAL_EMITTER = BLOCKS.register("superluminal_emitter",
+            () -> new SuperluminalEmitterBlock(BlockBehaviour.Properties.of()
+                    .mapColor(MapColor.METAL).strength(5.0F, 6.0F).sound(SoundType.METAL).requiresCorrectToolForDrops()));
+    public static final DeferredItem<BlockItem> SUPERLUMINAL_EMITTER_ITEM = BLOCK_ITEMS.register("superluminal_emitter",
+            () -> new BlockItem(SUPERLUMINAL_EMITTER.get(), new Item.Properties()));
+
+    // Tachyon Light Generator
+    public static final DeferredBlock<TachyonLightGeneratorBlock> TACHYON_LIGHT_GENERATOR = BLOCKS.register("tachyon_light_generator",
+            () -> new TachyonLightGeneratorBlock(BlockBehaviour.Properties.of()
+                    .mapColor(MapColor.METAL).strength(3.5F, 3.5F).sound(SoundType.METAL).requiresCorrectToolForDrops()
+                    .lightLevel(state -> state.getValue(TachyonLightGeneratorBlock.ACTIVE) ? 15 : 0)));
+    public static final DeferredItem<BlockItem> TACHYON_LIGHT_GENERATOR_ITEM = BLOCK_ITEMS.register("tachyon_light_generator",
+            () -> new BlockItem(TACHYON_LIGHT_GENERATOR.get(), new Item.Properties()));
 
     public static void register(IEventBus modEventBus) {
         BLOCKS.register(modEventBus);

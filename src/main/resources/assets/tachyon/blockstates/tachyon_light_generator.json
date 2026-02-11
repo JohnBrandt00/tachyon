@@ -1,0 +1,6 @@
+{
+  "variants": {
+    "active=false": { "model": "tachyon:block/tachyon_light_generator" },
+    "active=true": { "model": "tachyon:block/tachyon_light_generator_active" }
+  }
+}

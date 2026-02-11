@@ -24,6 +24,9 @@ public class ModItems {
     public static final DeferredItem<Item> RAW_THORIUM = ITEMS.registerSimpleItem("raw_thorium");
     public static final DeferredItem<Item> THORIUM_INGOT = ITEMS.registerSimpleItem("thorium_ingot");
 
+    // Tachyon Shard (fuel for Superluminal Emitter)
+    public static final DeferredItem<Item> TACHYON_SHARD = ITEMS.registerSimpleItem("tachyon_shard");
+
     public static void register(IEventBus modEventBus) {
         ITEMS.register(modEventBus);
     }

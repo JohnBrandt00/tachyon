@@ -1,0 +1,6 @@
+{
+  "variants": {
+    "active=false": { "model": "tachyon:block/superluminal_emitter" },
+    "active=true": { "model": "tachyon:block/superluminal_emitter_active" }
+  }
+}
