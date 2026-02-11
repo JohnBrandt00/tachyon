@@ -1,8 +1,14 @@
 {
-  "itemGroup.tachyon": "Example Mod Tab",
+  "itemGroup.tachyon": "Tachyon",
   "block.tachyon.example_block": "Example Block",
   "block.tachyon.tachyon_metal_block": "Tachyon Metal Block",
   "item.tachyon.example_item": "Example Item",
+
+  "block.tachyon.titanium_ore": "Titanium Ore",
+  "block.tachyon.deepslate_titanium_ore": "Deepslate Titanium Ore",
+  "block.tachyon.titanium_block": "Block of Titanium",
+  "item.tachyon.raw_titanium": "Raw Titanium",
+  "item.tachyon.titanium_ingot": "Titanium Ingot",
 
   "tachyon.configuration.title": "tachyon Configs",
   "tachyon.configuration.section.tachyon.common.toml": "tachyon Configs",

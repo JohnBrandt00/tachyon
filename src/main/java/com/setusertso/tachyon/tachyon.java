@@ -61,13 +61,19 @@ public class tachyon {
             .alwaysEdible().nutrition(1).saturationModifier(2f).build()));
 
     // Creates a creative tab with the id "tachyon:example_tab" for the example item, that is placed after the combat tab
-    public static final DeferredHolder<CreativeModeTab, CreativeModeTab> EXAMPLE_TAB = CREATIVE_MODE_TABS.register("example_tab", () -> CreativeModeTab.builder()
+    public static final DeferredHolder<CreativeModeTab, CreativeModeTab> EXAMPLE_TAB = CREATIVE_MODE_TABS.register("tachyon", () -> CreativeModeTab.builder()
             .title(Component.translatable("itemGroup.tachyon")) //The language key for the title of your CreativeModeTab
             .withTabsBefore(CreativeModeTabs.COMBAT)
             .icon(() -> EXAMPLE_ITEM.get().getDefaultInstance())
             .displayItems((parameters, output) -> {
-                output.accept(EXAMPLE_ITEM.get()); // Add the example item to the tab. For your own tabs, this method is preferred over the event
+                output.accept(EXAMPLE_ITEM.get());
                 output.accept(TACHYON_METAL_BLOCK_ITEM.get());
+                // Titanium
+                output.accept(ModBlocks.TITANIUM_ORE_ITEM.get());
+                output.accept(ModBlocks.DEEPSLATE_TITANIUM_ORE_ITEM.get());
+                output.accept(ModBlocks.TITANIUM_BLOCK_ITEM.get());
+                output.accept(ModItems.RAW_TITANIUM.get());
+                output.accept(ModItems.TITANIUM_INGOT.get());
             }).build());
 
     // The constructor for the mod class is the first code that is run when your mod is loaded.
@@ -82,6 +88,10 @@ public class tachyon {
         ITEMS.register(modEventBus);
         // Register the Deferred Register to the mod event bus so tabs get registered
         CREATIVE_MODE_TABS.register(modEventBus);
+
+        // Register ore blocks and items
+        ModBlocks.register(modEventBus);
+        ModItems.register(modEventBus);
 
         // Register ourselves for server and other game events we are interested in.
         // Note that this is necessary if and only if we want *this* class (tachyon) to respond directly to events.
