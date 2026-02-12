@@ -4,12 +4,15 @@ import com.setusertso.tachyon.block.AcceleratorCasingBlock;
 import com.setusertso.tachyon.block.AcceleratorControllerBlock;
 import com.setusertso.tachyon.block.AcceleratorGlassBlock;
 import com.setusertso.tachyon.block.AcceleratorPortBlock;
+import com.setusertso.tachyon.block.CreativePowerBlock;
 import com.setusertso.tachyon.block.SuperluminalEmitterBlock;
 import com.setusertso.tachyon.block.TachyonLightGeneratorBlock;
+import com.setusertso.tachyon.init.ModFluids;
 
 import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.LiquidBlock;
 import net.minecraft.world.level.block.SoundType;
 import net.minecraft.world.level.block.state.BlockBehaviour;
 import net.minecraft.world.level.material.MapColor;
@@ -116,6 +119,19 @@ public class ModBlocks {
                     .isViewBlocking((s, l, p) -> false).requiresCorrectToolForDrops()));
     public static final DeferredItem<BlockItem> ACCELERATOR_GLASS_ITEM = BLOCK_ITEMS.register("accelerator_glass",
             () -> new BlockItem(ACCELERATOR_GLASS.get(), new Item.Properties()));
+
+    // Helium fluid block
+    public static final DeferredBlock<LiquidBlock> HELIUM_BLOCK = BLOCKS.register("helium",
+            () -> new LiquidBlock(ModFluids.HELIUM_SOURCE.get(), BlockBehaviour.Properties.of()
+                    .mapColor(MapColor.NONE).replaceable().noCollission()
+                    .randomTicks().strength(-1.0F).liquid().noLootTable()));
+
+    // Creative Power Source (test block)
+    public static final DeferredBlock<CreativePowerBlock> CREATIVE_POWER_SOURCE = BLOCKS.register("creative_power_source",
+            () -> new CreativePowerBlock(BlockBehaviour.Properties.of()
+                    .mapColor(MapColor.COLOR_PURPLE).strength(3.0F, 6.0F).sound(SoundType.METAL)));
+    public static final DeferredItem<BlockItem> CREATIVE_POWER_SOURCE_ITEM = BLOCK_ITEMS.register("creative_power_source",
+            () -> new BlockItem(CREATIVE_POWER_SOURCE.get(), new Item.Properties()));
 
     public static void register(IEventBus modEventBus) {
         BLOCKS.register(modEventBus);

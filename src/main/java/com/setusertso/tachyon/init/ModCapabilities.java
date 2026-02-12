@@ -9,7 +9,7 @@ public class ModCapabilities {
         event.registerBlockEntity(
                 Capabilities.ItemHandler.BLOCK,
                 ModBlockEntities.ACCELERATOR_PORT.get(),
-                (be, side) -> be.getItemHandler()
+                (be, side) -> be.getItemCapHandler()
         );
 
         event.registerBlockEntity(
@@ -22,6 +22,12 @@ public class ModCapabilities {
                 Capabilities.EnergyStorage.BLOCK,
                 ModBlockEntities.ACCELERATOR_PORT.get(),
                 (be, side) -> be.getEnergyHandler()
+        );
+
+        event.registerBlockEntity(
+                Capabilities.EnergyStorage.BLOCK,
+                ModBlockEntities.CREATIVE_POWER_SOURCE.get(),
+                (be, side) -> be.getEnergyStorage()
         );
     }
 }

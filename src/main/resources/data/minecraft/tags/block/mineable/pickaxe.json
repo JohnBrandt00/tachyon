@@ -18,6 +18,7 @@
     "tachyon:accelerator_controller",
     "tachyon:accelerator_casing",
     "tachyon:accelerator_port",
-    "tachyon:accelerator_glass"
+    "tachyon:accelerator_glass",
+    "tachyon:creative_power_source"
   ]
 }

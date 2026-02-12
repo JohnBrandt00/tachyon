@@ -62,7 +62,7 @@ public class AcceleratorControllerBlockEntity extends BlockEntity implements Men
     private final FluidTank fluidTank = new FluidTank(FLUID_CAPACITY) {
         @Override
         public boolean isFluidValid(FluidStack stack) {
-            return stack.getFluid().isSame(net.minecraft.world.level.material.Fluids.WATER);
+            return stack.getFluid().isSame(com.setusertso.tachyon.init.ModFluids.HELIUM_SOURCE.get());
         }
 
         @Override

@@ -20,8 +20,8 @@ public class AcceleratorPortScreen extends AbstractContainerScreen<AcceleratorPo
     public AcceleratorPortScreen(AcceleratorPortMenu menu, Inventory playerInventory, Component title) {
         super(menu, playerInventory, title);
         this.imageWidth = 176;
-        this.imageHeight = 80;
-        this.inventoryLabelY = 10000; // hide inventory label
+        this.imageHeight = 166;
+        this.inventoryLabelY = 73;
     }
 
     @Override
@@ -30,7 +30,7 @@ public class AcceleratorPortScreen extends AbstractContainerScreen<AcceleratorPo
         this.addRenderableWidget(Button.builder(
                 Component.translatable("gui.tachyon.cycle_mode"),
                 button -> PacketDistributor.sendToServer(new CyclePortModePacket(this.menu.getPortPos()))
-        ).bounds(this.leftPos + 58, this.topPos + 50, 60, 20).build());
+        ).bounds(this.leftPos + 58, this.topPos + 56, 60, 20).build());
     }
 
     @Override
@@ -46,7 +46,7 @@ public class AcceleratorPortScreen extends AbstractContainerScreen<AcceleratorPo
         Component modeText = Component.translatable("gui.tachyon.port_mode." + mode.getSerializedName());
         int textWidth = this.font.width(modeText);
         graphics.drawString(this.font, modeText,
-                this.leftPos + (this.imageWidth - textWidth) / 2, this.topPos + 30, 0xFFFFFF);
+                this.leftPos + (this.imageWidth - textWidth) / 2, this.topPos + 42, 0xFFFFFF);
 
         this.renderTooltip(graphics, mouseX, mouseY);
     }

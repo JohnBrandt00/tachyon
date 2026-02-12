@@ -1,6 +1,8 @@
 package com.setusertso.tachyon.block.entity;
 
-public enum PortMode {
+import net.minecraft.util.StringRepresentable;
+
+public enum PortMode implements StringRepresentable {
     ITEM_INPUT("item_input"),
     ITEM_OUTPUT("item_output"),
     FLUID_INPUT("fluid_input"),
@@ -13,6 +15,7 @@ public enum PortMode {
         this.serializedName = serializedName;
     }
 
+    @Override
     public String getSerializedName() {
         return serializedName;
     }

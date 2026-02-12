@@ -6,6 +6,7 @@ import com.mojang.logging.LogUtils;
 import com.setusertso.tachyon.command.ModCommands;
 import com.setusertso.tachyon.init.ModBlockEntities;
 import com.setusertso.tachyon.init.ModCapabilities;
+import com.setusertso.tachyon.init.ModFluids;
 import com.setusertso.tachyon.init.ModMenuTypes;
 import com.setusertso.tachyon.network.ModNetworking;
 
@@ -107,6 +108,10 @@ public class tachyon {
                 output.accept(ModBlocks.ACCELERATOR_CASING_ITEM.get());
                 output.accept(ModBlocks.ACCELERATOR_PORT_ITEM.get());
                 output.accept(ModBlocks.ACCELERATOR_GLASS_ITEM.get());
+                // Fluids
+                output.accept(ModItems.HELIUM_BUCKET.get());
+                // Creative / Testing
+                output.accept(ModBlocks.CREATIVE_POWER_SOURCE_ITEM.get());
             }).build());
 
     // The constructor for the mod class is the first code that is run when your mod is loaded.
@@ -125,6 +130,9 @@ public class tachyon {
         // Register ore blocks and items
         ModBlocks.register(modEventBus);
         ModItems.register(modEventBus);
+
+        // Register fluids
+        ModFluids.register(modEventBus);
 
         // Register block entities and menu types
         ModBlockEntities.register(modEventBus);

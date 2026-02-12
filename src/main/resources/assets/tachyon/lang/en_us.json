@@ -47,6 +47,10 @@
   "gui.tachyon.port_mode.energy_input": "Energy Input",
   "gui.tachyon.cycle_mode": "Cycle Mode",
 
+  "block.tachyon.creative_power_source": "Creative Power Source",
+  "fluid_type.tachyon.helium": "Helium",
+  "item.tachyon.helium_bucket": "Helium Bucket",
+
   "tachyon.configuration.title": "tachyon Configs",
   "tachyon.configuration.section.tachyon.common.toml": "tachyon Configs",
   "tachyon.configuration.section.tachyon.common.toml.title": "tachyon Configs",

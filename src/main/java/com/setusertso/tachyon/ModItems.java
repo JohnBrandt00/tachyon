@@ -1,5 +1,8 @@
 package com.setusertso.tachyon;
 
+import com.setusertso.tachyon.init.ModFluids;
+
+import net.minecraft.world.item.BucketItem;
 import net.minecraft.world.item.Item;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.neoforge.registries.DeferredItem;
@@ -26,6 +29,10 @@ public class ModItems {
 
     // Tachyon Shard (fuel for Superluminal Emitter)
     public static final DeferredItem<Item> TACHYON_SHARD = ITEMS.registerSimpleItem("tachyon_shard");
+
+    // Helium Bucket
+    public static final DeferredItem<BucketItem> HELIUM_BUCKET = ITEMS.register("helium_bucket",
+            () -> new BucketItem(ModFluids.HELIUM_SOURCE.get(), new Item.Properties().stacksTo(1)));
 
     public static void register(IEventBus modEventBus) {
         ITEMS.register(modEventBus);

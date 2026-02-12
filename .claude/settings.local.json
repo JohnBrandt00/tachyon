@@ -5,7 +5,8 @@
       "Bash(./gradlew:*)",
       "WebFetch(domain:docs.neoforged.net)",
       "Bash(jar tf:*)",
-      "WebFetch(domain:github.com)"
+      "WebFetch(domain:github.com)",
+      "Bash(cmd.exe /c \"cd /d d:\\\\MCMODDING\\\\tachyon && gradlew.bat build 2>&1\")"
     ]
   }
 }

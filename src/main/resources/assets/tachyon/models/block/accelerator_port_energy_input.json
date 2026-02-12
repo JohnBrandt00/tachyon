@@ -1,0 +1,6 @@
+{
+  "parent": "minecraft:block/cube_all",
+  "textures": {
+    "all": "tachyon:block/accelerator_port_energy_input"
+  }
+}

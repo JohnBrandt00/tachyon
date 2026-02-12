@@ -1,0 +1,5 @@
+{
+  "variants": {
+    "": { "model": "tachyon:block/creative_power_source" }
+  }
+}

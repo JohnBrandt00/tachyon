@@ -1,0 +1,6 @@
+{
+  "loader": "neoforge:fluid_container",
+  "fluid": "tachyon:helium",
+  "flip_gas": true,
+  "apply_tint": true
+}
