@@ -11,6 +11,9 @@
     "tachyon:deepslate_lithium_ore",
     "tachyon:lithium_block",
     "tachyon:superluminal_emitter",
-    "tachyon:tachyon_light_generator"
+    "tachyon:tachyon_light_generator",
+    "tachyon:accelerator_controller",
+    "tachyon:accelerator_casing",
+    "tachyon:accelerator_port"
   ]
 }

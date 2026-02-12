@@ -1,5 +1,8 @@
 package com.setusertso.tachyon;
 
+import com.setusertso.tachyon.block.AcceleratorCasingBlock;
+import com.setusertso.tachyon.block.AcceleratorControllerBlock;
+import com.setusertso.tachyon.block.AcceleratorPortBlock;
 import com.setusertso.tachyon.block.SuperluminalEmitterBlock;
 import com.setusertso.tachyon.block.TachyonLightGeneratorBlock;
 
@@ -84,6 +87,25 @@ public class ModBlocks {
                     .lightLevel(state -> state.getValue(TachyonLightGeneratorBlock.ACTIVE) ? 15 : 0)));
     public static final DeferredItem<BlockItem> TACHYON_LIGHT_GENERATOR_ITEM = BLOCK_ITEMS.register("tachyon_light_generator",
             () -> new BlockItem(TACHYON_LIGHT_GENERATOR.get(), new Item.Properties()));
+
+    // Particle Accelerator
+    public static final DeferredBlock<AcceleratorControllerBlock> ACCELERATOR_CONTROLLER = BLOCKS.register("accelerator_controller",
+            () -> new AcceleratorControllerBlock(BlockBehaviour.Properties.of()
+                    .mapColor(MapColor.METAL).strength(5.0F, 6.0F).sound(SoundType.METAL).requiresCorrectToolForDrops()));
+    public static final DeferredItem<BlockItem> ACCELERATOR_CONTROLLER_ITEM = BLOCK_ITEMS.register("accelerator_controller",
+            () -> new BlockItem(ACCELERATOR_CONTROLLER.get(), new Item.Properties()));
+
+    public static final DeferredBlock<AcceleratorCasingBlock> ACCELERATOR_CASING = BLOCKS.register("accelerator_casing",
+            () -> new AcceleratorCasingBlock(BlockBehaviour.Properties.of()
+                    .mapColor(MapColor.METAL).strength(5.0F, 6.0F).sound(SoundType.METAL).requiresCorrectToolForDrops()));
+    public static final DeferredItem<BlockItem> ACCELERATOR_CASING_ITEM = BLOCK_ITEMS.register("accelerator_casing",
+            () -> new BlockItem(ACCELERATOR_CASING.get(), new Item.Properties()));
+
+    public static final DeferredBlock<AcceleratorPortBlock> ACCELERATOR_PORT = BLOCKS.register("accelerator_port",
+            () -> new AcceleratorPortBlock(BlockBehaviour.Properties.of()
+                    .mapColor(MapColor.METAL).strength(5.0F, 6.0F).sound(SoundType.METAL).requiresCorrectToolForDrops()));
+    public static final DeferredItem<BlockItem> ACCELERATOR_PORT_ITEM = BLOCK_ITEMS.register("accelerator_port",
+            () -> new BlockItem(ACCELERATOR_PORT.get(), new Item.Properties()));
 
     public static void register(IEventBus modEventBus) {
         BLOCKS.register(modEventBus);

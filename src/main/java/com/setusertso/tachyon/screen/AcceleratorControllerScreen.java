@@ -1,0 +1,70 @@
+package com.setusertso.tachyon.screen;
+
+import com.setusertso.tachyon.menu.AcceleratorControllerMenu;
+import com.setusertso.tachyon.tachyon;
+
+import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
+import net.minecraft.network.chat.Component;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.entity.player.Inventory;
+
+public class AcceleratorControllerScreen extends AbstractContainerScreen<AcceleratorControllerMenu> {
+    private static final ResourceLocation TEXTURE =
+            ResourceLocation.fromNamespaceAndPath(tachyon.MODID, "textures/gui/accelerator_controller.png");
+
+    public AcceleratorControllerScreen(AcceleratorControllerMenu menu, Inventory playerInventory, Component title) {
+        super(menu, playerInventory, title);
+        this.imageWidth = 176;
+        this.imageHeight = 166;
+    }
+
+    @Override
+    protected void renderBg(GuiGraphics graphics, float partialTick, int mouseX, int mouseY) {
+        graphics.blit(TEXTURE, this.leftPos, this.topPos, 0, 0, this.imageWidth, this.imageHeight);
+
+        // Energy bar (left side, 16x52 pixels, position: 10, 16)
+        float energyScaled = this.menu.getEnergyScaled();
+        if (energyScaled > 0) {
+            int barHeight = (int) (energyScaled * 52);
+            graphics.blit(TEXTURE, this.leftPos + 10, this.topPos + 16 + 52 - barHeight,
+                    176, 52 - barHeight, 16, barHeight);
+        }
+
+        // Fluid tank (right side, 16x52 pixels, position: 150, 16)
+        float fluidScaled = this.menu.getFluidScaled();
+        if (fluidScaled > 0) {
+            int barHeight = (int) (fluidScaled * 52);
+            graphics.blit(TEXTURE, this.leftPos + 150, this.topPos + 16 + 52 - barHeight,
+                    192, 52 - barHeight, 16, barHeight);
+        }
+
+        // Progress arrow (between slots, 24x17 pixels, position: 79, 34)
+        float progressScaled = this.menu.getProgressScaled();
+        if (progressScaled > 0) {
+            int arrowWidth = (int) (progressScaled * 24);
+            graphics.blit(TEXTURE, this.leftPos + 79, this.topPos + 34,
+                    176, 52, arrowWidth, 17);
+        }
+    }
+
+    @Override
+    public void render(GuiGraphics graphics, int mouseX, int mouseY, float partialTick) {
+        super.render(graphics, mouseX, mouseY, partialTick);
+        this.renderTooltip(graphics, mouseX, mouseY);
+
+        // Energy tooltip
+        if (isHovering(10, 16, 16, 52, mouseX, mouseY)) {
+            graphics.renderTooltip(this.font,
+                    Component.literal(this.menu.getEnergy() + " / " + this.menu.getMaxEnergy() + " FE"),
+                    mouseX, mouseY);
+        }
+
+        // Fluid tooltip
+        if (isHovering(150, 16, 16, 52, mouseX, mouseY)) {
+            graphics.renderTooltip(this.font,
+                    Component.literal(this.menu.getFluidAmount() + " / " + this.menu.getFluidCapacity() + " mB"),
+                    mouseX, mouseY);
+        }
+    }
+}

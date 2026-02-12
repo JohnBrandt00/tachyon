@@ -1,0 +1,5 @@
+{
+  "variants": {
+    "": { "model": "tachyon:block/accelerator_casing" }
+  }
+}

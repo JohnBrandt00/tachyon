@@ -3,8 +3,11 @@ package com.setusertso.tachyon;
 import org.slf4j.Logger;
 
 import com.mojang.logging.LogUtils;
+import com.setusertso.tachyon.command.ModCommands;
 import com.setusertso.tachyon.init.ModBlockEntities;
+import com.setusertso.tachyon.init.ModCapabilities;
 import com.setusertso.tachyon.init.ModMenuTypes;
+import com.setusertso.tachyon.network.ModNetworking;
 
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.core.registries.Registries;
@@ -28,6 +31,7 @@ import net.neoforged.fml.ModContainer;
 import net.neoforged.fml.event.lifecycle.FMLCommonSetupEvent;
 import net.neoforged.neoforge.common.NeoForge;
 import net.neoforged.neoforge.event.BuildCreativeModeTabContentsEvent;
+import net.neoforged.neoforge.event.RegisterCommandsEvent;
 import net.neoforged.neoforge.event.server.ServerStartingEvent;
 import net.neoforged.neoforge.registries.DeferredBlock;
 import net.neoforged.neoforge.registries.DeferredHolder;
@@ -98,6 +102,10 @@ public class tachyon {
                 output.accept(ModBlocks.SUPERLUMINAL_EMITTER_ITEM.get());
                 output.accept(ModBlocks.TACHYON_LIGHT_GENERATOR_ITEM.get());
                 output.accept(ModItems.TACHYON_SHARD.get());
+                // Particle Accelerator
+                output.accept(ModBlocks.ACCELERATOR_CONTROLLER_ITEM.get());
+                output.accept(ModBlocks.ACCELERATOR_CASING_ITEM.get());
+                output.accept(ModBlocks.ACCELERATOR_PORT_ITEM.get());
             }).build());
 
     // The constructor for the mod class is the first code that is run when your mod is loaded.
@@ -126,6 +134,10 @@ public class tachyon {
         // Do not add this line if there are no @SubscribeEvent-annotated functions in this class, like onServerStarting() below.
         NeoForge.EVENT_BUS.register(this);
 
+        // Register capabilities and networking
+        modEventBus.addListener(ModCapabilities::register);
+        modEventBus.addListener(ModNetworking::register);
+
         // Register the item to a creative tab
         modEventBus.addListener(this::addCreative);
 
@@ -152,6 +164,11 @@ public class tachyon {
             event.accept(EXAMPLE_BLOCK_ITEM);
             event.accept(TACHYON_METAL_BLOCK_ITEM);
         }
+    }
+
+    @SubscribeEvent
+    public void onRegisterCommands(RegisterCommandsEvent event) {
+        ModCommands.register(event.getDispatcher());
     }
 
     // You can use SubscribeEvent and let the Event Bus discover methods to call

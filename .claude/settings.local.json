@@ -1,0 +1,11 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(python:*)",
+      "Bash(./gradlew:*)",
+      "WebFetch(domain:docs.neoforged.net)",
+      "Bash(jar tf:*)",
+      "WebFetch(domain:github.com)"
+    ]
+  }
+}
