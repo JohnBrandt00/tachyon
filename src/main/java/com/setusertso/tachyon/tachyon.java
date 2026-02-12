@@ -106,6 +106,7 @@ public class tachyon {
                 output.accept(ModBlocks.ACCELERATOR_CONTROLLER_ITEM.get());
                 output.accept(ModBlocks.ACCELERATOR_CASING_ITEM.get());
                 output.accept(ModBlocks.ACCELERATOR_PORT_ITEM.get());
+                output.accept(ModBlocks.ACCELERATOR_GLASS_ITEM.get());
             }).build());
 
     // The constructor for the mod class is the first code that is run when your mod is loaded.

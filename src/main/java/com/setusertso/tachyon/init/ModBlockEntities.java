@@ -37,7 +37,7 @@ public class ModBlockEntities {
     public static final Supplier<BlockEntityType<AcceleratorCasingBlockEntity>> ACCELERATOR_CASING =
             BLOCK_ENTITIES.register("accelerator_casing",
                     () -> BlockEntityType.Builder.of(AcceleratorCasingBlockEntity::new,
-                            ModBlocks.ACCELERATOR_CASING.get()).build(null));
+                            ModBlocks.ACCELERATOR_CASING.get(), ModBlocks.ACCELERATOR_GLASS.get()).build(null));
 
     public static final Supplier<BlockEntityType<AcceleratorPortBlockEntity>> ACCELERATOR_PORT =
             BLOCK_ENTITIES.register("accelerator_port",

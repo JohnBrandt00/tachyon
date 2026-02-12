@@ -36,6 +36,7 @@
   "block.tachyon.accelerator_controller": "Accelerator Controller",
   "block.tachyon.accelerator_casing": "Accelerator Casing",
   "block.tachyon.accelerator_port": "Accelerator Port",
+  "block.tachyon.accelerator_glass": "Accelerator Glass",
   "menu.tachyon.accelerator_controller": "Particle Accelerator",
   "menu.tachyon.accelerator_port": "Accelerator Port",
   "message.tachyon.accelerator_not_formed": "Structure is not complete!",

@@ -2,6 +2,7 @@ package com.setusertso.tachyon;
 
 import com.setusertso.tachyon.block.AcceleratorCasingBlock;
 import com.setusertso.tachyon.block.AcceleratorControllerBlock;
+import com.setusertso.tachyon.block.AcceleratorGlassBlock;
 import com.setusertso.tachyon.block.AcceleratorPortBlock;
 import com.setusertso.tachyon.block.SuperluminalEmitterBlock;
 import com.setusertso.tachyon.block.TachyonLightGeneratorBlock;
@@ -106,6 +107,15 @@ public class ModBlocks {
                     .mapColor(MapColor.METAL).strength(5.0F, 6.0F).sound(SoundType.METAL).requiresCorrectToolForDrops()));
     public static final DeferredItem<BlockItem> ACCELERATOR_PORT_ITEM = BLOCK_ITEMS.register("accelerator_port",
             () -> new BlockItem(ACCELERATOR_PORT.get(), new Item.Properties()));
+
+    public static final DeferredBlock<AcceleratorGlassBlock> ACCELERATOR_GLASS = BLOCKS.register("accelerator_glass",
+            () -> new AcceleratorGlassBlock(BlockBehaviour.Properties.of()
+                    .mapColor(MapColor.NONE).strength(3.0F, 6.0F).sound(SoundType.GLASS)
+                    .noOcclusion().isValidSpawn((s, l, p, e) -> false)
+                    .isRedstoneConductor((s, l, p) -> false).isSuffocating((s, l, p) -> false)
+                    .isViewBlocking((s, l, p) -> false).requiresCorrectToolForDrops()));
+    public static final DeferredItem<BlockItem> ACCELERATOR_GLASS_ITEM = BLOCK_ITEMS.register("accelerator_glass",
+            () -> new BlockItem(ACCELERATOR_GLASS.get(), new Item.Properties()));
 
     public static void register(IEventBus modEventBus) {
         BLOCKS.register(modEventBus);

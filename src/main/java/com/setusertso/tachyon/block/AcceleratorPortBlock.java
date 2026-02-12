@@ -28,12 +28,16 @@ public class AcceleratorPortBlock extends Block implements EntityBlock {
     @Override
     protected InteractionResult useWithoutItem(BlockState state, Level level, BlockPos pos,
             Player player, BlockHitResult hitResult) {
-        if (!level.isClientSide() && player instanceof ServerPlayer sp) {
-            if (level.getBlockEntity(pos) instanceof AcceleratorPortBlockEntity be) {
-                sp.openMenu(be, buf -> buf.writeBlockPos(pos));
+        if (level.getBlockEntity(pos) instanceof AcceleratorPortBlockEntity be) {
+            BlockPos masterPos = be.getMasterPos();
+            if (masterPos != null) {
+                if (!level.isClientSide() && player instanceof ServerPlayer sp) {
+                    sp.openMenu(be, buf -> buf.writeBlockPos(pos));
+                }
+                return InteractionResult.sidedSuccess(level.isClientSide());
             }
         }
-        return InteractionResult.sidedSuccess(level.isClientSide());
+        return InteractionResult.PASS;
     }
 
     @Override

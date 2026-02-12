@@ -69,24 +69,25 @@ public class ModCommands {
             default    -> { ctrlDx = ctrlLocalX; ctrlDz = ctrlLocalZ; }
         }
 
+        int centerX = controllerPos.getX() - ctrlDx;
+        int centerZ = controllerPos.getZ() - ctrlDz;
+
         int[] placed = {0};
         int height = AcceleratorPattern.getHeight();
 
-        for (AcceleratorPattern.RingOffset offset : AcceleratorPattern.getRingOffsets()) {
-            int worldDx, worldDz;
-            switch (facing) {
-                case NORTH -> { worldDx = offset.localZ(); worldDz = -offset.localX(); }
-                case SOUTH -> { worldDx = -offset.localZ(); worldDz = offset.localX(); }
-                case EAST  -> { worldDx = offset.localX(); worldDz = offset.localZ(); }
-                case WEST  -> { worldDx = -offset.localX(); worldDz = -offset.localZ(); }
-                default    -> { worldDx = offset.localX(); worldDz = offset.localZ(); }
-            }
+        // Place shell blocks for each layer
+        for (int y = 0; y < height; y++) {
+            for (AcceleratorPattern.RingOffset offset : AcceleratorPattern.getBlockOffsetsForLayer(y)) {
+                int worldDx, worldDz;
+                switch (facing) {
+                    case NORTH -> { worldDx = offset.localZ(); worldDz = -offset.localX(); }
+                    case SOUTH -> { worldDx = -offset.localZ(); worldDz = offset.localX(); }
+                    case EAST  -> { worldDx = offset.localX(); worldDz = offset.localZ(); }
+                    case WEST  -> { worldDx = -offset.localX(); worldDz = -offset.localZ(); }
+                    default    -> { worldDx = offset.localX(); worldDz = offset.localZ(); }
+                }
 
-            int finalX = controllerPos.getX() - ctrlDx + worldDx;
-            int finalZ = controllerPos.getZ() - ctrlDz + worldDz;
-
-            for (int y = 0; y < height; y++) {
-                BlockPos placePos = new BlockPos(finalX, controllerPos.getY() + y, finalZ);
+                BlockPos placePos = new BlockPos(centerX + worldDx, controllerPos.getY() + y, centerZ + worldDz);
 
                 // Skip the controller itself
                 if (placePos.equals(controllerPos)) continue;
@@ -96,7 +97,7 @@ public class ModCommands {
 
                 // Check if this position should be glass
                 if (AcceleratorPattern.isGlassPosition(y, offset.localX(), offset.localZ())) {
-                    level.setBlock(placePos, Blocks.GLASS.defaultBlockState(), Block.UPDATE_ALL);
+                    level.setBlock(placePos, ModBlocks.ACCELERATOR_GLASS.get().defaultBlockState(), Block.UPDATE_ALL);
                 } else {
                     level.setBlock(placePos, ModBlocks.ACCELERATOR_CASING.get().defaultBlockState(), Block.UPDATE_ALL);
                 }
@@ -104,7 +105,26 @@ public class ModCommands {
             }
         }
 
-        source.sendSuccess(() -> Component.literal("Placed " + placed[0] + " blocks for accelerator ring"), true);
+        // Clear air positions (ensure tube interior is air)
+        for (int y = 0; y < height; y++) {
+            for (AcceleratorPattern.RingOffset offset : AcceleratorPattern.getAirOffsetsForLayer(y)) {
+                int worldDx, worldDz;
+                switch (facing) {
+                    case NORTH -> { worldDx = offset.localZ(); worldDz = -offset.localX(); }
+                    case SOUTH -> { worldDx = -offset.localZ(); worldDz = offset.localX(); }
+                    case EAST  -> { worldDx = offset.localX(); worldDz = offset.localZ(); }
+                    case WEST  -> { worldDx = -offset.localX(); worldDz = -offset.localZ(); }
+                    default    -> { worldDx = offset.localX(); worldDz = offset.localZ(); }
+                }
+
+                BlockPos tubePos = new BlockPos(centerX + worldDx, controllerPos.getY() + y, centerZ + worldDz);
+                if (!level.getBlockState(tubePos).isAir()) {
+                    level.setBlock(tubePos, Blocks.AIR.defaultBlockState(), Block.UPDATE_ALL);
+                }
+            }
+        }
+
+        source.sendSuccess(() -> Component.literal("Placed " + placed[0] + " blocks for accelerator torus"), true);
         return 1;
     }
 

@@ -145,7 +145,7 @@ public class AcceleratorControllerBlockEntity extends BlockEntity implements Men
         if (AcceleratorPattern.validate(level, worldPosition, facing)) {
             formed = true;
             structurePositions = AcceleratorPattern.getStructurePositions(worldPosition, facing);
-            ringPath = AcceleratorPattern.computeRingPath(worldPosition, facing, 1);
+            ringPath = AcceleratorPattern.computeRingPath(worldPosition, facing, 2);
 
             // Set master pos on all slave block entities
             for (BlockPos sPos : structurePositions) {

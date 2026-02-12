@@ -129,7 +129,7 @@ public class AcceleratorControllerRenderer implements BlockEntityRenderer<Accele
     public AABB getRenderBoundingBox(AcceleratorControllerBlockEntity be) {
         BlockPos pos = be.getBlockPos();
         return new AABB(
-                pos.getX() - 6, pos.getY() - 1, pos.getZ() - 6,
-                pos.getX() + 7, pos.getY() + 4, pos.getZ() + 7);
+                pos.getX() - 8, pos.getY() - 1, pos.getZ() - 8,
+                pos.getX() + 9, pos.getY() + 6, pos.getZ() + 9);
     }
 }

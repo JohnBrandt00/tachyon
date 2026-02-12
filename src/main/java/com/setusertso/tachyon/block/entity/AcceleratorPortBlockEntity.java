@@ -33,6 +33,9 @@ public class AcceleratorPortBlockEntity extends BlockEntity implements MenuProvi
     public void setMasterPos(BlockPos masterPos) {
         this.masterPos = masterPos;
         setChanged();
+        if (level != null && !level.isClientSide()) {
+            level.sendBlockUpdated(worldPosition, getBlockState(), getBlockState(), 3);
+        }
     }
 
     public PortMode getMode() {

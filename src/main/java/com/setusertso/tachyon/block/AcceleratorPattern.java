@@ -4,7 +4,6 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
-import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -43,10 +42,13 @@ public class AcceleratorPattern {
         }
     }
 
-    private static List<RingOffset> ringOffsets;
+    // Explicit positions per layer (read directly from JSON)
+    private static Map<Integer, List<RingOffset>> shellPositions;
+    private static Map<Integer, List<RingOffset>> airPositions;
+    private static List<RingOffset> ringPathOffsets;
+
     private static int[] controllerOffset;
     private static LayerRule[] layerRules;
-    // Key: "layer,localX,localZ" -> per-position override rule
     private static Map<String, LayerRule> positionOverrides;
     private static int height;
     private static boolean loaded = false;
@@ -59,10 +61,7 @@ public class AcceleratorPattern {
                     "/data/tachyon/multiblock/particle_accelerator.json");
             if (is == null) {
                 tachyon.LOGGER.error("Failed to load particle_accelerator.json pattern!");
-                ringOffsets = List.of();
-                controllerOffset = new int[]{0, 0};
-                layerRules = new LayerRule[0];
-                height = 0;
+                initEmpty();
                 return;
             }
             JsonObject root = JsonParser.parseReader(
@@ -73,35 +72,54 @@ public class AcceleratorPattern {
             JsonArray ctrlArr = root.getAsJsonArray("controller_offset");
             controllerOffset = new int[]{ctrlArr.get(0).getAsInt(), ctrlArr.get(1).getAsInt()};
 
-            // Parse ring positions
-            JsonArray posArr = root.getAsJsonArray("ring_positions");
-            ringOffsets = new ArrayList<>();
-            for (JsonElement elem : posArr) {
-                JsonArray pair = elem.getAsJsonArray();
-                ringOffsets.add(new RingOffset(pair.get(0).getAsInt(), pair.get(1).getAsInt()));
+            height = root.get("height").getAsInt();
+
+            // Parse shell positions (explicit per-layer lists)
+            shellPositions = new HashMap<>();
+            JsonObject shellObj = root.getAsJsonObject("shell");
+            for (String layerKey : shellObj.keySet()) {
+                int layer = Integer.parseInt(layerKey);
+                JsonArray posArr = shellObj.getAsJsonArray(layerKey);
+                List<RingOffset> offsets = new ArrayList<>();
+                for (JsonElement elem : posArr) {
+                    JsonArray pair = elem.getAsJsonArray();
+                    offsets.add(new RingOffset(pair.get(0).getAsInt(), pair.get(1).getAsInt()));
+                }
+                shellPositions.put(layer, offsets);
             }
 
-            // Parse height
-            height = root.get("height").getAsInt();
+            // Parse air positions (explicit per-layer lists)
+            airPositions = new HashMap<>();
+            if (root.has("air")) {
+                JsonObject airObj = root.getAsJsonObject("air");
+                for (String layerKey : airObj.keySet()) {
+                    int layer = Integer.parseInt(layerKey);
+                    JsonArray posArr = airObj.getAsJsonArray(layerKey);
+                    List<RingOffset> offsets = new ArrayList<>();
+                    for (JsonElement elem : posArr) {
+                        JsonArray pair = elem.getAsJsonArray();
+                        offsets.add(new RingOffset(pair.get(0).getAsInt(), pair.get(1).getAsInt()));
+                    }
+                    airPositions.put(layer, offsets);
+                }
+            }
+
+            // Parse ring path (ordered positions for particle animation)
+            ringPathOffsets = new ArrayList<>();
+            if (root.has("ring_path")) {
+                JsonArray pathArr = root.getAsJsonArray("ring_path");
+                for (JsonElement elem : pathArr) {
+                    JsonArray pair = elem.getAsJsonArray();
+                    ringPathOffsets.add(new RingOffset(pair.get(0).getAsInt(), pair.get(1).getAsInt()));
+                }
+            }
 
             // Parse layer rules
             JsonObject layers = root.getAsJsonObject("layers");
             layerRules = new LayerRule[height];
             for (int y = 0; y < height; y++) {
                 JsonObject layer = layers.getAsJsonObject(String.valueOf(y));
-                JsonArray accepts = layer.getAsJsonArray("accepts");
-                List<ResourceLocation> blockIds = new ArrayList<>();
-                List<TagKey<Block>> blockTags = new ArrayList<>();
-                for (JsonElement a : accepts) {
-                    String s = a.getAsString();
-                    if (s.startsWith("#")) {
-                        blockTags.add(TagKey.create(Registries.BLOCK,
-                                ResourceLocation.parse(s.substring(1))));
-                    } else {
-                        blockIds.add(ResourceLocation.parse(s));
-                    }
-                }
-                layerRules[y] = new LayerRule(blockIds, blockTags);
+                layerRules[y] = parseLayerRule(layer.getAsJsonArray("accepts"));
             }
 
             // Parse position overrides (optional)
@@ -112,35 +130,60 @@ public class AcceleratorPattern {
                     JsonObject layerOverrides = overrides.getAsJsonObject(layerKey);
                     for (String posKey : layerOverrides.keySet()) {
                         JsonObject overrideObj = layerOverrides.getAsJsonObject(posKey);
-                        JsonArray accepts = overrideObj.getAsJsonArray("accepts");
-                        List<ResourceLocation> blockIds = new ArrayList<>();
-                        List<TagKey<Block>> blockTags = new ArrayList<>();
-                        for (JsonElement a : accepts) {
-                            String s = a.getAsString();
-                            if (s.startsWith("#")) {
-                                blockTags.add(TagKey.create(Registries.BLOCK,
-                                        ResourceLocation.parse(s.substring(1))));
-                            } else {
-                                blockIds.add(ResourceLocation.parse(s));
-                            }
-                        }
-                        // Store as "layer,x,z" key
+                        LayerRule rule = parseLayerRule(overrideObj.getAsJsonArray("accepts"));
                         String normalizedKey = layerKey + "," + posKey;
-                        positionOverrides.put(normalizedKey, new LayerRule(blockIds, blockTags));
+                        positionOverrides.put(normalizedKey, rule);
                     }
                 }
             }
 
-            tachyon.LOGGER.info("Loaded accelerator pattern: {} ring positions, {} layers, {} overrides",
-                    ringOffsets.size(), height, positionOverrides.size());
+            int totalShell = 0;
+            int totalAir = 0;
+            for (int y = 0; y < height; y++) {
+                totalShell += shellPositions.getOrDefault(y, List.of()).size();
+                totalAir += airPositions.getOrDefault(y, List.of()).size();
+            }
+            tachyon.LOGGER.info("Loaded accelerator torus: {} layers, {} shell blocks, {} air blocks, {} ring path positions",
+                    height, totalShell, totalAir, ringPathOffsets.size());
         } catch (Exception e) {
             tachyon.LOGGER.error("Error loading accelerator pattern", e);
-            ringOffsets = List.of();
-            controllerOffset = new int[]{0, 0};
-            layerRules = new LayerRule[0];
-            positionOverrides = new HashMap<>();
-            height = 0;
+            initEmpty();
         }
+    }
+
+    private static LayerRule parseLayerRule(JsonArray accepts) {
+        List<ResourceLocation> blockIds = new ArrayList<>();
+        List<TagKey<Block>> blockTags = new ArrayList<>();
+        for (JsonElement a : accepts) {
+            String s = a.getAsString();
+            if (s.startsWith("#")) {
+                blockTags.add(TagKey.create(Registries.BLOCK,
+                        ResourceLocation.parse(s.substring(1))));
+            } else {
+                blockIds.add(ResourceLocation.parse(s));
+            }
+        }
+        return new LayerRule(blockIds, blockTags);
+    }
+
+    private static void initEmpty() {
+        shellPositions = new HashMap<>();
+        airPositions = new HashMap<>();
+        ringPathOffsets = List.of();
+        controllerOffset = new int[]{0, 0};
+        layerRules = new LayerRule[0];
+        positionOverrides = new HashMap<>();
+        height = 0;
+    }
+
+    public static List<RingOffset> getBlockOffsetsForLayer(int layer) {
+        ensureLoaded();
+        return shellPositions.getOrDefault(layer, List.of());
+    }
+
+    public static List<RingOffset> getAirOffsetsForLayer(int layer) {
+        ensureLoaded();
+        return airPositions.getOrDefault(layer, List.of());
     }
 
     public static int getHeight() {
@@ -148,61 +191,53 @@ public class AcceleratorPattern {
         return height;
     }
 
-    public static List<RingOffset> getRingOffsets() {
+    public static List<RingOffset> getRingPathOffsets() {
         ensureLoaded();
-        return ringOffsets;
+        return ringPathOffsets;
     }
 
     /**
-     * Compute all world positions for the ring given controller pos and facing.
-     * The controller occupies one of the ring positions (the controller_offset position).
-     * Returns positions for all layers (y=0, y=1, y=2).
+     * Compute all world positions for shell blocks (all layers).
      */
     public static List<BlockPos> computeWorldPositions(BlockPos controllerPos, Direction facing) {
         ensureLoaded();
         List<BlockPos> positions = new ArrayList<>();
         int baseY = controllerPos.getY();
 
-        for (RingOffset offset : ringOffsets) {
-            // local coordinates relative to ring center
-            int localX = offset.localX();
-            int localZ = offset.localZ();
+        int ctrlLocalX = controllerOffset[0];
+        int ctrlLocalZ = controllerOffset[1];
+        int ctrlDx, ctrlDz;
+        switch (facing) {
+            case NORTH -> { ctrlDx = ctrlLocalZ; ctrlDz = -ctrlLocalX; }
+            case SOUTH -> { ctrlDx = -ctrlLocalZ; ctrlDz = ctrlLocalX; }
+            case EAST  -> { ctrlDx = ctrlLocalX; ctrlDz = ctrlLocalZ; }
+            case WEST  -> { ctrlDx = -ctrlLocalX; ctrlDz = -ctrlLocalZ; }
+            default    -> { ctrlDx = ctrlLocalX; ctrlDz = ctrlLocalZ; }
+        }
 
-            // Rotate based on facing
-            int worldDx, worldDz;
-            switch (facing) {
-                case NORTH -> { worldDx = localZ; worldDz = -localX; }
-                case SOUTH -> { worldDx = -localZ; worldDz = localX; }
-                case EAST  -> { worldDx = localX; worldDz = localZ; }
-                case WEST  -> { worldDx = -localX; worldDz = -localZ; }
-                default    -> { worldDx = localX; worldDz = localZ; }
-            }
+        int centerX = controllerPos.getX() - ctrlDx;
+        int centerZ = controllerPos.getZ() - ctrlDz;
 
-            // Translate: ring center is at controllerPos + rotated(-controllerOffset)
-            int ctrlLocalX = controllerOffset[0];
-            int ctrlLocalZ = controllerOffset[1];
-            int ctrlDx, ctrlDz;
-            switch (facing) {
-                case NORTH -> { ctrlDx = ctrlLocalZ; ctrlDz = -ctrlLocalX; }
-                case SOUTH -> { ctrlDx = -ctrlLocalZ; ctrlDz = ctrlLocalX; }
-                case EAST  -> { ctrlDx = ctrlLocalX; ctrlDz = ctrlLocalZ; }
-                case WEST  -> { ctrlDx = -ctrlLocalX; ctrlDz = -ctrlLocalZ; }
-                default    -> { ctrlDx = ctrlLocalX; ctrlDz = ctrlLocalZ; }
-            }
+        for (int y = 0; y < height; y++) {
+            for (RingOffset offset : getBlockOffsetsForLayer(y)) {
+                int worldDx, worldDz;
+                switch (facing) {
+                    case NORTH -> { worldDx = offset.localZ(); worldDz = -offset.localX(); }
+                    case SOUTH -> { worldDx = -offset.localZ(); worldDz = offset.localX(); }
+                    case EAST  -> { worldDx = offset.localX(); worldDz = offset.localZ(); }
+                    case WEST  -> { worldDx = -offset.localX(); worldDz = -offset.localZ(); }
+                    default    -> { worldDx = offset.localX(); worldDz = offset.localZ(); }
+                }
 
-            int finalX = controllerPos.getX() - ctrlDx + worldDx;
-            int finalZ = controllerPos.getZ() - ctrlDz + worldDz;
-
-            for (int y = 0; y < height; y++) {
-                positions.add(new BlockPos(finalX, baseY + y, finalZ));
+                positions.add(new BlockPos(centerX + worldDx, baseY + y, centerZ + worldDz));
             }
         }
         return positions;
     }
 
     /**
-     * Compute the ordered ring path (for particle rendering) at a specific Y layer.
-     * Positions are sorted by angle around the ring center.
+     * Compute the ring path (tube center) at a specific Y layer.
+     * Used for particle rendering — the particle orbits through the air tube.
      */
     public static List<BlockPos> computeRingPath(BlockPos controllerPos, Direction facing, int layer) {
         ensureLoaded();
@@ -223,7 +258,7 @@ public class AcceleratorPattern {
         int centerX = controllerPos.getX() - ctrlDx;
         int centerZ = controllerPos.getZ() - ctrlDz;
 
-        for (RingOffset offset : ringOffsets) {
+        for (RingOffset offset : ringPathOffsets) {
             int worldDx, worldDz;
             switch (facing) {
                 case NORTH -> { worldDx = offset.localZ(); worldDz = -offset.localX(); }
@@ -235,16 +270,11 @@ public class AcceleratorPattern {
             path.add(new BlockPos(centerX + worldDx, baseY + layer, centerZ + worldDz));
         }
 
-        // Sort by angle around center
-        path.sort(Comparator.comparingDouble(p ->
-                Math.atan2(p.getZ() - centerZ, p.getX() - centerX)));
-
         return path;
     }
 
     /**
-     * Validate the structure. Returns true if all positions are valid.
-     * The controller position itself is skipped (it's already the controller block).
+     * Validate the torus structure.
      */
     public static boolean validate(Level level, BlockPos controllerPos, Direction facing) {
         ensureLoaded();
@@ -261,21 +291,22 @@ public class AcceleratorPattern {
             default    -> { ctrlDx = ctrlLocalX; ctrlDz = ctrlLocalZ; }
         }
 
-        for (RingOffset offset : ringOffsets) {
-            int worldDx, worldDz;
-            switch (facing) {
-                case NORTH -> { worldDx = offset.localZ(); worldDz = -offset.localX(); }
-                case SOUTH -> { worldDx = -offset.localZ(); worldDz = offset.localX(); }
-                case EAST  -> { worldDx = offset.localX(); worldDz = offset.localZ(); }
-                case WEST  -> { worldDx = -offset.localX(); worldDz = -offset.localZ(); }
-                default    -> { worldDx = offset.localX(); worldDz = offset.localZ(); }
-            }
+        int centerX = controllerPos.getX() - ctrlDx;
+        int centerZ = controllerPos.getZ() - ctrlDz;
 
-            int finalX = controllerPos.getX() - ctrlDx + worldDx;
-            int finalZ = controllerPos.getZ() - ctrlDz + worldDz;
+        // Validate shell positions (must be correct block types)
+        for (int y = 0; y < height; y++) {
+            for (RingOffset offset : getBlockOffsetsForLayer(y)) {
+                int worldDx, worldDz;
+                switch (facing) {
+                    case NORTH -> { worldDx = offset.localZ(); worldDz = -offset.localX(); }
+                    case SOUTH -> { worldDx = -offset.localZ(); worldDz = offset.localX(); }
+                    case EAST  -> { worldDx = offset.localX(); worldDz = offset.localZ(); }
+                    case WEST  -> { worldDx = -offset.localX(); worldDz = -offset.localZ(); }
+                    default    -> { worldDx = offset.localX(); worldDz = offset.localZ(); }
+                }
 
-            for (int y = 0; y < height; y++) {
-                BlockPos checkPos = new BlockPos(finalX, baseY + y, finalZ);
+                BlockPos checkPos = new BlockPos(centerX + worldDx, baseY + y, centerZ + worldDz);
 
                 // Skip the controller position itself
                 if (checkPos.equals(controllerPos)) continue;
@@ -290,12 +321,31 @@ public class AcceleratorPattern {
                 }
             }
         }
+
+        // Validate air positions (must be air)
+        for (int y = 0; y < height; y++) {
+            for (RingOffset offset : getAirOffsetsForLayer(y)) {
+                int worldDx, worldDz;
+                switch (facing) {
+                    case NORTH -> { worldDx = offset.localZ(); worldDz = -offset.localX(); }
+                    case SOUTH -> { worldDx = -offset.localZ(); worldDz = offset.localX(); }
+                    case EAST  -> { worldDx = offset.localX(); worldDz = offset.localZ(); }
+                    case WEST  -> { worldDx = -offset.localX(); worldDz = -offset.localZ(); }
+                    default    -> { worldDx = offset.localX(); worldDz = offset.localZ(); }
+                }
+
+                BlockPos tubePos = new BlockPos(centerX + worldDx, baseY + y, centerZ + worldDz);
+                if (!level.getBlockState(tubePos).isAir()) {
+                    return false;
+                }
+            }
+        }
+
         return true;
     }
 
     /**
      * Get all structure positions excluding the controller position itself.
-     * Used by the controller to track slave blocks.
      */
     public static List<BlockPos> getStructurePositions(BlockPos controllerPos, Direction facing) {
         List<BlockPos> all = computeWorldPositions(controllerPos, facing);
@@ -304,13 +354,16 @@ public class AcceleratorPattern {
     }
 
     /**
-     * Check if a given ring position + layer has a position override that accepts glass.
+     * Check if a given block position + layer has a position override that accepts glass.
      */
     public static boolean isGlassPosition(int layer, int localX, int localZ) {
         ensureLoaded();
         String key = layer + "," + localX + "," + localZ;
         LayerRule rule = positionOverrides.get(key);
         if (rule == null) return false;
+        for (ResourceLocation id : rule.blockIds()) {
+            if (id.getPath().contains("glass")) return true;
+        }
         for (TagKey<Block> tag : rule.blockTags()) {
             if (tag.location().getPath().contains("glass")) return true;
         }
