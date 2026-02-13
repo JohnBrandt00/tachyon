@@ -21,7 +21,8 @@ public class AcceleratorPortScreen extends AbstractContainerScreen<AcceleratorPo
         super(menu, playerInventory, title);
         this.imageWidth = 176;
         this.imageHeight = 166;
-        this.inventoryLabelY = 73;
+        this.titleLabelY = 6;
+        this.inventoryLabelY = 72;
     }
 
     @Override
@@ -40,6 +41,7 @@ public class AcceleratorPortScreen extends AbstractContainerScreen<AcceleratorPo
 
     @Override
     public void render(GuiGraphics graphics, int mouseX, int mouseY, float partialTick) {
+        this.renderBackground(graphics, mouseX, mouseY, partialTick);
         super.render(graphics, mouseX, mouseY, partialTick);
 
         PortMode mode = this.menu.getMode();

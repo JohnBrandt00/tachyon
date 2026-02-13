@@ -10,6 +10,7 @@ import net.minecraft.world.inventory.ContainerData;
 import net.minecraft.world.inventory.SimpleContainerData;
 import net.minecraft.world.inventory.Slot;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.Items;
 import net.neoforged.neoforge.items.IItemHandler;
 import net.neoforged.neoforge.items.ItemStackHandler;
 import net.neoforged.neoforge.items.SlotItemHandler;
@@ -19,7 +20,7 @@ public class AcceleratorControllerMenu extends AbstractContainerMenu {
 
     // Client constructor
     public AcceleratorControllerMenu(int containerId, Inventory playerInventory) {
-        this(containerId, playerInventory, new ItemStackHandler(2), new SimpleContainerData(6));
+        this(containerId, playerInventory, new ItemStackHandler(2), new SimpleContainerData(8));
     }
 
     // Server constructor
@@ -28,11 +29,11 @@ public class AcceleratorControllerMenu extends AbstractContainerMenu {
         super(ModMenuTypes.ACCELERATOR_CONTROLLER.get(), containerId);
         this.data = data;
 
-        // Input slot (thorium ingot)
+        // Input slot (thorium ingot or ender pearl)
         this.addSlot(new SlotItemHandler(handler, 0, 56, 35) {
             @Override
             public boolean mayPlace(ItemStack stack) {
-                return stack.is(ModTags.Items.INGOTS_THORIUM);
+                return stack.is(ModTags.Items.INGOTS_THORIUM) || stack.is(Items.ENDER_PEARL);
             }
         });
 
@@ -65,6 +66,8 @@ public class AcceleratorControllerMenu extends AbstractContainerMenu {
     public int getMaxEnergy() { return data.get(3); }
     public int getFluidAmount() { return data.get(4); }
     public int getFluidCapacity() { return data.get(5); }
+    public int getMomentum() { return data.get(6); }
+    public int getMaxMomentum() { return data.get(7); }
 
     public float getProgressScaled() {
         int max = data.get(1);
@@ -79,6 +82,11 @@ public class AcceleratorControllerMenu extends AbstractContainerMenu {
     public float getFluidScaled() {
         int max = data.get(5);
         return max == 0 ? 0 : (float) data.get(4) / max;
+    }
+
+    public float getMomentumScaled() {
+        int max = data.get(7);
+        return max == 0 ? 0 : (float) data.get(6) / max;
     }
 
     @Override
@@ -96,7 +104,7 @@ public class AcceleratorControllerMenu extends AbstractContainerMenu {
                 }
             }
             // From player inventory to input slot
-            else if (slotStack.is(ModTags.Items.INGOTS_THORIUM)) {
+            else if (slotStack.is(ModTags.Items.INGOTS_THORIUM) || slotStack.is(Items.ENDER_PEARL)) {
                 if (!this.moveItemStackTo(slotStack, 0, 1, false)) {
                     return ItemStack.EMPTY;
                 }

@@ -10,6 +10,8 @@ import com.setusertso.tachyon.init.ModBlockEntities;
 import com.setusertso.tachyon.init.ModTags;
 import com.setusertso.tachyon.menu.AcceleratorControllerMenu;
 
+import net.minecraft.world.item.Items;
+
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.HolderLookup;
@@ -46,8 +48,16 @@ public class AcceleratorControllerBlockEntity extends BlockEntity implements Men
     public static final int MAX_ENERGY_RECEIVE = 10_000;
     public static final int ENERGY_PER_TICK = 500;
     public static final int FLUID_CAPACITY = 16_000;
-    public static final int FLUID_PER_CRAFT = 1_000;
+    public static final int FLUID_PER_CRAFT_THORIUM = 1_000;
+    public static final int FLUID_PER_CRAFT_ENDERPEARL = 100;
     public static final int PROCESS_TIME = 200;
+
+    // Windup mechanic constants
+    public static final int MAX_MOMENTUM = 5000; // 5 items * 1000 each
+    public static final int MOMENTUM_PER_ITEM = 1000;
+    public static final int MOMENTUM_DECAY_RATE = 2; // Momentum lost per tick when idle
+    public static final float MIN_SPEED_MULTIPLIER = 0.5f; // 50% speed at 0 momentum
+    public static final float MAX_SPEED_MULTIPLIER = 2.0f; // 200% speed at max momentum
 
     // Storage
     private final ItemStackHandler items = new ItemStackHandler(SLOT_COUNT) {
@@ -73,6 +83,7 @@ public class AcceleratorControllerBlockEntity extends BlockEntity implements Men
 
     // Processing state
     private int progress = 0;
+    private int momentum = 0; // Windup mechanic - increases with continuous use
     private boolean formed = false;
     private List<BlockPos> structurePositions = new ArrayList<>();
     private List<BlockPos> ringPath = new ArrayList<>();
@@ -88,6 +99,8 @@ public class AcceleratorControllerBlockEntity extends BlockEntity implements Men
                 case 3 -> energy.getMaxEnergyStored();
                 case 4 -> fluidTank.getFluidAmount();
                 case 5 -> fluidTank.getCapacity();
+                case 6 -> momentum;
+                case 7 -> MAX_MOMENTUM;
                 default -> 0;
             };
         }
@@ -97,12 +110,13 @@ public class AcceleratorControllerBlockEntity extends BlockEntity implements Men
             switch (index) {
                 case 0 -> progress = value;
                 case 2 -> energy.setEnergy(value);
+                case 6 -> momentum = value;
             }
         }
 
         @Override
         public int getCount() {
-            return 6;
+            return 8;
         }
     };
 
@@ -136,6 +150,16 @@ public class AcceleratorControllerBlockEntity extends BlockEntity implements Men
         return progress;
     }
 
+    public int getMomentum() {
+        return momentum;
+    }
+
+    public float getSpeedMultiplier() {
+        // Interpolate between min and max speed based on momentum
+        float momentumRatio = (float) momentum / MAX_MOMENTUM;
+        return MIN_SPEED_MULTIPLIER + (MAX_SPEED_MULTIPLIER - MIN_SPEED_MULTIPLIER) * momentumRatio;
+    }
+
     // --- Structure Management ---
 
     public void tryFormStructure() {
@@ -161,6 +185,7 @@ public class AcceleratorControllerBlockEntity extends BlockEntity implements Men
             level.setBlock(worldPosition, getBlockState().setValue(AcceleratorControllerBlock.FORMED, true),
                     Block.UPDATE_ALL);
             setChanged();
+            syncToClient();
         }
     }
 
@@ -190,6 +215,7 @@ public class AcceleratorControllerBlockEntity extends BlockEntity implements Men
                     Block.UPDATE_ALL);
         }
         setChanged();
+        syncToClient();
     }
 
     public void onNeighborChanged(BlockPos changedPos) {
@@ -215,34 +241,66 @@ public class AcceleratorControllerBlockEntity extends BlockEntity implements Men
         if (!be.formed) return;
 
         boolean changed = false;
+        boolean wasProcessing = be.progress > 0;
 
         if (be.canProcess()) {
+            // Apply speed multiplier to processing
+            float speedMultiplier = be.getSpeedMultiplier();
+            int progressIncrement = Math.max(1, Math.round(speedMultiplier));
+
             be.energy.consumeEnergy(ENERGY_PER_TICK);
-            be.progress++;
+            be.progress += progressIncrement;
             changed = true;
 
             if (be.progress >= PROCESS_TIME) {
                 be.processItem();
                 be.progress = 0;
+
+                // Increase momentum when item completes
+                be.momentum = Math.min(MAX_MOMENTUM, be.momentum + MOMENTUM_PER_ITEM);
             }
-        } else if (be.progress > 0) {
-            be.progress = 0;
-            changed = true;
+        } else {
+            // Decay momentum when idle
+            if (be.momentum > 0) {
+                be.momentum = Math.max(0, be.momentum - MOMENTUM_DECAY_RATE);
+                changed = true;
+            }
+
+            if (be.progress > 0) {
+                be.progress = 0;
+                changed = true;
+            }
         }
+
+        boolean isProcessing = be.progress > 0;
 
         if (changed) {
             be.setChanged();
+            // Sync to client when processing state changes or every 10 ticks while processing
+            if (wasProcessing != isProcessing || (isProcessing && level.getGameTime() % 10 == 0)) {
+                be.syncToClient();
+            }
         }
     }
 
     private boolean canProcess() {
         // Need energy
         if (energy.getEnergyStored() < ENERGY_PER_TICK) return false;
-        // Need water
-        if (fluidTank.getFluidAmount() < FLUID_PER_CRAFT) return false;
-        // Need input item (thorium ingot)
-        if (items.getStackInSlot(INPUT_SLOT).isEmpty()) return false;
-        if (!items.getStackInSlot(INPUT_SLOT).is(ModTags.Items.INGOTS_THORIUM)) return false;
+
+        // Check input item
+        var input = items.getStackInSlot(INPUT_SLOT);
+        if (input.isEmpty()) return false;
+
+        // Determine recipe and fluid requirement
+        boolean isThorium = input.is(ModTags.Items.INGOTS_THORIUM);
+        boolean isEnderPearl = input.is(Items.ENDER_PEARL);
+
+        if (!isThorium && !isEnderPearl) return false;
+
+        // Check fluid requirement based on input
+        int requiredFluid = isThorium ? FLUID_PER_CRAFT_THORIUM : FLUID_PER_CRAFT_ENDERPEARL;
+        if (fluidTank.getFluidAmount() < requiredFluid) return false;
+
         // Need space for output
         var output = items.getStackInSlot(OUTPUT_SLOT);
         if (!output.isEmpty()) {
@@ -253,10 +311,17 @@ public class AcceleratorControllerBlockEntity extends BlockEntity implements Men
     }
 
     private void processItem() {
+        var input = items.getStackInSlot(INPUT_SLOT);
+
+        // Determine fluid consumption based on input
+        int fluidToConsume = input.is(ModTags.Items.INGOTS_THORIUM)
+            ? FLUID_PER_CRAFT_THORIUM
+            : FLUID_PER_CRAFT_ENDERPEARL;
+
         // Consume input
         items.extractItem(INPUT_SLOT, 1, false);
-        // Consume water
-        fluidTank.drain(FLUID_PER_CRAFT, IFluidHandler.FluidAction.EXECUTE);
+        // Consume helium
+        fluidTank.drain(fluidToConsume, IFluidHandler.FluidAction.EXECUTE);
         // Produce output
         var existing = items.getStackInSlot(OUTPUT_SLOT);
         if (existing.isEmpty()) {
@@ -287,6 +352,7 @@ public class AcceleratorControllerBlockEntity extends BlockEntity implements Men
         tag.putInt("Energy", energy.getEnergyStored());
         tag.put("Fluid", fluidTank.writeToNBT(registries, new CompoundTag()));
         tag.putInt("Progress", progress);
+        tag.putInt("Momentum", momentum);
         tag.putBoolean("Formed", formed);
 
         if (formed && !structurePositions.isEmpty()) {
@@ -319,6 +385,7 @@ public class AcceleratorControllerBlockEntity extends BlockEntity implements Men
         energy.setEnergy(tag.getInt("Energy"));
         fluidTank.readFromNBT(registries, tag.getCompound("Fluid"));
         progress = tag.getInt("Progress");
+        momentum = tag.getInt("Momentum");
         formed = tag.getBoolean("Formed");
 
         structurePositions.clear();
@@ -350,5 +417,22 @@ public class AcceleratorControllerBlockEntity extends BlockEntity implements Men
     @Override
     public ClientboundBlockEntityDataPacket getUpdatePacket() {
         return ClientboundBlockEntityDataPacket.create(this);
+    }
+
+    @Override
+    public void onDataPacket(net.minecraft.network.Connection net, ClientboundBlockEntityDataPacket pkt, HolderLookup.Provider registries) {
+        super.onDataPacket(net, pkt, registries);
+        handleUpdateTag(pkt.getTag(), registries);
+    }
+
+    @Override
+    public void handleUpdateTag(CompoundTag tag, HolderLookup.Provider registries) {
+        loadAdditional(tag, registries);
+    }
+
+    private void syncToClient() {
+        if (level != null && !level.isClientSide()) {
+            level.sendBlockUpdated(worldPosition, getBlockState(), getBlockState(), Block.UPDATE_CLIENTS);
+        }
     }
 }

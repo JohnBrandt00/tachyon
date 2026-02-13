@@ -1,6 +1,6 @@
 {
+  "parent": "neoforge:item/bucket",
   "loader": "neoforge:fluid_container",
   "fluid": "tachyon:helium",
-  "flip_gas": true,
-  "apply_tint": true
+  "flip_gas": true
 }
