@@ -2,9 +2,11 @@ package com.setusertso.tachyon;
 
 import com.setusertso.tachyon.client.AcceleratorControllerRenderer;
 import com.setusertso.tachyon.client.SingularityDebugRenderer;
+import com.setusertso.tachyon.client.particle.AccretionDiskParticle;
 import com.setusertso.tachyon.init.ModBlockEntities;
 import com.setusertso.tachyon.init.ModFluids;
 import com.setusertso.tachyon.init.ModMenuTypes;
+import com.setusertso.tachyon.init.ModParticles;
 import com.setusertso.tachyon.screen.AcceleratorControllerScreen;
 import com.setusertso.tachyon.screen.AcceleratorPortScreen;
 import com.setusertso.tachyon.screen.SuperluminalEmitterScreen;
@@ -18,6 +20,7 @@ import net.neoforged.fml.common.Mod;
 import net.neoforged.fml.event.lifecycle.FMLClientSetupEvent;
 import net.neoforged.neoforge.client.event.EntityRenderersEvent;
 import net.neoforged.neoforge.client.event.RegisterMenuScreensEvent;
+import net.neoforged.neoforge.client.event.RegisterParticleProvidersEvent;
 import net.neoforged.neoforge.client.extensions.common.IClientFluidTypeExtensions;
 import net.neoforged.neoforge.client.extensions.common.RegisterClientExtensionsEvent;
 import net.neoforged.neoforge.client.gui.ConfigurationScreen;
@@ -33,6 +36,7 @@ public class tachyonClient {
         modEventBus.addListener(this::onRegisterMenuScreens);
         modEventBus.addListener(this::onRegisterRenderers);
         modEventBus.addListener(this::onRegisterClientExtensions);
+        modEventBus.addListener(this::onRegisterParticleProviders);
     }
 
     private void onClientSetup(FMLClientSetupEvent event) {
@@ -51,6 +55,10 @@ public class tachyonClient {
                 AcceleratorControllerRenderer::new);
         event.registerBlockEntityRenderer(ModBlockEntities.SINGULARITY_DEBUG.get(),
                 SingularityDebugRenderer::new);
+    }
+
+    private void onRegisterParticleProviders(RegisterParticleProvidersEvent event) {
+        event.registerSpriteSet(ModParticles.ACCRETION_DISK.get(), AccretionDiskParticle.Provider::new);
     }
 
     private void onRegisterClientExtensions(RegisterClientExtensionsEvent event) {

@@ -8,6 +8,7 @@ import com.setusertso.tachyon.init.ModBlockEntities;
 import com.setusertso.tachyon.init.ModCapabilities;
 import com.setusertso.tachyon.init.ModFluids;
 import com.setusertso.tachyon.init.ModMenuTypes;
+import com.setusertso.tachyon.init.ModParticles;
 import com.setusertso.tachyon.init.ModSounds;
 import com.setusertso.tachyon.network.ModNetworking;
 
@@ -142,6 +143,9 @@ public class tachyon {
 
         // Register sounds
         ModSounds.SOUND_EVENTS.register(modEventBus);
+
+        // Register particles
+        ModParticles.PARTICLE_TYPES.register(modEventBus);
 
         // Register ourselves for server and other game events we are interested in.
         // Note that this is necessary if and only if we want *this* class (tachyon) to respond directly to events.

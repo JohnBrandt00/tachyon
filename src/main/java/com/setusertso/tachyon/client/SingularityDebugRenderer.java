@@ -21,6 +21,7 @@ import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.blockentity.BlockEntityRenderer;
 import net.minecraft.client.renderer.blockentity.BlockEntityRendererProvider;
 import net.minecraft.core.BlockPos;
+import com.setusertso.tachyon.init.ModParticles;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.phys.AABB;
@@ -61,6 +62,10 @@ public class SingularityDebugRenderer implements BlockEntityRenderer<Singularity
     // === SCALE FACTOR — change this one value to resize everything ===
     private static final float SCALE = 3.0f;
 
+    // Cache the rotation parameters so we can compute world-space positions in spawnParticles
+    private float cachedBillboardYaw = 0;
+    private float cachedDiskRotation = 0;
+
     // Black hole event horizon sphere
     private static final float SPHERE_RADIUS = 1.5f * SCALE;
 
@@ -73,7 +78,7 @@ public class SingularityDebugRenderer implements BlockEntityRenderer<Singularity
     private static final float DISK_FADE = 4.5f * SCALE;
     private static final int DISK_SEGMENTS = 64;
     private static final int DISK_RADIAL_STEPS = 24; // smooth radial gradient
-    private static final float DISK_TILT = 12.0f;
+    private static final float DISK_TILT = 8.0f; // reduced from 12 degrees
     private static final float DISK_ROTATION_SPEED = 1.5f;
 
     // Lensing arc
@@ -107,15 +112,24 @@ public class SingularityDebugRenderer implements BlockEntityRenderer<Singularity
         poseStack.pushPose();
         poseStack.translate(0.5, 1.5 * SCALE, 0.5);
 
+        // Calculate billboard yaw (disk faces camera horizontally)
+        double dx = cameraPos.x - centerX;
+        double dz = cameraPos.z - centerZ;
+        float billboardYaw = (float) Math.toDegrees(Math.atan2(dx, dz));
+
+        // Cache rotation params for particle spawning
+        cachedBillboardYaw = billboardYaw;
+        cachedDiskRotation = (gameTime * DISK_ROTATION_SPEED) % 360.0f;
+
         renderBlackHoleSphere(poseStack, bufferSource, packedOverlay, gameTime);
-        renderPhotonRing(poseStack, bufferSource, packedOverlay, gameTime);
-        renderAccretionDisk(poseStack, bufferSource, packedOverlay, gameTime);
+        renderPhotonRing(poseStack, bufferSource, packedOverlay, gameTime, billboardYaw);
+        renderAccretionDisk(poseStack, bufferSource, packedOverlay, gameTime, billboardYaw);
         renderLensingArc(poseStack, bufferSource, packedOverlay, gameTime,
                 cameraPos, centerX, centerY, centerZ);
 
         poseStack.popPose();
 
-        spawnParticles(be, gameTime);
+        spawnParticles(be, gameTime, billboardYaw);
     }
 
     // =========================================================================
@@ -157,12 +171,13 @@ public class SingularityDebugRenderer implements BlockEntityRenderer<Singularity
     // 2. PHOTON RING
     // =========================================================================
     private void renderPhotonRing(PoseStack poseStack, MultiBufferSource bufferSource,
-                                   int packedOverlay, float gameTime) {
+                                   int packedOverlay, float gameTime, float billboardYaw) {
         VertexConsumer consumer = bufferSource.getBuffer(
                 BlackHoleRenderTypes.emissiveNoDepth(WHITE_TEX));
         int light = LightTexture.FULL_BRIGHT;
 
         poseStack.pushPose();
+        poseStack.mulPose(Axis.YP.rotationDegrees(billboardYaw)); // Billboard toward camera
         poseStack.mulPose(Axis.XP.rotationDegrees(DISK_TILT));
 
         PoseStack.Pose pose = poseStack.last();
@@ -200,7 +215,7 @@ public class SingularityDebugRenderer implements BlockEntityRenderer<Singularity
     // 3. ACCRETION DISK — smooth continuous radial gradient, no per-segment flicker
     // =========================================================================
     private void renderAccretionDisk(PoseStack poseStack, MultiBufferSource bufferSource,
-                                      int packedOverlay, float gameTime) {
+                                      int packedOverlay, float gameTime, float billboardYaw) {
         VertexConsumer consumer = bufferSource.getBuffer(
                 BlackHoleRenderTypes.emissiveNoDepth(WHITE_TEX));
         int light = LightTexture.FULL_BRIGHT;
@@ -208,6 +223,7 @@ public class SingularityDebugRenderer implements BlockEntityRenderer<Singularity
         float rotation = (gameTime * DISK_ROTATION_SPEED) % 360.0f;
 
         poseStack.pushPose();
+        poseStack.mulPose(Axis.YP.rotationDegrees(billboardYaw)); // Billboard toward camera
         poseStack.mulPose(Axis.XP.rotationDegrees(DISK_TILT));
         poseStack.mulPose(Axis.YP.rotationDegrees(rotation));
 
@@ -397,7 +413,37 @@ public class SingularityDebugRenderer implements BlockEntityRenderer<Singularity
     // =========================================================================
     // 5. PARTICLES — much denser, more variety
     // =========================================================================
-    private void spawnParticles(SingularityDebugBlockEntity be, float gameTime) {
+    /**
+     * Transforms a flat disk-space point (lx, 0, lz) into world space by applying:
+     *   1. Disk rotation around Y
+     *   2. Tilt around X
+     *   3. Billboard yaw around Y
+     * Then adds the world-space center offset (cx, cy, cz).
+     */
+    private Vec3 diskToWorld(double lx, double lz, double cx, double cy, double cz,
+                              float yawRad, float tiltRad, float rotRad) {
+        // 1. Disk rotation (Y-axis)
+        double cosR = Math.cos(rotRad), sinR = Math.sin(rotRad);
+        double rx = lx * cosR + lz * sinR;
+        double rz = -lx * sinR + lz * cosR;
+        double ry = 0;
+
+        // 2. Tilt (X-axis)
+        double cosT = Math.cos(tiltRad), sinT = Math.sin(tiltRad);
+        double ty = ry * cosT - rz * sinT;
+        double tz = ry * sinT + rz * cosT;
+        double tx = rx;
+
+        // 3. Billboard yaw (Y-axis)
+        double cosY = Math.cos(yawRad), sinY = Math.sin(yawRad);
+        double fy = ty;
+        double fx = tx * cosY + tz * sinY;
+        double fz = -tx * sinY + tz * cosY;
+
+        return new Vec3(cx + fx, cy + fy, cz + fz);
+    }
+
+    private void spawnParticles(SingularityDebugBlockEntity be, float gameTime, float billboardYaw) {
         if (!(be.getLevel() instanceof ClientLevel level)) return;
 
         BlockPos pos = be.getBlockPos();
@@ -405,38 +451,40 @@ public class SingularityDebugRenderer implements BlockEntityRenderer<Singularity
         double cy = pos.getY() + 1.5 * SCALE;
         double cz = pos.getZ() + 0.5;
 
-        float diskTiltRad = (float) Math.toRadians(DISK_TILT);
+        // Convert cached rotation angles to radians for manual transform
+        float yawRad = (float) Math.toRadians(cachedBillboardYaw);
+        float tiltRad = (float) Math.toRadians(DISK_TILT);
+        float rotRad = (float) Math.toRadians(cachedDiskRotation);
 
-        // === DISK PLANE PARTICLES — multiple per tick, spiraling ===
-        for (int p = 0; p < 3; p++) {
-            if (level.random.nextFloat() < 0.7f) {
+        // === DISK PLANE PARTICLES — spawn at outer edge, spiral inward to center ===
+        for (int p = 0; p < 10; p++) {
+            if (level.random.nextFloat() < 0.95f) {
+                // Random angle around the disk at the outer visible edge
                 float angle = level.random.nextFloat() * (float)(2 * Math.PI);
-                float radius = DISK_INNER + level.random.nextFloat() * (DISK_FADE - DISK_INNER);
-
+                float radius = DISK_FADE;
                 double lx = Math.cos(angle) * radius;
-                double ly = Math.sin(angle) * radius * Math.sin(diskTiltRad);
-                double lz = Math.sin(angle) * radius * Math.cos(diskTiltRad);
+                double lz = Math.sin(angle) * radius;
 
-                double x = cx + lx;
-                double y = cy + ly;
-                double z = cz + lz;
+                Vec3 worldPos = diskToWorld(lx, lz, cx, cy, cz, yawRad, tiltRad, rotRad);
 
-                double toX = (cx - x);
-                double toY = (cy - y);
-                double toZ = (cz - z);
-                double tanX = -toZ * 0.015;
-                double tanZ = toX * 0.015;
-                double vx = toX * 0.015 + tanX;
-                double vy = toY * 0.015;
-                double vz = toZ * 0.015 + tanZ;
+                double x = worldPos.x;
+                double y = worldPos.y;
+                double z = worldPos.z;
 
-                // Inner particles are flame, outer are smoke
-                float diskMid = (DISK_INNER + DISK_FADE) * 0.5f;
-                if (radius < diskMid) {
-                    level.addParticle(ParticleTypes.FLAME, x, y, z, vx, vy, vz);
-                } else {
-                    level.addParticle(ParticleTypes.SMOKE, x, y, z, vx, vy, vz);
-                }
+                // Velocity: strong inward pull toward center
+                double toX = cx - x;
+                double toY = cy - y;
+                double toZ = cz - z;
+                double dist = Math.sqrt(toX * toX + toY * toY + toZ * toZ);
+
+                // Normalize and set speed — particles need to cover ~dist blocks in their lifetime
+                // END_ROD lives ~40 ticks, so speed = dist / 40ish
+                double speed = dist / 50.0;
+                double vx = (toX / dist) * speed;
+                double vy = (toY / dist) * speed;
+                double vz = (toZ / dist) * speed;
+
+                level.addParticle(ModParticles.ACCRETION_DISK.get(), x, y, z, vx, vy, vz);
             }
         }
 
@@ -459,42 +507,28 @@ public class SingularityDebugRenderer implements BlockEntityRenderer<Singularity
             }
         }
 
-        // === EVENT HORIZON SPARKS ===
-        if (level.random.nextFloat() < 0.3f) {
-            float angle = level.random.nextFloat() * (float)(2 * Math.PI);
-            float phi = (level.random.nextFloat() - 0.5f) * (float) Math.PI;
-            float radius = SPHERE_RADIUS + 0.2f * SCALE;
-
-            double x = cx + Math.cos(angle) * Math.cos(phi) * radius;
-            double y = cy + Math.sin(phi) * radius;
-            double z = cz + Math.sin(angle) * Math.cos(phi) * radius;
-
-            double vx = (cx - x) * 0.05;
-            double vy = (cy - y) * 0.05;
-            double vz = (cz - z) * 0.05;
-
-            level.addParticle(ParticleTypes.SMALL_FLAME, x, y, z, vx, vy, vz);
-        }
-
-        // === LENSING ARC PARTICLES — above and below the sphere ===
-        for (int p = 0; p < 2; p++) {
-            if (level.random.nextFloat() < 0.4f) {
+        // === SPHERE INFALL PARTICLES — spawn on a sphere larger than the event horizon, sucked in ===
+        for (int p = 0; p < 3; p++) {
+            if (level.random.nextFloat() < 0.5f) {
                 float angle = level.random.nextFloat() * (float)(2 * Math.PI);
-                float radius = LENS_ARC_INNER + level.random.nextFloat() * (LENS_ARC_OUTER - LENS_ARC_INNER);
+                float phi = (level.random.nextFloat() - 0.5f) * (float) Math.PI;
+                float radius = SPHERE_RADIUS + 1.5f * SCALE;
 
-                float vertBias = (float) Math.sin(angle);
-                if (Math.abs(vertBias) < 0.3f) continue;
+                double x = cx + Math.cos(angle) * Math.cos(phi) * radius;
+                double y = cy + Math.sin(phi) * radius;
+                double z = cz + Math.sin(angle) * Math.cos(phi) * radius;
 
-                double x = cx + (level.random.nextFloat() - 0.5f) * 0.6f;
-                double y = cy + vertBias * radius;
-                double z = cz + (level.random.nextFloat() - 0.5f) * 0.6f;
+                double toX = cx - x;
+                double toY = cy - y;
+                double toZ = cz - z;
+                double dist = Math.sqrt(toX * toX + toY * toY + toZ * toZ);
+                double speed = dist / 50.0;
 
-                // Slight pull toward center
-                double vx = (cx - x) * 0.01;
-                double vy = (cy - y) * 0.005;
-                double vz = (cz - z) * 0.01;
+                double vx = (toX / dist) * speed;
+                double vy = (toY / dist) * speed;
+                double vz = (toZ / dist) * speed;
 
-                level.addParticle(ParticleTypes.FLAME, x, y, z, vx, vy, vz);
+                level.addParticle(ModParticles.ACCRETION_DISK.get(), x, y, z, vx, vy, vz);
             }
         }
     }
