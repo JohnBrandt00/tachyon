@@ -112,6 +112,7 @@ public class tachyon {
                 output.accept(ModItems.HELIUM_BUCKET.get());
                 // Creative / Testing
                 output.accept(ModBlocks.CREATIVE_POWER_SOURCE_ITEM.get());
+                output.accept(ModBlocks.SINGULARITY_DEBUG_ITEM.get());
             }).build());
 
     // The constructor for the mod class is the first code that is run when your mod is loaded.

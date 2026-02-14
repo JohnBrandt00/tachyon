@@ -48,6 +48,7 @@
   "gui.tachyon.cycle_mode": "Cycle Mode",
 
   "block.tachyon.creative_power_source": "Creative Power Source",
+  "block.tachyon.singularity_debug": "Singularity Debug",
   "fluid_type.tachyon.helium": "Helium",
   "item.tachyon.helium_bucket": "Helium Bucket",
 

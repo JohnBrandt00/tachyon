@@ -19,6 +19,7 @@
     "tachyon:accelerator_casing",
     "tachyon:accelerator_port",
     "tachyon:accelerator_glass",
-    "tachyon:creative_power_source"
+    "tachyon:creative_power_source",
+    "tachyon:singularity_debug"
   ]
 }

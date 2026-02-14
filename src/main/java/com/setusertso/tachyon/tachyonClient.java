@@ -1,6 +1,7 @@
 package com.setusertso.tachyon;
 
 import com.setusertso.tachyon.client.AcceleratorControllerRenderer;
+import com.setusertso.tachyon.client.SingularityDebugRenderer;
 import com.setusertso.tachyon.init.ModBlockEntities;
 import com.setusertso.tachyon.init.ModFluids;
 import com.setusertso.tachyon.init.ModMenuTypes;
@@ -48,6 +49,8 @@ public class tachyonClient {
     private void onRegisterRenderers(EntityRenderersEvent.RegisterRenderers event) {
         event.registerBlockEntityRenderer(ModBlockEntities.ACCELERATOR_CONTROLLER.get(),
                 AcceleratorControllerRenderer::new);
+        event.registerBlockEntityRenderer(ModBlockEntities.SINGULARITY_DEBUG.get(),
+                SingularityDebugRenderer::new);
     }
 
     private void onRegisterClientExtensions(RegisterClientExtensionsEvent event) {

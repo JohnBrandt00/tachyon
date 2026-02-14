@@ -1,7 +1,13 @@
 {
   "permissions": {
     "allow": [
-      "WebSearch"
+      "WebSearch",
+      "Bash(cmd.exe /c \"copy C:\\\\Users\\\\notjo\\\\.claude\\\\plans\\\\partitioned-twirling-starlight.md d:\\\\MCMODDING\\\\tachyon\\\\.claude\\\\singularity_engine_plan.md\")",
+      "Bash(cmd.exe /c \"cd /d d:\\\\MCMODDING\\\\tachyon && gradlew.bat build\")",
+      "Bash(cmd.exe /c \"cd /d d:\\\\MCMODDING\\\\tachyon && .\\\\gradlew.bat build\")",
+      "Bash(.\\\\gradlew.bat build:*)",
+      "Bash(cmd /c:*)",
+      "Bash(d:/MCMODDING/tachyon/gradlew.bat build)"
     ]
   }
 }

@@ -8,6 +8,7 @@ import com.setusertso.tachyon.block.entity.AcceleratorCasingBlockEntity;
 import com.setusertso.tachyon.block.entity.AcceleratorControllerBlockEntity;
 import com.setusertso.tachyon.block.entity.AcceleratorPortBlockEntity;
 import com.setusertso.tachyon.block.entity.CreativePowerBlockEntity;
+import com.setusertso.tachyon.block.entity.SingularityDebugBlockEntity;
 import com.setusertso.tachyon.block.entity.SuperluminalEmitterBlockEntity;
 import com.setusertso.tachyon.block.entity.TachyonLightGeneratorBlockEntity;
 
@@ -49,6 +50,11 @@ public class ModBlockEntities {
             BLOCK_ENTITIES.register("creative_power_source",
                     () -> BlockEntityType.Builder.of(CreativePowerBlockEntity::new,
                             ModBlocks.CREATIVE_POWER_SOURCE.get()).build(null));
+
+    public static final Supplier<BlockEntityType<SingularityDebugBlockEntity>> SINGULARITY_DEBUG =
+            BLOCK_ENTITIES.register("singularity_debug",
+                    () -> BlockEntityType.Builder.of(SingularityDebugBlockEntity::new,
+                            ModBlocks.SINGULARITY_DEBUG.get()).build(null));
 
     public static void register(IEventBus modEventBus) {
         BLOCK_ENTITIES.register(modEventBus);
