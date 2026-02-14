@@ -59,7 +59,7 @@ class BlackHoleRenderTypes extends RenderStateShard {
 public class SingularityDebugRenderer implements BlockEntityRenderer<SingularityDebugBlockEntity> {
 
     // === SCALE FACTOR — change this one value to resize everything ===
-    private static final float SCALE = 1.0f;
+    private static final float SCALE = 3.0f;
 
     // Black hole event horizon sphere
     private static final float SPHERE_RADIUS = 1.5f * SCALE;

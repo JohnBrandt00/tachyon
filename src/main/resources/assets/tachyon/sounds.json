@@ -1,0 +1,11 @@
+{
+  "black_hole_ambient": {
+    "subtitle": "subtitles.tachyon.black_hole_ambient",
+    "sounds": [
+      {
+        "name": "tachyon:black_hole_sine_deeper_slower",
+        "stream": true
+      }
+    ]
+  }
+}

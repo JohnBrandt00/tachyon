@@ -7,7 +7,8 @@
       "Bash(cmd.exe /c \"cd /d d:\\\\MCMODDING\\\\tachyon && .\\\\gradlew.bat build\")",
       "Bash(.\\\\gradlew.bat build:*)",
       "Bash(cmd /c:*)",
-      "Bash(d:/MCMODDING/tachyon/gradlew.bat build)"
+      "Bash(d:/MCMODDING/tachyon/gradlew.bat build)",
+      "Bash(gradlew.bat build:*)"
     ]
   }
 }

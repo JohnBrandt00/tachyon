@@ -49,6 +49,7 @@
 
   "block.tachyon.creative_power_source": "Creative Power Source",
   "block.tachyon.singularity_debug": "Singularity Debug",
+  "subtitles.tachyon.black_hole_ambient": "Black hole warbles",
   "fluid_type.tachyon.helium": "Helium",
   "item.tachyon.helium_bucket": "Helium Bucket",
 

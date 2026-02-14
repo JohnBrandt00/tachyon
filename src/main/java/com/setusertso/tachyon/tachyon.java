@@ -8,6 +8,7 @@ import com.setusertso.tachyon.init.ModBlockEntities;
 import com.setusertso.tachyon.init.ModCapabilities;
 import com.setusertso.tachyon.init.ModFluids;
 import com.setusertso.tachyon.init.ModMenuTypes;
+import com.setusertso.tachyon.init.ModSounds;
 import com.setusertso.tachyon.network.ModNetworking;
 
 import net.minecraft.core.registries.BuiltInRegistries;
@@ -138,6 +139,9 @@ public class tachyon {
         // Register block entities and menu types
         ModBlockEntities.register(modEventBus);
         ModMenuTypes.register(modEventBus);
+
+        // Register sounds
+        ModSounds.SOUND_EVENTS.register(modEventBus);
 
         // Register ourselves for server and other game events we are interested in.
         // Note that this is necessary if and only if we want *this* class (tachyon) to respond directly to events.
