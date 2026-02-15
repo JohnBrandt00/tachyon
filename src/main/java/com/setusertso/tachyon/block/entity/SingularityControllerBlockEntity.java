@@ -6,8 +6,10 @@ import java.util.List;
 import com.setusertso.tachyon.ModItems;
 import com.setusertso.tachyon.block.ExoticMatterCoreBlock;
 import com.setusertso.tachyon.block.PhotonicInjectorBlock;
+import com.setusertso.tachyon.block.SingularityCasingBlock;
 import com.setusertso.tachyon.block.SingularityControllerBlock;
 import com.setusertso.tachyon.block.SingularityPattern;
+import com.setusertso.tachyon.block.SingularityPortBlock;
 import com.setusertso.tachyon.init.ModBlockEntities;
 import com.setusertso.tachyon.init.ModSounds;
 import com.setusertso.tachyon.menu.SingularityControllerMenu;
@@ -27,7 +29,10 @@ import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.Containers;
 import net.minecraft.world.MenuProvider;
+import net.minecraft.world.effect.MobEffectInstance;
+import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
@@ -64,8 +69,9 @@ public class SingularityControllerBlockEntity extends BlockEntity implements Men
     public static final double MIN_STABILITY_TO_OPERATE = 25.0;
     public static final double MAX_STABILITY = 100.0;
     public static final double STARTING_STABILITY = 50.0;
+    public static final double RESTABILIZE_THRESHOLD = 10.0;
 
-    // Gravity constants — matches the containment field radius
+    // Normal gravity constants
     private static final double GRAVITY_RADIUS = 16.0;
     private static final double PULL_STRENGTH = 0.06;
     private static final double MAX_PULL = 0.6;
@@ -73,6 +79,16 @@ public class SingularityControllerBlockEntity extends BlockEntity implements Men
     private static final double DAMAGE_RADIUS = 4.5;
     private static final float DAMAGE_PER_TICK = 2.0f;
     private static final float KILL_DAMAGE = 20.0f;
+
+    // Meltdown gravity constants (4x normal)
+    private static final double MELTDOWN_GRAVITY_RADIUS = 64.0;
+    private static final double MELTDOWN_PULL_STRENGTH = 0.24;
+    private static final double MELTDOWN_MAX_PULL = 2.4;
+    private static final double MELTDOWN_KILL_RADIUS = 3.0;
+    private static final double MELTDOWN_DAMAGE_RADIUS = 9.0;
+    private static final double MELTDOWN_WITHER_RADIUS = 48.0;
+    private static final int WITHER_DURATION = 200;
+    private static final int WITHER_AMPLIFIER = 1;
 
     // Storage
     private final ItemStackHandler items = new ItemStackHandler(SLOT_COUNT) {
@@ -88,17 +104,25 @@ public class SingularityControllerBlockEntity extends BlockEntity implements Men
     private int progress = 0;
     private int condensedLightBuffer = 0;
     private double stability = 0.0;
+    private double savedStability = STARTING_STABILITY;
     private int activeInjectors = 0;
     private int coreCount = 0;
     private boolean formed = false;
     private boolean processing = false;
     private List<BlockPos> structurePositions = new ArrayList<>();
     private List<BlockPos> corePositions = new ArrayList<>();
+    private List<BlockPos> portPositions = new ArrayList<>();
+    private List<PortMode> portModes = new ArrayList<>();
     private BlockPos centerPos = null;
+
+    // Engine state machine
+    private EngineState engineState = EngineState.NORMAL;
+    private float blackHoleScale = 1.0f;
 
     // Tick counters
     private int injectorScanTick = 0;
     private int damageTick = 0;
+    private int witherTick = 0;
 
     // Client-side sound fields
     private int wardenSoundCooldown = 0;
@@ -120,6 +144,8 @@ public class SingularityControllerBlockEntity extends BlockEntity implements Men
                 case 7 -> (int) (MAX_STABILITY * 100);
                 case 8 -> activeInjectors;
                 case 9 -> coreCount;
+                case 10 -> engineState.ordinal();
+                case 11 -> (int) (blackHoleScale * 100);
                 default -> 0;
             };
         }
@@ -131,12 +157,14 @@ public class SingularityControllerBlockEntity extends BlockEntity implements Men
                 case 2 -> energy.setEnergy(value);
                 case 4 -> condensedLightBuffer = value;
                 case 6 -> stability = value / 100.0;
+                case 10 -> engineState = EngineState.fromOrdinal(value);
+                case 11 -> blackHoleScale = value / 100.0f;
             }
         }
 
         @Override
         public int getCount() {
-            return 10;
+            return 12;
         }
     };
 
@@ -178,6 +206,22 @@ public class SingularityControllerBlockEntity extends BlockEntity implements Men
         return centerPos;
     }
 
+    public List<BlockPos> getPortPositions() {
+        return portPositions;
+    }
+
+    public List<PortMode> getPortModes() {
+        return portModes;
+    }
+
+    public EngineState getEngineState() {
+        return engineState;
+    }
+
+    public float getBlackHoleScale() {
+        return blackHoleScale;
+    }
+
     // --- Structure Management ---
 
     public void tryFormStructure() {
@@ -188,51 +232,92 @@ public class SingularityControllerBlockEntity extends BlockEntity implements Men
 
         if (result.valid()) {
             formed = true;
+            engineState = EngineState.NORMAL;
+            blackHoleScale = 1.0f;
             structurePositions = result.structurePositions();
             corePositions = result.corePositions();
             coreCount = corePositions.size();
             centerPos = SingularityPattern.getCenterPosition(worldPosition);
-            stability = STARTING_STABILITY;
+            stability = savedStability;
+            portPositions.clear();
+            portModes.clear();
 
-            // Set master pos on all slave block entities
+            // Set master pos on all slave block entities and toggle FORMED states
             for (BlockPos sPos : structurePositions) {
+                if (sPos.equals(worldPosition)) continue;
                 BlockEntity be = level.getBlockEntity(sPos);
+                BlockState sState = level.getBlockState(sPos);
                 if (be instanceof SingularityCasingBlockEntity casing) {
                     casing.setMasterPos(worldPosition);
+                    level.setBlock(sPos, sState.setValue(SingularityCasingBlock.FORMED, true)
+                            .setValue(SingularityCasingBlock.MELTDOWN, false), Block.UPDATE_ALL);
                 } else if (be instanceof SingularityPortBlockEntity port) {
                     port.setMasterPos(worldPosition);
+                    portPositions.add(sPos);
+                    portModes.add(port.getMode());
+                    level.setBlock(sPos, sState.setValue(SingularityPortBlock.FORMED, true), Block.UPDATE_ALL);
                 } else if (be instanceof ExoticMatterCoreBlockEntity core) {
                     core.setMasterPos(worldPosition);
+                    level.setBlock(sPos, sState.setValue(ExoticMatterCoreBlock.FORMED, true)
+                            .setValue(ExoticMatterCoreBlock.MELTDOWN, false), Block.UPDATE_ALL);
                 }
             }
 
-            // Update blockstate
-            level.setBlock(worldPosition, getBlockState().setValue(SingularityControllerBlock.FORMED, true),
+            // Update controller blockstate
+            level.setBlock(worldPosition, getBlockState()
+                    .setValue(SingularityControllerBlock.FORMED, true)
+                    .setValue(SingularityControllerBlock.MELTDOWN, false),
                     Block.UPDATE_ALL);
             setChanged();
             syncToClient();
         }
     }
 
+    /**
+     * Full disassembly — only allowed in NEUTRALIZED state.
+     * In NORMAL or MELTDOWN states, the structure is permanent.
+     */
     public void disassembleStructure() {
         if (level == null || level.isClientSide()) return;
         if (!formed) return;
 
-        // Clear master pos on all slave block entities
+        // Structure is permanent in NORMAL and MELTDOWN states
+        if (engineState == EngineState.NORMAL || engineState == EngineState.MELTDOWN) return;
+
+        // Only allow disassembly in NEUTRALIZED state
         for (BlockPos sPos : structurePositions) {
+            if (sPos.equals(worldPosition)) continue;
             BlockEntity be = level.getBlockEntity(sPos);
+            BlockState sState = level.getBlockState(sPos);
             if (be instanceof SingularityCasingBlockEntity casing) {
                 casing.setMasterPos(null);
+                if (sState.hasProperty(SingularityCasingBlock.FORMED)) {
+                    level.setBlock(sPos, sState.setValue(SingularityCasingBlock.FORMED, false)
+                            .setValue(SingularityCasingBlock.MELTDOWN, false), Block.UPDATE_ALL);
+                }
             } else if (be instanceof SingularityPortBlockEntity port) {
                 port.setMasterPos(null);
+                if (sState.hasProperty(SingularityPortBlock.FORMED)) {
+                    level.setBlock(sPos, sState.setValue(SingularityPortBlock.FORMED, false), Block.UPDATE_ALL);
+                }
             } else if (be instanceof ExoticMatterCoreBlockEntity core) {
                 core.setMasterPos(null);
+                if (sState.hasProperty(ExoticMatterCoreBlock.FORMED)) {
+                    level.setBlock(sPos, sState.setValue(ExoticMatterCoreBlock.FORMED, false)
+                            .setValue(ExoticMatterCoreBlock.MELTDOWN, false), Block.UPDATE_ALL);
+                }
             }
+        }
+
+        if (stability > 0) {
+            savedStability = stability;
         }
 
         formed = false;
         structurePositions.clear();
         corePositions.clear();
+        portPositions.clear();
+        portModes.clear();
         coreCount = 0;
         centerPos = null;
         progress = 0;
@@ -240,23 +325,142 @@ public class SingularityControllerBlockEntity extends BlockEntity implements Men
         activeInjectors = 0;
         processing = false;
 
-        // Update blockstate
         BlockState state = getBlockState();
         if (state.getValue(SingularityControllerBlock.FORMED)) {
-            level.setBlock(worldPosition, state.setValue(SingularityControllerBlock.FORMED, false),
+            level.setBlock(worldPosition, state.setValue(SingularityControllerBlock.FORMED, false)
+                    .setValue(SingularityControllerBlock.MELTDOWN, false),
                     Block.UPDATE_ALL);
         }
         setChanged();
         syncToClient();
     }
 
-    public void onNeighborChanged(BlockPos changedPos) {
-        if (level == null || level.isClientSide() || !formed) return;
-        SingularityPattern.ensureLoaded();
-        SingularityPattern.ValidationResult result = SingularityPattern.validate(level, worldPosition);
-        if (!result.valid()) {
-            disassembleStructure();
+    /**
+     * Enter meltdown state — stability hit 0.
+     * Black hole doubles in size, gravity quadruples, wither effect applied.
+     */
+    public void enterMeltdown() {
+        if (level == null || level.isClientSide()) return;
+
+        engineState = EngineState.MELTDOWN;
+        blackHoleScale = 2.0f;
+        processing = false;
+        progress = 0;
+
+        // Set MELTDOWN=true on all structure blocks so they reappear visually
+        setStructureBlocksMeltdown(true);
+
+        // Play warden sonic boom sound
+        if (centerPos != null) {
+            level.playSound(null, centerPos, SoundEvents.WARDEN_SONIC_BOOM, SoundSource.BLOCKS, 3.0f, 0.5f);
         }
+
+        setChanged();
+        syncToClient();
+    }
+
+    /**
+     * Neutralize the engine — antimatter neutralizer consumed.
+     * Black hole disappears, all blocks become breakable.
+     */
+    public void neutralize() {
+        if (level == null || level.isClientSide()) return;
+
+        engineState = EngineState.NEUTRALIZED;
+        blackHoleScale = 0.0f;
+        processing = false;
+        progress = 0;
+        stability = 0.0;
+        savedStability = STARTING_STABILITY;
+
+        // Clear master pos on all slaves and reset FORMED
+        for (BlockPos sPos : structurePositions) {
+            if (sPos.equals(worldPosition)) continue;
+            BlockEntity be = level.getBlockEntity(sPos);
+            BlockState sState = level.getBlockState(sPos);
+            if (be instanceof SingularityCasingBlockEntity casing) {
+                casing.setMasterPos(null);
+                if (sState.hasProperty(SingularityCasingBlock.FORMED)) {
+                    level.setBlock(sPos, sState.setValue(SingularityCasingBlock.FORMED, false)
+                            .setValue(SingularityCasingBlock.MELTDOWN, false), Block.UPDATE_ALL);
+                }
+            } else if (be instanceof SingularityPortBlockEntity port) {
+                port.setMasterPos(null);
+                if (sState.hasProperty(SingularityPortBlock.FORMED)) {
+                    level.setBlock(sPos, sState.setValue(SingularityPortBlock.FORMED, false), Block.UPDATE_ALL);
+                }
+            } else if (be instanceof ExoticMatterCoreBlockEntity core) {
+                core.setMasterPos(null);
+                if (sState.hasProperty(ExoticMatterCoreBlock.FORMED)) {
+                    level.setBlock(sPos, sState.setValue(ExoticMatterCoreBlock.FORMED, false)
+                            .setValue(ExoticMatterCoreBlock.MELTDOWN, false), Block.UPDATE_ALL);
+                }
+            }
+        }
+
+        formed = false;
+        structurePositions.clear();
+        corePositions.clear();
+        portPositions.clear();
+        portModes.clear();
+        coreCount = 0;
+        centerPos = null;
+
+        // Update controller blockstate
+        BlockState state = getBlockState();
+        level.setBlock(worldPosition, state.setValue(SingularityControllerBlock.FORMED, false)
+                .setValue(SingularityControllerBlock.MELTDOWN, false), Block.UPDATE_ALL);
+
+        setChanged();
+        syncToClient();
+    }
+
+    /**
+     * Reform the structure after neutralization.
+     */
+    public void reformStructure() {
+        if (level == null || level.isClientSide()) return;
+        if (engineState != EngineState.NEUTRALIZED) return;
+
+        engineState = EngineState.NORMAL;
+        blackHoleScale = 1.0f;
+        savedStability = STARTING_STABILITY;
+        tryFormStructure();
+    }
+
+    private void setStructureBlocksMeltdown(boolean meltdown) {
+        if (level == null) return;
+
+        for (BlockPos sPos : structurePositions) {
+            BlockState sState = level.getBlockState(sPos);
+            if (sState.hasProperty(SingularityCasingBlock.MELTDOWN)) {
+                level.setBlock(sPos, sState.setValue(SingularityCasingBlock.MELTDOWN, meltdown), Block.UPDATE_ALL);
+            } else if (sState.hasProperty(ExoticMatterCoreBlock.MELTDOWN)) {
+                level.setBlock(sPos, sState.setValue(ExoticMatterCoreBlock.MELTDOWN, meltdown), Block.UPDATE_ALL);
+            } else if (sState.hasProperty(SingularityControllerBlock.MELTDOWN)) {
+                level.setBlock(sPos, sState.setValue(SingularityControllerBlock.MELTDOWN, meltdown), Block.UPDATE_ALL);
+            }
+        }
+        // Also update controller itself
+        BlockState controllerState = level.getBlockState(worldPosition);
+        if (controllerState.hasProperty(SingularityControllerBlock.MELTDOWN)) {
+            level.setBlock(worldPosition, controllerState.setValue(SingularityControllerBlock.MELTDOWN, meltdown), Block.UPDATE_ALL);
+        }
+    }
+
+    public void updatePortMode(BlockPos portPos, PortMode newMode) {
+        for (int i = 0; i < portPositions.size(); i++) {
+            if (portPositions.get(i).equals(portPos)) {
+                portModes.set(i, newMode);
+                setChanged();
+                syncToClient();
+                return;
+            }
+        }
+    }
+
+    public void onNeighborChanged(BlockPos changedPos) {
+        // Structure is permanent once formed — no validation/disassembly
     }
 
     public void dropContents() {
@@ -273,16 +477,27 @@ public class SingularityControllerBlockEntity extends BlockEntity implements Men
                                    SingularityControllerBlockEntity be) {
         if (!be.formed) return;
 
+        // Skip everything if neutralized
+        if (be.engineState == EngineState.NEUTRALIZED) return;
+
+        boolean isMeltdown = be.engineState == EngineState.MELTDOWN;
+
         // --- Gravitational pull ---
         be.damageTick++;
         if (be.centerPos != null) {
+            double gravRadius = isMeltdown ? MELTDOWN_GRAVITY_RADIUS : GRAVITY_RADIUS;
+            double pullStr = isMeltdown ? MELTDOWN_PULL_STRENGTH : PULL_STRENGTH;
+            double maxPull = isMeltdown ? MELTDOWN_MAX_PULL : MAX_PULL;
+            double killRadius = isMeltdown ? MELTDOWN_KILL_RADIUS : KILL_RADIUS;
+            double damageRadius = isMeltdown ? MELTDOWN_DAMAGE_RADIUS : DAMAGE_RADIUS;
+
             double cx = be.centerPos.getX() + 0.5;
             double cy = be.centerPos.getY() + 0.5;
             double cz = be.centerPos.getZ() + 0.5;
 
             AABB pullArea = new AABB(
-                    cx - GRAVITY_RADIUS, cy - GRAVITY_RADIUS, cz - GRAVITY_RADIUS,
-                    cx + GRAVITY_RADIUS, cy + GRAVITY_RADIUS, cz + GRAVITY_RADIUS);
+                    cx - gravRadius, cy - gravRadius, cz - gravRadius,
+                    cx + gravRadius, cy + gravRadius, cz + gravRadius);
 
             for (Entity entity : level.getEntitiesOfClass(Entity.class, pullArea)) {
                 double dx = cx - entity.getX();
@@ -290,26 +505,41 @@ public class SingularityControllerBlockEntity extends BlockEntity implements Men
                 double dz = cz - entity.getZ();
                 double distance = Math.sqrt(dx * dx + dy * dy + dz * dz);
 
-                if (distance > GRAVITY_RADIUS || distance < 0.1) continue;
+                if (distance > gravRadius || distance < 0.1) continue;
                 if (entity instanceof Player player && player.isCreative()) continue;
 
                 double nx = dx / distance;
                 double ny = dy / distance;
                 double nz = dz / distance;
 
-                double strength = Math.min(MAX_PULL, PULL_STRENGTH / (distance * 0.15));
+                double strength = Math.min(maxPull, pullStr / (distance * 0.15));
                 Vec3 motion = entity.getDeltaMovement();
                 entity.setDeltaMovement(motion.x + nx * strength, motion.y + ny * strength, motion.z + nz * strength);
                 entity.hurtMarked = true;
 
-                if (distance < KILL_RADIUS) {
+                if (distance < killRadius) {
                     if (entity instanceof ItemEntity) {
                         entity.discard();
                     } else {
                         entity.hurt(level.damageSources().generic(), KILL_DAMAGE);
                     }
-                } else if (distance < DAMAGE_RADIUS && be.damageTick % 10 == 0) {
+                } else if (distance < damageRadius && be.damageTick % 10 == 0) {
                     entity.hurt(level.damageSources().generic(), DAMAGE_PER_TICK);
+                }
+            }
+
+            // Wither effect during meltdown
+            if (isMeltdown) {
+                be.witherTick++;
+                if (be.witherTick >= 40) {
+                    be.witherTick = 0;
+                    AABB witherArea = new AABB(
+                            cx - MELTDOWN_WITHER_RADIUS, cy - MELTDOWN_WITHER_RADIUS, cz - MELTDOWN_WITHER_RADIUS,
+                            cx + MELTDOWN_WITHER_RADIUS, cy + MELTDOWN_WITHER_RADIUS, cz + MELTDOWN_WITHER_RADIUS);
+                    for (LivingEntity living : level.getEntitiesOfClass(LivingEntity.class, witherArea)) {
+                        if (living instanceof Player player && player.isCreative()) continue;
+                        living.addEffect(new MobEffectInstance(MobEffects.WITHER, WITHER_DURATION, WITHER_AMPLIFIER));
+                    }
                 }
             }
         }
@@ -333,13 +563,42 @@ public class SingularityControllerBlockEntity extends BlockEntity implements Men
         be.stability = Math.max(0.0, Math.min(MAX_STABILITY, be.stability));
         changed = true;
 
-        // Safe shutdown at 0 stability
-        if (be.stability <= 0.0) {
-            be.disassembleStructure();
+        // State transitions based on stability
+        if (be.engineState == EngineState.NORMAL && be.stability <= 0.0) {
+            // NORMAL -> MELTDOWN
+            be.enterMeltdown();
             return;
         }
 
-        // Process if conditions met
+        if (be.engineState == EngineState.MELTDOWN && be.stability >= RESTABILIZE_THRESHOLD) {
+            // MELTDOWN -> NORMAL: restabilized
+            be.engineState = EngineState.NORMAL;
+            be.setStructureBlocksMeltdown(false);
+            be.setChanged();
+            be.syncToClient();
+        }
+
+        // Gradually shrink black hole scale back to 1.0 when in NORMAL state and scale > 1.0
+        if (be.engineState == EngineState.NORMAL && be.blackHoleScale > 1.0f) {
+            float shrinkRate = 0.002f * (float)(be.stability / MAX_STABILITY);
+            be.blackHoleScale = Math.max(1.0f, be.blackHoleScale - shrinkRate);
+            changed = true;
+        }
+
+        // Skip processing during meltdown
+        if (isMeltdown) {
+            be.processing = false;
+            be.progress = 0;
+            if (changed || wasProcessing != be.processing) {
+                be.setChanged();
+                if (wasProcessing != be.processing || level.getGameTime() % 10 == 0) {
+                    be.syncToClient();
+                }
+            }
+            return;
+        }
+
+        // Process if conditions met (NORMAL state only)
         if (be.stability >= MIN_STABILITY_TO_OPERATE
                 && be.energy.getEnergyStored() >= ENERGY_PER_TICK
                 && be.condensedLightBuffer > 0
@@ -349,12 +608,10 @@ public class SingularityControllerBlockEntity extends BlockEntity implements Men
             be.progress++;
             be.processing = true;
 
-            // Consume light from buffer periodically
             if (be.progress % LIGHT_CONSUME_INTERVAL == 0) {
                 be.condensedLightBuffer--;
             }
 
-            // Refill light buffer from input slot
             if (be.condensedLightBuffer < MAX_LIGHT_BUFFER) {
                 ItemStack input = be.items.getStackInSlot(INPUT_SLOT);
                 if (!input.isEmpty() && input.is(ModItems.CONDENSED_LIGHT.get())) {
@@ -369,7 +626,6 @@ public class SingularityControllerBlockEntity extends BlockEntity implements Men
                 be.progress = 0;
             }
         } else {
-            // Try to refill light buffer even when not processing
             if (be.condensedLightBuffer < MAX_LIGHT_BUFFER) {
                 ItemStack input = be.items.getStackInSlot(INPUT_SLOT);
                 if (!input.isEmpty() && input.is(ModItems.CONDENSED_LIGHT.get())) {
@@ -460,15 +716,17 @@ public class SingularityControllerBlockEntity extends BlockEntity implements Men
     private void scanForInjectors() {
         if (centerPos == null || level == null) return;
 
+        SingularityPattern.ensureLoaded();
+        int shellRadius = SingularityPattern.getHeight() / 2;
+
         int count = 0;
         for (Direction dir : Direction.values()) {
-            for (int dist = 6; dist <= 16; dist++) {
+            for (int dist = shellRadius; dist <= shellRadius + 20; dist++) {
                 BlockPos checkPos = centerPos.relative(dir, dist);
                 BlockState checkState = level.getBlockState(checkPos);
 
                 if (checkState.getBlock() instanceof PhotonicInjectorBlock) {
                     if (checkState.getValue(PhotonicInjectorBlock.ACTIVE)) {
-                        // Check facing aims toward center
                         Direction injectorFacing = checkState.getValue(PhotonicInjectorBlock.FACING);
                         if (injectorFacing == dir.getOpposite()) {
                             count++;
@@ -477,7 +735,6 @@ public class SingularityControllerBlockEntity extends BlockEntity implements Men
                     break;
                 }
 
-                // Stop if we hit a solid non-air block that isn't part of our structure
                 if (!checkState.isAir() && !structurePositions.contains(checkPos)) {
                     break;
                 }
@@ -495,7 +752,7 @@ public class SingularityControllerBlockEntity extends BlockEntity implements Men
 
     @Override
     public AbstractContainerMenu createMenu(int containerId, Inventory playerInventory, Player player) {
-        return new SingularityControllerMenu(containerId, playerInventory, items, dataAccess);
+        return new SingularityControllerMenu(containerId, playerInventory, items, dataAccess, worldPosition);
     }
 
     // --- NBT ---
@@ -508,10 +765,13 @@ public class SingularityControllerBlockEntity extends BlockEntity implements Men
         tag.putInt("Progress", progress);
         tag.putInt("LightBuffer", condensedLightBuffer);
         tag.putDouble("Stability", stability);
+        tag.putDouble("SavedStability", savedStability);
         tag.putInt("Injectors", activeInjectors);
         tag.putInt("CoreCount", coreCount);
         tag.putBoolean("Formed", formed);
         tag.putBoolean("Processing", processing);
+        tag.putInt("EngineState", engineState.ordinal());
+        tag.putFloat("BlackHoleScale", blackHoleScale);
 
         if (centerPos != null) {
             tag.putInt("CenterX", centerPos.getX());
@@ -539,6 +799,17 @@ public class SingularityControllerBlockEntity extends BlockEntity implements Men
                 coreList.add(posTag);
             }
             tag.put("CorePositions", coreList);
+
+            ListTag portList = new ListTag();
+            for (int i = 0; i < portPositions.size(); i++) {
+                CompoundTag portTag = new CompoundTag();
+                portTag.putInt("X", portPositions.get(i).getX());
+                portTag.putInt("Y", portPositions.get(i).getY());
+                portTag.putInt("Z", portPositions.get(i).getZ());
+                portTag.putInt("Mode", i < portModes.size() ? portModes.get(i).ordinal() : 0);
+                portList.add(portTag);
+            }
+            tag.put("PortPositions", portList);
         }
     }
 
@@ -550,10 +821,13 @@ public class SingularityControllerBlockEntity extends BlockEntity implements Men
         progress = tag.getInt("Progress");
         condensedLightBuffer = tag.getInt("LightBuffer");
         stability = tag.getDouble("Stability");
+        savedStability = tag.contains("SavedStability") ? tag.getDouble("SavedStability") : STARTING_STABILITY;
         activeInjectors = tag.getInt("Injectors");
         coreCount = tag.getInt("CoreCount");
         formed = tag.getBoolean("Formed");
         processing = tag.getBoolean("Processing");
+        engineState = tag.contains("EngineState") ? EngineState.fromOrdinal(tag.getInt("EngineState")) : EngineState.NORMAL;
+        blackHoleScale = tag.contains("BlackHoleScale") ? tag.getFloat("BlackHoleScale") : 1.0f;
 
         if (tag.contains("CenterX")) {
             centerPos = new BlockPos(tag.getInt("CenterX"), tag.getInt("CenterY"), tag.getInt("CenterZ"));
@@ -576,6 +850,17 @@ public class SingularityControllerBlockEntity extends BlockEntity implements Men
             for (int i = 0; i < coreList.size(); i++) {
                 CompoundTag posTag = coreList.getCompound(i);
                 corePositions.add(new BlockPos(posTag.getInt("X"), posTag.getInt("Y"), posTag.getInt("Z")));
+            }
+        }
+
+        portPositions.clear();
+        portModes.clear();
+        if (tag.contains("PortPositions")) {
+            ListTag portList = tag.getList("PortPositions", Tag.TAG_COMPOUND);
+            for (int i = 0; i < portList.size(); i++) {
+                CompoundTag portTag = portList.getCompound(i);
+                portPositions.add(new BlockPos(portTag.getInt("X"), portTag.getInt("Y"), portTag.getInt("Z")));
+                portModes.add(PortMode.fromOrdinal(portTag.getInt("Mode")));
             }
         }
     }

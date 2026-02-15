@@ -116,6 +116,7 @@ public class tachyon {
                 output.accept(ModItems.PHOTONIC_MATRIX.get());
                 output.accept(ModItems.CONDENSED_LIGHT.get());
                 output.accept(ModItems.EXOTIC_MATTER.get());
+                output.accept(ModItems.ANTIMATTER_NEUTRALIZER.get());
                 // Singularity Engine blocks
                 output.accept(ModBlocks.SINGULARITY_CONTROLLER_ITEM.get());
                 output.accept(ModBlocks.SINGULARITY_CASING_ITEM.get());

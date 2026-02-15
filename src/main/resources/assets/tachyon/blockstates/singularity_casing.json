@@ -1,5 +1,8 @@
 {
   "variants": {
-    "": { "model": "tachyon:block/singularity_casing" }
+    "formed=false,meltdown=false": { "model": "tachyon:block/singularity_casing" },
+    "formed=true,meltdown=false": { "model": "tachyon:block/singularity_casing" },
+    "formed=false,meltdown=true": { "model": "tachyon:block/singularity_casing" },
+    "formed=true,meltdown=true": { "model": "tachyon:block/singularity_casing" }
   }
 }

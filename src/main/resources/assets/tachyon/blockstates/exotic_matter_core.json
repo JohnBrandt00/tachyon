@@ -1,5 +1,8 @@
 {
   "variants": {
-    "": { "model": "tachyon:block/exotic_matter_core" }
+    "formed=false,meltdown=false": { "model": "tachyon:block/exotic_matter_core" },
+    "formed=true,meltdown=false": { "model": "tachyon:block/exotic_matter_core" },
+    "formed=false,meltdown=true": { "model": "tachyon:block/exotic_matter_core" },
+    "formed=true,meltdown=true": { "model": "tachyon:block/exotic_matter_core" }
   }
 }

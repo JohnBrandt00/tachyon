@@ -53,7 +53,7 @@ public class PhotonicInjectorMenu extends AbstractContainerMenu {
         this.addSlot(new SlotItemHandler(handler, 0, 80, 35) {
             @Override
             public boolean mayPlace(ItemStack stack) {
-                return stack.is(ModItems.CONDENSED_LIGHT.get());
+                return stack.is(ModItems.CONDENSED_LIGHT.get()) || stack.is(ModItems.ANTIMATTER_NEUTRALIZER.get());
             }
         });
 
@@ -88,7 +88,7 @@ public class PhotonicInjectorMenu extends AbstractContainerMenu {
                 if (!this.moveItemStackTo(slotStack, 1, 37, true)) {
                     return ItemStack.EMPTY;
                 }
-            } else if (slotStack.is(ModItems.CONDENSED_LIGHT.get())) {
+            } else if (slotStack.is(ModItems.CONDENSED_LIGHT.get()) || slotStack.is(ModItems.ANTIMATTER_NEUTRALIZER.get())) {
                 if (!this.moveItemStackTo(slotStack, 0, 1, false)) {
                     return ItemStack.EMPTY;
                 }

@@ -6,6 +6,7 @@ import java.util.List;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import com.mojang.math.Axis;
+import com.setusertso.tachyon.block.entity.EngineState;
 import com.setusertso.tachyon.block.entity.SingularityControllerBlockEntity;
 import com.setusertso.tachyon.init.ModParticles;
 
@@ -45,6 +46,11 @@ public class SingularityControllerRenderer implements BlockEntityRenderer<Singul
     private static final float SHIELD_RADIUS = 16.0f;
     private static final int SHIELD_SUBDIVISIONS = 3;
 
+    // Wireframe ring rendering
+    private static final float RING_RADIUS = 16.0f;
+    private static final int RING_SEGMENTS = 128;
+    private static final float RING_TUBE_RADIUS = 0.4f;
+    private static final int RING_TUBE_SIDES = 12;
     private static final ResourceLocation WHITE_TEX =
             ResourceLocation.withDefaultNamespace("textures/misc/white.png");
 
@@ -60,13 +66,18 @@ public class SingularityControllerRenderer implements BlockEntityRenderer<Singul
     @Override
     public void render(SingularityControllerBlockEntity be, float partialTick, PoseStack poseStack,
                        MultiBufferSource bufferSource, int packedLight, int packedOverlay) {
-        if (!be.isFormed()) return;
+        if (!be.isFormed() && be.getEngineState() != EngineState.MELTDOWN) return;
 
         BlockPos centerPos = be.getCenterPos();
         if (centerPos == null) return;
         if (be.getLevel() == null) return;
 
+        float bhScale = be.getBlackHoleScale();
+        // Skip all rendering if neutralized (scale near zero)
+        if (bhScale <= 0.01f) return;
+
         float gameTime = be.getLevel().getGameTime() + partialTick;
+        EngineState engineState = be.getEngineState();
 
         // Calculate offset from controller to center of the center block
         double dx = centerPos.getX() + 0.5 - be.getBlockPos().getX();
@@ -96,20 +107,37 @@ public class SingularityControllerRenderer implements BlockEntityRenderer<Singul
             shieldTriangles = generateIcosphere(SHIELD_RADIUS, SHIELD_SUBDIVISIONS);
         }
 
-        // Render all effects when formed
+        // Apply dynamic black hole scale
+        poseStack.pushPose();
+        poseStack.scale(bhScale, bhScale, bhScale);
+
+        // Render all black hole effects (scaled)
         renderBlackHoleSphere(poseStack, bufferSource, packedOverlay, gameTime);
         renderPhotonRing(poseStack, bufferSource, packedOverlay, gameTime, billboardYaw);
         renderAccretionDisk(poseStack, bufferSource, packedOverlay, gameTime, billboardYaw);
         renderLensingArc(poseStack, bufferSource, packedOverlay, gameTime,
                 cameraPos, centerX, centerY, centerZ);
 
-        // Render containment shield based on stability
+        poseStack.popPose();
+        // End of scaled black hole effects
+
+        // Render containment shield based on stability (not scaled by bhScale)
         float stability = (float) be.getStability();
         renderContainmentShield(poseStack, bufferSource, packedOverlay, gameTime, stability);
 
+        // Render meltdown warning sphere during MELTDOWN state
+        if (engineState == EngineState.MELTDOWN) {
+            renderMeltdownWarning(poseStack, bufferSource, packedOverlay, gameTime);
+        }
+
+        // Render wireframe rings (replacing physical blocks) — only during NORMAL
+        if (engineState == EngineState.NORMAL) {
+            renderWireframeRings(poseStack, bufferSource, packedOverlay, gameTime, stability);
+        }
+
         poseStack.popPose();
 
-        // Spawn particles
+        // Spawn particles (scale particle distance with bhScale)
         spawnParticles(be, gameTime, centerX, centerY, centerZ);
     }
 
@@ -415,7 +443,241 @@ public class SingularityControllerRenderer implements BlockEntityRenderer<Singul
     }
 
     // =========================================================================
-    // 6. PARTICLES
+    // 5b. MELTDOWN WARNING SPHERE — pulsing red sphere during meltdown
+    // =========================================================================
+    private void renderMeltdownWarning(PoseStack poseStack, MultiBufferSource bufferSource,
+                                        int packedOverlay, float gameTime) {
+        VertexConsumer consumer = bufferSource.getBuffer(
+                BlackHoleRenderTypes.emissiveNoDepth(WHITE_TEX));
+        int light = LightTexture.FULL_BRIGHT;
+
+        // Pulsing red warning glow
+        float pulse = 0.5f + 0.5f * (float) Math.sin(gameTime * 0.15);
+        float fastPulse = 0.3f + 0.7f * (float) Math.sin(gameTime * 0.4);
+        float combined = pulse * 0.6f + fastPulse * 0.4f;
+
+        int r = clamp255((int)(255 * combined));
+        int g = clamp255((int)(30 * combined));
+        int b = clamp255((int)(10 * combined));
+        int alpha = clamp255((int)(80 * combined));
+        if (alpha < 3) return;
+
+        PoseStack.Pose pose = poseStack.last();
+
+        for (float[] tri : shieldTriangles) {
+            float nx = -tri[9], ny = -tri[10], nz = -tri[11];
+            // Front face
+            iVertex(pose, consumer, tri[0], tri[1], tri[2], nx, ny, nz, r, g, b, alpha, light, packedOverlay);
+            iVertex(pose, consumer, tri[3], tri[4], tri[5], nx, ny, nz, r, g, b, alpha, light, packedOverlay);
+            iVertex(pose, consumer, tri[6], tri[7], tri[8], nx, ny, nz, r, g, b, alpha, light, packedOverlay);
+            iVertex(pose, consumer, tri[6], tri[7], tri[8], nx, ny, nz, r, g, b, alpha, light, packedOverlay);
+            // Back face
+            iVertex(pose, consumer, tri[6], tri[7], tri[8], nx, ny, nz, r, g, b, alpha, light, packedOverlay);
+            iVertex(pose, consumer, tri[6], tri[7], tri[8], nx, ny, nz, r, g, b, alpha, light, packedOverlay);
+            iVertex(pose, consumer, tri[3], tri[4], tri[5], nx, ny, nz, r, g, b, alpha, light, packedOverlay);
+            iVertex(pose, consumer, tri[0], tri[1], tri[2], nx, ny, nz, r, g, b, alpha, light, packedOverlay);
+        }
+    }
+
+    // =========================================================================
+    // 6. WIREFRAME RINGS — 3 great circles rendered as thick metallic tubes
+    // =========================================================================
+    private void renderWireframeRings(PoseStack poseStack, MultiBufferSource bufferSource,
+                                       int packedOverlay, float gameTime, float stability) {
+        int light = LightTexture.FULL_BRIGHT;
+        PoseStack.Pose pose = poseStack.last();
+
+        // PASS 1: Render ALL solid metallic base geometry
+        {
+            VertexConsumer solidConsumer = bufferSource.getBuffer(
+                    RenderType.entitySolid(ResourceLocation.withDefaultNamespace("textures/block/iron_block.png")));
+            for (int axis = 0; axis < 3; axis++) {
+                renderMetallicTubeRingSolid(pose, solidConsumer, light, packedOverlay,
+                        axis, RING_RADIUS, RING_TUBE_RADIUS, RING_SEGMENTS, RING_TUBE_SIDES, gameTime);
+            }
+        }
+
+        // PASS 2: Render ALL specular highlight geometry
+        {
+            VertexConsumer glowConsumer = bufferSource.getBuffer(
+                    BlackHoleRenderTypes.emissiveNoDepth(WHITE_TEX));
+            for (int axis = 0; axis < 3; axis++) {
+                renderMetallicTubeRingGlow(pose, glowConsumer, light, packedOverlay,
+                        axis, RING_RADIUS, RING_TUBE_RADIUS, RING_SEGMENTS, RING_TUBE_SIDES, gameTime);
+            }
+        }
+    }
+
+    /** Computes metallic shade: dark on faces away from light, bright highlight on faces toward light */
+    private static int[] metallicShade(float nx, float ny, float nz, float gameTime, int axis) {
+        // Simulated directional light from upper-right
+        float lightDot = Math.max(0, ny * 0.6f + nx * 0.35f + nz * 0.25f);
+        // Ambient term so shadow faces aren't pure black
+        float ambient = 0.25f;
+        float diffuse = ambient + (1.0f - ambient) * lightDot;
+        // Specular highlight: sharp reflection
+        float specPow = lightDot * lightDot * lightDot * lightDot;
+        float shimmer = 0.7f + 0.3f * (float)(Math.sin(gameTime * 0.015 + axis * 2.1));
+        float spec = specPow * shimmer;
+        // Base metallic color: cool steel with slight blue tint
+        int r = clamp255((int)(110 * diffuse + 180 * spec));
+        int g = clamp255((int)(115 * diffuse + 175 * spec));
+        int b = clamp255((int)(130 * diffuse + 200 * spec));
+        return new int[]{r, g, b, 255};
+    }
+
+    /**
+     * Returns the perpendicular frame (radial outward, ring normal) for a point on a great circle.
+     * This is analytically derived per-axis so the frame is smooth and continuous around the ring,
+     * eliminating gaps between tube segments.
+     * Returns float[6]: {radialX, radialY, radialZ, normalX, normalY, normalZ}
+     */
+    private static float[] ringFrame(int axis, float angle) {
+        float c = (float) Math.cos(angle), s = (float) Math.sin(angle);
+        // perp1 = radial outward direction (from ring center to ring point)
+        // perp2 = ring plane normal (constant for each axis)
+        return switch (axis) {
+            case 0 -> new float[]{c, 0, s,  0, 1, 0};  // XZ equator: radial in XZ, normal is Y
+            case 1 -> new float[]{c, s, 0,  0, 0, 1};  // XY meridian: radial in XY, normal is Z
+            case 2 -> new float[]{0, s, c,  1, 0, 0};  // YZ meridian: radial in YZ, normal is +X
+            default -> new float[]{c, 0, s, 0, 1, 0};
+        };
+    }
+
+    /** Pass 1: solid metallic base quads with per-face shading */
+    private void renderMetallicTubeRingSolid(PoseStack.Pose pose, VertexConsumer consumer,
+                                              int light, int overlay,
+                                              int axis, float radius, float tubeRadius,
+                                              int segments, int tubeSides, float gameTime) {
+        for (int i = 0; i < segments; i++) {
+            float angle0 = (float)(i * 2 * Math.PI / segments);
+            float angle1 = (float)((i + 1) * 2 * Math.PI / segments);
+
+            float[] c0 = ringPoint(axis, radius, angle0);
+            float[] c1 = ringPoint(axis, radius, angle1);
+
+            float[] frame0 = ringFrame(axis, angle0);
+            float[] frame1 = ringFrame(axis, angle1);
+
+            for (int j = 0; j < tubeSides; j++) {
+                float ta0 = (float)(j * 2 * Math.PI / tubeSides);
+                float ta1 = (float)((j + 1) * 2 * Math.PI / tubeSides);
+                float cos0 = (float) Math.cos(ta0), sin0 = (float) Math.sin(ta0);
+                float cos1 = (float) Math.cos(ta1), sin1 = (float) Math.sin(ta1);
+
+                // Use per-vertex frame so edges match between adjacent segments
+                float x00 = c0[0] + tubeRadius * (cos0 * frame0[0] + sin0 * frame0[3]);
+                float y00 = c0[1] + tubeRadius * (cos0 * frame0[1] + sin0 * frame0[4]);
+                float z00 = c0[2] + tubeRadius * (cos0 * frame0[2] + sin0 * frame0[5]);
+
+                float x01 = c0[0] + tubeRadius * (cos1 * frame0[0] + sin1 * frame0[3]);
+                float y01 = c0[1] + tubeRadius * (cos1 * frame0[1] + sin1 * frame0[4]);
+                float z01 = c0[2] + tubeRadius * (cos1 * frame0[2] + sin1 * frame0[5]);
+
+                float x10 = c1[0] + tubeRadius * (cos0 * frame1[0] + sin0 * frame1[3]);
+                float y10 = c1[1] + tubeRadius * (cos0 * frame1[1] + sin0 * frame1[4]);
+                float z10 = c1[2] + tubeRadius * (cos0 * frame1[2] + sin0 * frame1[5]);
+
+                float x11 = c1[0] + tubeRadius * (cos1 * frame1[0] + sin1 * frame1[3]);
+                float y11 = c1[1] + tubeRadius * (cos1 * frame1[1] + sin1 * frame1[4]);
+                float z11 = c1[2] + tubeRadius * (cos1 * frame1[2] + sin1 * frame1[5]);
+
+                float nx0 = cos0 * frame0[0] + sin0 * frame0[3];
+                float ny0 = cos0 * frame0[1] + sin0 * frame0[4];
+                float nz0 = cos0 * frame0[2] + sin0 * frame0[5];
+
+                int[] shade = metallicShade(nx0, ny0, nz0, gameTime, axis);
+                // Front face
+                iVertex(pose, consumer, x00, y00, z00, nx0, ny0, nz0, shade[0], shade[1], shade[2], shade[3], light, overlay);
+                iVertex(pose, consumer, x01, y01, z01, nx0, ny0, nz0, shade[0], shade[1], shade[2], shade[3], light, overlay);
+                iVertex(pose, consumer, x11, y11, z11, nx0, ny0, nz0, shade[0], shade[1], shade[2], shade[3], light, overlay);
+                iVertex(pose, consumer, x10, y10, z10, nx0, ny0, nz0, shade[0], shade[1], shade[2], shade[3], light, overlay);
+                // Back face (reversed winding)
+                iVertex(pose, consumer, x10, y10, z10, -nx0, -ny0, -nz0, shade[0], shade[1], shade[2], shade[3], light, overlay);
+                iVertex(pose, consumer, x11, y11, z11, -nx0, -ny0, -nz0, shade[0], shade[1], shade[2], shade[3], light, overlay);
+                iVertex(pose, consumer, x01, y01, z01, -nx0, -ny0, -nz0, shade[0], shade[1], shade[2], shade[3], light, overlay);
+                iVertex(pose, consumer, x00, y00, z00, -nx0, -ny0, -nz0, shade[0], shade[1], shade[2], shade[3], light, overlay);
+            }
+        }
+    }
+
+    /** Pass 2: bright specular edge highlights */
+    private void renderMetallicTubeRingGlow(PoseStack.Pose pose, VertexConsumer consumer,
+                                             int light, int overlay,
+                                             int axis, float radius, float tubeRadius,
+                                             int segments, int tubeSides, float gameTime) {
+        float shimmer = 0.4f + 0.6f * (float)(0.5 + 0.5 * Math.sin(gameTime * 0.02 + axis * 2.1));
+
+        for (int i = 0; i < segments; i++) {
+            float angle0 = (float)(i * 2 * Math.PI / segments);
+            float angle1 = (float)((i + 1) * 2 * Math.PI / segments);
+
+            float[] c0 = ringPoint(axis, radius, angle0);
+            float[] c1 = ringPoint(axis, radius, angle1);
+
+            float[] frame0 = ringFrame(axis, angle0);
+            float[] frame1 = ringFrame(axis, angle1);
+
+            for (int j = 0; j < tubeSides; j++) {
+                float ta0 = (float)(j * 2 * Math.PI / tubeSides);
+                float ta1 = (float)((j + 1) * 2 * Math.PI / tubeSides);
+                float cos0 = (float) Math.cos(ta0), sin0 = (float) Math.sin(ta0);
+                float cos1 = (float) Math.cos(ta1), sin1 = (float) Math.sin(ta1);
+
+                float nx0 = cos0 * frame0[0] + sin0 * frame0[3];
+                float ny0 = cos0 * frame0[1] + sin0 * frame0[4];
+                float nz0 = cos0 * frame0[2] + sin0 * frame0[5];
+
+                float upDot = Math.max(0, ny0 * 0.7f + nx0 * 0.3f + nz0 * 0.2f);
+                float specular = upDot * upDot * upDot * shimmer;
+                if (specular > 0.08f) {
+                    float x00 = c0[0] + tubeRadius * (cos0 * frame0[0] + sin0 * frame0[3]);
+                    float y00 = c0[1] + tubeRadius * (cos0 * frame0[1] + sin0 * frame0[4]);
+                    float z00 = c0[2] + tubeRadius * (cos0 * frame0[2] + sin0 * frame0[5]);
+
+                    float x01 = c0[0] + tubeRadius * (cos1 * frame0[0] + sin1 * frame0[3]);
+                    float y01 = c0[1] + tubeRadius * (cos1 * frame0[1] + sin1 * frame0[4]);
+                    float z01 = c0[2] + tubeRadius * (cos1 * frame0[2] + sin1 * frame0[5]);
+
+                    float x10 = c1[0] + tubeRadius * (cos0 * frame1[0] + sin0 * frame1[3]);
+                    float y10 = c1[1] + tubeRadius * (cos0 * frame1[1] + sin0 * frame1[4]);
+                    float z10 = c1[2] + tubeRadius * (cos0 * frame1[2] + sin0 * frame1[5]);
+
+                    float x11 = c1[0] + tubeRadius * (cos1 * frame1[0] + sin1 * frame1[3]);
+                    float y11 = c1[1] + tubeRadius * (cos1 * frame1[1] + sin1 * frame1[4]);
+                    float z11 = c1[2] + tubeRadius * (cos1 * frame1[2] + sin1 * frame1[5]);
+
+                    int sr = clamp255((int)(255 * specular));
+                    int sg = clamp255((int)(250 * specular));
+                    int sb = clamp255((int)(240 * specular));
+                    int sa = clamp255((int)(120 * specular));
+                    float offset = 0.003f;
+                    iVertex(pose, consumer, x00 + nx0*offset, y00 + ny0*offset, z00 + nz0*offset,
+                            nx0, ny0, nz0, sr, sg, sb, sa, light, overlay);
+                    iVertex(pose, consumer, x01 + nx0*offset, y01 + ny0*offset, z01 + nz0*offset,
+                            nx0, ny0, nz0, sr, sg, sb, sa, light, overlay);
+                    iVertex(pose, consumer, x11 + nx0*offset, y11 + ny0*offset, z11 + nz0*offset,
+                            nx0, ny0, nz0, sr, sg, sb, sa, light, overlay);
+                    iVertex(pose, consumer, x10 + nx0*offset, y10 + ny0*offset, z10 + nz0*offset,
+                            nx0, ny0, nz0, sr, sg, sb, sa, light, overlay);
+                }
+            }
+        }
+    }
+
+    /** Returns a point on a great circle ring. axis: 0=XZ(equator), 1=XY(meridian z=0), 2=YZ(meridian x=0) */
+    private static float[] ringPoint(int axis, float radius, float angle) {
+        float c = (float) Math.cos(angle), s = (float) Math.sin(angle);
+        return switch (axis) {
+            case 0 -> new float[]{c * radius, 0, s * radius};
+            case 1 -> new float[]{c * radius, s * radius, 0};
+            case 2 -> new float[]{0, s * radius, c * radius};
+            default -> new float[]{c * radius, 0, s * radius};
+        };
+    }
+
+    // =========================================================================
+    // 7. PARTICLES
     // =========================================================================
     private Vec3 diskToWorld(double lx, double lz, double cx, double cy, double cz,
                               float yawRad, float tiltRad, float rotRad) {
@@ -534,7 +796,8 @@ public class SingularityControllerRenderer implements BlockEntityRenderer<Singul
     @Override
     public AABB getRenderBoundingBox(SingularityControllerBlockEntity be) {
         BlockPos pos = be.getBlockPos();
-        int r = (int)(DISK_FADE + 2);
+        float bhScale = Math.max(1.0f, be.getBlackHoleScale());
+        int r = (int)(SHIELD_RADIUS * bhScale + 2);
         return new AABB(pos.getX() - r, pos.getY() - r, pos.getZ() - r,
                          pos.getX() + r + 1, pos.getY() + r + 1, pos.getZ() + r + 1);
     }

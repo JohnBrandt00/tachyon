@@ -36,7 +36,8 @@ public class ModMenuTypes {
 
     public static final Supplier<MenuType<SingularityControllerMenu>> SINGULARITY_CONTROLLER =
             MENUS.register("singularity_controller",
-                    () -> new MenuType<>(SingularityControllerMenu::new, FeatureFlags.DEFAULT_FLAGS));
+                    () -> IMenuTypeExtension.create(
+                            (containerId, inv, buf) -> new SingularityControllerMenu(containerId, inv, buf.readBlockPos())));
 
     public static final Supplier<MenuType<SingularityPortMenu>> SINGULARITY_PORT =
             MENUS.register("singularity_port",

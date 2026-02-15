@@ -1,22 +1,50 @@
 package com.setusertso.tachyon.screen;
 
+import com.setusertso.tachyon.block.entity.EngineState;
 import com.setusertso.tachyon.menu.SingularityControllerMenu;
+import com.setusertso.tachyon.network.ReformStructurePacket;
 import com.setusertso.tachyon.tachyon;
 
 import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.player.Inventory;
+import net.neoforged.neoforge.network.PacketDistributor;
 
 public class SingularityControllerScreen extends AbstractContainerScreen<SingularityControllerMenu> {
     private static final ResourceLocation TEXTURE =
             ResourceLocation.fromNamespaceAndPath(tachyon.MODID, "textures/gui/singularity_controller.png");
 
+    private Button reformButton;
+
     public SingularityControllerScreen(SingularityControllerMenu menu, Inventory playerInventory, Component title) {
         super(menu, playerInventory, title);
         this.imageWidth = 176;
         this.imageHeight = 166;
+    }
+
+    @Override
+    protected void init() {
+        super.init();
+
+        reformButton = Button.builder(
+                Component.translatable("gui.tachyon.reform_structure"),
+                btn -> {
+                    PacketDistributor.sendToServer(new ReformStructurePacket(this.menu.getControllerPos()));
+                })
+                .bounds(this.leftPos + 60, this.topPos + 4, 56, 12)
+                .build();
+        reformButton.visible = false;
+        this.addRenderableWidget(reformButton);
+    }
+
+    @Override
+    public void containerTick() {
+        super.containerTick();
+        EngineState state = this.menu.getEngineState();
+        reformButton.visible = (state == EngineState.NEUTRALIZED);
     }
 
     @Override
@@ -35,7 +63,6 @@ public class SingularityControllerScreen extends AbstractContainerScreen<Singula
         float stabilityScaled = this.menu.getStabilityScaled();
         if (stabilityScaled > 0) {
             int barHeight = (int) (stabilityScaled * 52);
-            // Color gradient: green at top, red at bottom (encoded in texture UV)
             graphics.blit(TEXTURE, this.leftPos + 30, this.topPos + 16 + 52 - barHeight,
                     192, 52 - barHeight, 10, barHeight);
         }
@@ -52,6 +79,23 @@ public class SingularityControllerScreen extends AbstractContainerScreen<Singula
     @Override
     public void render(GuiGraphics graphics, int mouseX, int mouseY, float partialTick) {
         super.render(graphics, mouseX, mouseY, partialTick);
+
+        EngineState engineState = this.menu.getEngineState();
+
+        // Status text
+        int statusX = this.leftPos + 44;
+        int statusY = this.topPos + 6;
+        switch (engineState) {
+            case NORMAL -> graphics.drawString(this.font, "Status: Normal", statusX, statusY, 0x40C040, false);
+            case MELTDOWN -> {
+                // Flashing red text
+                long time = System.currentTimeMillis();
+                boolean flash = (time / 300) % 2 == 0;
+                int color = flash ? 0xFF2020 : 0xAA0000;
+                graphics.drawString(this.font, "STATUS: MELTDOWN", statusX, statusY, color, false);
+            }
+            case NEUTRALIZED -> graphics.drawString(this.font, "Status: Neutralized", statusX, statusY, 0x808080, false);
+        }
 
         // Info text
         int textX = this.leftPos + 44;

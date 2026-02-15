@@ -1,8 +1,10 @@
 package com.setusertso.tachyon.menu;
 
 import com.setusertso.tachyon.ModItems;
+import com.setusertso.tachyon.block.entity.EngineState;
 import com.setusertso.tachyon.init.ModMenuTypes;
 
+import net.minecraft.core.BlockPos;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.AbstractContainerMenu;
@@ -16,17 +18,19 @@ import net.neoforged.neoforge.items.SlotItemHandler;
 
 public class SingularityControllerMenu extends AbstractContainerMenu {
     private final ContainerData data;
+    private final BlockPos controllerPos;
 
-    // Client constructor
-    public SingularityControllerMenu(int containerId, Inventory playerInventory) {
-        this(containerId, playerInventory, new ItemStackHandler(2), new SimpleContainerData(10));
+    // Client constructor (receives BlockPos from buffer)
+    public SingularityControllerMenu(int containerId, Inventory playerInventory, BlockPos pos) {
+        this(containerId, playerInventory, new ItemStackHandler(2), new SimpleContainerData(12), pos);
     }
 
     // Server constructor
     public SingularityControllerMenu(int containerId, Inventory playerInventory,
-                                      IItemHandler handler, ContainerData data) {
+                                      IItemHandler handler, ContainerData data, BlockPos pos) {
         super(ModMenuTypes.SINGULARITY_CONTROLLER.get(), containerId);
         this.data = data;
+        this.controllerPos = pos;
 
         // Input slot (Condensed Light)
         this.addSlot(new SlotItemHandler(handler, 0, 56, 35) {
@@ -69,6 +73,9 @@ public class SingularityControllerMenu extends AbstractContainerMenu {
     public int getMaxStability() { return data.get(7); }
     public int getActiveInjectors() { return data.get(8); }
     public int getCoreCount() { return data.get(9); }
+    public EngineState getEngineState() { return EngineState.fromOrdinal(data.get(10)); }
+    public int getBlackHoleScaleRaw() { return data.get(11); }
+    public BlockPos getControllerPos() { return controllerPos; }
 
     public float getProgressScaled() {
         int max = data.get(1);

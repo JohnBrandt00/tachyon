@@ -45,6 +45,7 @@ public class SingularityPortBlockEntity extends BlockEntity implements MenuProvi
         this.masterPos = masterPos;
         setChanged();
         if (level != null && !level.isClientSide()) {
+            level.invalidateCapabilities(worldPosition);
             level.sendBlockUpdated(worldPosition, getBlockState(), getBlockState(), 3);
         }
     }
@@ -70,6 +71,11 @@ public class SingularityPortBlockEntity extends BlockEntity implements MenuProvi
             BlockState newState = getBlockState().setValue(
                     com.setusertso.tachyon.block.SingularityPortBlock.MODE, mode);
             level.setBlock(worldPosition, newState, Block.UPDATE_CLIENTS);
+
+            // Notify controller to update its cached port mode for rendering
+            if (masterPos != null && level.getBlockEntity(masterPos) instanceof SingularityControllerBlockEntity controller) {
+                controller.updatePortMode(worldPosition, mode);
+            }
         }
     }
 

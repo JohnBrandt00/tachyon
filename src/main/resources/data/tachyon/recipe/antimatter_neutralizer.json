@@ -1,0 +1,18 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+    "TET",
+    "ENE",
+    "TDT"
+  ],
+  "key": {
+    "T": { "item": "tachyon:tungsten_ingot" },
+    "E": { "item": "tachyon:exotic_matter" },
+    "N": { "item": "minecraft:nether_star" },
+    "D": { "item": "minecraft:diamond_block" }
+  },
+  "result": {
+    "id": "tachyon:antimatter_neutralizer",
+    "count": 1
+  }
+}

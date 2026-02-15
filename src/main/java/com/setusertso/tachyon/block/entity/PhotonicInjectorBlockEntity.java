@@ -5,6 +5,7 @@ import com.setusertso.tachyon.block.PhotonicInjectorBlock;
 import com.setusertso.tachyon.init.ModBlockEntities;
 
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
@@ -32,7 +33,7 @@ public class PhotonicInjectorBlockEntity extends BlockEntity implements MenuProv
 
         @Override
         public boolean isItemValid(int slot, ItemStack stack) {
-            return stack.is(ModItems.CONDENSED_LIGHT.get());
+            return stack.is(ModItems.CONDENSED_LIGHT.get()) || stack.is(ModItems.ANTIMATTER_NEUTRALIZER.get());
         }
     };
 
@@ -58,22 +59,70 @@ public class PhotonicInjectorBlockEntity extends BlockEntity implements MenuProv
             be.burnTime--;
             be.active = true;
         } else {
-            // Try to consume a condensed light
             ItemStack fuel = be.items.getStackInSlot(0);
-            if (!fuel.isEmpty() && fuel.is(ModItems.CONDENSED_LIGHT.get())) {
-                be.items.extractItem(0, 1, false);
-                be.burnTime = CONSUME_INTERVAL;
-                be.active = true;
+            if (!fuel.isEmpty()) {
+                if (fuel.is(ModItems.ANTIMATTER_NEUTRALIZER.get())) {
+                    // Consume neutralizer and neutralize nearby controller
+                    be.items.extractItem(0, 1, false);
+                    be.neutralizeNearbyController(level, pos, state);
+                    be.active = false;
+                } else if (fuel.is(ModItems.CONDENSED_LIGHT.get())) {
+                    be.items.extractItem(0, 1, false);
+                    be.burnTime = CONSUME_INTERVAL;
+                    be.active = true;
+                } else {
+                    be.active = false;
+                }
             } else {
                 be.active = false;
             }
         }
 
         if (wasActive != be.active) {
-            // Update block state
             level.setBlock(pos, state.setValue(PhotonicInjectorBlock.ACTIVE, be.active), Block.UPDATE_ALL);
             be.setChanged();
             be.syncToClient();
+        }
+    }
+
+    /**
+     * Search along the injector's facing direction to find a structure block,
+     * then get its master controller and call neutralize().
+     */
+    private void neutralizeNearbyController(Level level, BlockPos pos, BlockState state) {
+        Direction facing = state.getValue(PhotonicInjectorBlock.FACING);
+
+        for (int dist = 1; dist <= 30; dist++) {
+            BlockPos checkPos = pos.relative(facing, dist);
+            BlockEntity be = level.getBlockEntity(checkPos);
+
+            if (be instanceof SingularityControllerBlockEntity controller) {
+                controller.neutralize();
+                return;
+            } else if (be instanceof SingularityCasingBlockEntity casing) {
+                BlockPos masterPos = casing.getMasterPos();
+                if (masterPos != null && level.getBlockEntity(masterPos) instanceof SingularityControllerBlockEntity controller) {
+                    controller.neutralize();
+                    return;
+                }
+            } else if (be instanceof SingularityPortBlockEntity port) {
+                BlockPos masterPos = port.getMasterPos();
+                if (masterPos != null && level.getBlockEntity(masterPos) instanceof SingularityControllerBlockEntity controller) {
+                    controller.neutralize();
+                    return;
+                }
+            } else if (be instanceof ExoticMatterCoreBlockEntity core) {
+                BlockPos masterPos = core.getMasterPos();
+                if (masterPos != null && level.getBlockEntity(masterPos) instanceof SingularityControllerBlockEntity controller) {
+                    controller.neutralize();
+                    return;
+                }
+            }
+
+            BlockState checkState = level.getBlockState(checkPos);
+            if (!checkState.isAir() && be == null) {
+                break;
+            }
         }
     }
 
@@ -84,7 +133,6 @@ public class PhotonicInjectorBlockEntity extends BlockEntity implements MenuProv
 
     @Override
     public AbstractContainerMenu createMenu(int containerId, Inventory playerInventory, Player player) {
-        // Simple single-slot container — reuse a minimal approach
         return new PhotonicInjectorMenu(containerId, playerInventory, this);
     }
 

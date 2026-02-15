@@ -13,5 +13,11 @@ public class ModNetworking {
                 CyclePortModePacket.STREAM_CODEC,
                 CyclePortModePacket::handle
         );
+
+        registrar.playToServer(
+                ReformStructurePacket.TYPE,
+                ReformStructurePacket.STREAM_CODEC,
+                ReformStructurePacket::handle
+        );
     }
 }

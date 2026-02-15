@@ -38,6 +38,7 @@ public class ModItems {
     public static final DeferredItem<Item> PHOTONIC_MATRIX = ITEMS.registerSimpleItem("photonic_matrix");
     public static final DeferredItem<Item> CONDENSED_LIGHT = ITEMS.registerSimpleItem("condensed_light");
     public static final DeferredItem<Item> EXOTIC_MATTER = ITEMS.registerSimpleItem("exotic_matter");
+    public static final DeferredItem<Item> ANTIMATTER_NEUTRALIZER = ITEMS.registerSimpleItem("antimatter_neutralizer");
 
     public static void register(IEventBus modEventBus) {
         ITEMS.register(modEventBus);

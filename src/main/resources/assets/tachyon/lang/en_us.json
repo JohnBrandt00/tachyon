@@ -69,6 +69,10 @@
   "gui.tachyon.injectors": "Injectors",
   "gui.tachyon.cores": "Cores",
   "gui.tachyon.light_buffer": "Light",
+  "gui.tachyon.reform_structure": "Reform",
+  "item.tachyon.antimatter_neutralizer": "Antimatter Gravitational Neutralizer",
+  "message.tachyon.meltdown_warning": "The singularity has entered meltdown!",
+  "message.tachyon.neutralized": "The singularity has been neutralized.",
 
   "tachyon.configuration.title": "tachyon Configs",
   "tachyon.configuration.section.tachyon.common.toml": "tachyon Configs",
