@@ -29,5 +29,25 @@ public class ModCapabilities {
                 ModBlockEntities.CREATIVE_POWER_SOURCE.get(),
                 (be, side) -> be.getEnergyStorage()
         );
+
+        // Singularity Engine ports
+        event.registerBlockEntity(
+                Capabilities.ItemHandler.BLOCK,
+                ModBlockEntities.SINGULARITY_PORT.get(),
+                (be, side) -> be.getItemCapHandler()
+        );
+
+        event.registerBlockEntity(
+                Capabilities.EnergyStorage.BLOCK,
+                ModBlockEntities.SINGULARITY_PORT.get(),
+                (be, side) -> be.getEnergyHandler()
+        );
+
+        // Photonic Injector item handler
+        event.registerBlockEntity(
+                Capabilities.ItemHandler.BLOCK,
+                ModBlockEntities.PHOTONIC_INJECTOR.get(),
+                (be, side) -> be.getItems()
+        );
     }
 }

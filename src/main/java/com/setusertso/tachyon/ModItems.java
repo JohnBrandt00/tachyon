@@ -34,6 +34,11 @@ public class ModItems {
     public static final DeferredItem<BucketItem> HELIUM_BUCKET = ITEMS.register("helium_bucket",
             () -> new BucketItem(ModFluids.HELIUM_SOURCE.get(), new Item.Properties().stacksTo(1)));
 
+    // Singularity Engine
+    public static final DeferredItem<Item> PHOTONIC_MATRIX = ITEMS.registerSimpleItem("photonic_matrix");
+    public static final DeferredItem<Item> CONDENSED_LIGHT = ITEMS.registerSimpleItem("condensed_light");
+    public static final DeferredItem<Item> EXOTIC_MATTER = ITEMS.registerSimpleItem("exotic_matter");
+
     public static void register(IEventBus modEventBus) {
         ITEMS.register(modEventBus);
     }

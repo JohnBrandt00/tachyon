@@ -5,7 +5,12 @@ import com.setusertso.tachyon.block.AcceleratorControllerBlock;
 import com.setusertso.tachyon.block.AcceleratorGlassBlock;
 import com.setusertso.tachyon.block.AcceleratorPortBlock;
 import com.setusertso.tachyon.block.CreativePowerBlock;
+import com.setusertso.tachyon.block.ExoticMatterCoreBlock;
+import com.setusertso.tachyon.block.PhotonicInjectorBlock;
+import com.setusertso.tachyon.block.SingularityCasingBlock;
+import com.setusertso.tachyon.block.SingularityControllerBlock;
 import com.setusertso.tachyon.block.SingularityDebugBlock;
+import com.setusertso.tachyon.block.SingularityPortBlock;
 import com.setusertso.tachyon.block.SuperluminalEmitterBlock;
 import com.setusertso.tachyon.block.TachyonLightGeneratorBlock;
 import com.setusertso.tachyon.init.ModFluids;
@@ -133,6 +138,39 @@ public class ModBlocks {
                     .mapColor(MapColor.COLOR_BLACK).strength(3.0F, 6.0F).sound(SoundType.METAL)));
     public static final DeferredItem<BlockItem> SINGULARITY_DEBUG_ITEM = BLOCK_ITEMS.register("singularity_debug",
             () -> new BlockItem(SINGULARITY_DEBUG.get(), new Item.Properties()));
+
+    // Singularity Engine
+    public static final DeferredBlock<SingularityControllerBlock> SINGULARITY_CONTROLLER = BLOCKS.register("singularity_controller",
+            () -> new SingularityControllerBlock(BlockBehaviour.Properties.of()
+                    .mapColor(MapColor.METAL).strength(5.0F, 6.0F).sound(SoundType.METAL).requiresCorrectToolForDrops()));
+    public static final DeferredItem<BlockItem> SINGULARITY_CONTROLLER_ITEM = BLOCK_ITEMS.register("singularity_controller",
+            () -> new BlockItem(SINGULARITY_CONTROLLER.get(), new Item.Properties()));
+
+    public static final DeferredBlock<SingularityCasingBlock> SINGULARITY_CASING = BLOCKS.register("singularity_casing",
+            () -> new SingularityCasingBlock(BlockBehaviour.Properties.of()
+                    .mapColor(MapColor.METAL).strength(5.0F, 6.0F).sound(SoundType.METAL).requiresCorrectToolForDrops()));
+    public static final DeferredItem<BlockItem> SINGULARITY_CASING_ITEM = BLOCK_ITEMS.register("singularity_casing",
+            () -> new BlockItem(SINGULARITY_CASING.get(), new Item.Properties()));
+
+    public static final DeferredBlock<SingularityPortBlock> SINGULARITY_PORT = BLOCKS.register("singularity_port",
+            () -> new SingularityPortBlock(BlockBehaviour.Properties.of()
+                    .mapColor(MapColor.METAL).strength(5.0F, 6.0F).sound(SoundType.METAL).requiresCorrectToolForDrops()));
+    public static final DeferredItem<BlockItem> SINGULARITY_PORT_ITEM = BLOCK_ITEMS.register("singularity_port",
+            () -> new BlockItem(SINGULARITY_PORT.get(), new Item.Properties()));
+
+    public static final DeferredBlock<ExoticMatterCoreBlock> EXOTIC_MATTER_CORE = BLOCKS.register("exotic_matter_core",
+            () -> new ExoticMatterCoreBlock(BlockBehaviour.Properties.of()
+                    .mapColor(MapColor.COLOR_PURPLE).strength(5.0F, 6.0F).sound(SoundType.METAL).requiresCorrectToolForDrops()
+                    .lightLevel(state -> 7)));
+    public static final DeferredItem<BlockItem> EXOTIC_MATTER_CORE_ITEM = BLOCK_ITEMS.register("exotic_matter_core",
+            () -> new BlockItem(EXOTIC_MATTER_CORE.get(), new Item.Properties()));
+
+    public static final DeferredBlock<PhotonicInjectorBlock> PHOTONIC_INJECTOR = BLOCKS.register("photonic_injector",
+            () -> new PhotonicInjectorBlock(BlockBehaviour.Properties.of()
+                    .mapColor(MapColor.METAL).strength(5.0F, 6.0F).sound(SoundType.METAL).requiresCorrectToolForDrops()
+                    .lightLevel(state -> state.getValue(PhotonicInjectorBlock.ACTIVE) ? 12 : 0)));
+    public static final DeferredItem<BlockItem> PHOTONIC_INJECTOR_ITEM = BLOCK_ITEMS.register("photonic_injector",
+            () -> new BlockItem(PHOTONIC_INJECTOR.get(), new Item.Properties()));
 
     // Creative Power Source (test block)
     public static final DeferredBlock<CreativePowerBlock> CREATIVE_POWER_SOURCE = BLOCKS.register("creative_power_source",

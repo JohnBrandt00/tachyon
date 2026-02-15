@@ -3,8 +3,11 @@ package com.setusertso.tachyon.init;
 import java.util.function.Supplier;
 
 import com.setusertso.tachyon.tachyon;
+import com.setusertso.tachyon.block.entity.PhotonicInjectorMenu;
 import com.setusertso.tachyon.menu.AcceleratorControllerMenu;
 import com.setusertso.tachyon.menu.AcceleratorPortMenu;
+import com.setusertso.tachyon.menu.SingularityControllerMenu;
+import com.setusertso.tachyon.menu.SingularityPortMenu;
 import com.setusertso.tachyon.menu.SuperluminalEmitterMenu;
 
 import net.minecraft.core.registries.BuiltInRegistries;
@@ -30,6 +33,19 @@ public class ModMenuTypes {
             MENUS.register("accelerator_port",
                     () -> IMenuTypeExtension.create(
                             (containerId, inv, buf) -> new AcceleratorPortMenu(containerId, inv, buf.readBlockPos())));
+
+    public static final Supplier<MenuType<SingularityControllerMenu>> SINGULARITY_CONTROLLER =
+            MENUS.register("singularity_controller",
+                    () -> new MenuType<>(SingularityControllerMenu::new, FeatureFlags.DEFAULT_FLAGS));
+
+    public static final Supplier<MenuType<SingularityPortMenu>> SINGULARITY_PORT =
+            MENUS.register("singularity_port",
+                    () -> IMenuTypeExtension.create(
+                            (containerId, inv, buf) -> new SingularityPortMenu(containerId, inv, buf.readBlockPos())));
+
+    public static final Supplier<MenuType<PhotonicInjectorMenu>> PHOTONIC_INJECTOR =
+            MENUS.register("photonic_injector",
+                    () -> new MenuType<>(PhotonicInjectorMenu::new, FeatureFlags.DEFAULT_FLAGS));
 
     public static void register(IEventBus modEventBus) {
         MENUS.register(modEventBus);

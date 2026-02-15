@@ -1,0 +1,8 @@
+{
+  "parent": "minecraft:block/orientable",
+  "textures": {
+    "top": "tachyon:block/singularity_casing",
+    "front": "tachyon:block/singularity_controller_front_formed",
+    "side": "tachyon:block/singularity_casing"
+  }
+}

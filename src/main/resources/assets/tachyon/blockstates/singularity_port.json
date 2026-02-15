@@ -1,0 +1,9 @@
+{
+  "variants": {
+    "mode=item_input": { "model": "tachyon:block/singularity_port" },
+    "mode=item_output": { "model": "tachyon:block/singularity_port" },
+    "mode=fluid_input": { "model": "tachyon:block/singularity_port" },
+    "mode=fluid_output": { "model": "tachyon:block/singularity_port" },
+    "mode=energy_input": { "model": "tachyon:block/singularity_port" }
+  }
+}

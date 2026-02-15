@@ -6,146 +6,118 @@ import java.util.List;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import com.mojang.math.Axis;
-import com.setusertso.tachyon.block.entity.SingularityDebugBlockEntity;
-
-import com.mojang.blaze3d.vertex.DefaultVertexFormat;
-import com.mojang.blaze3d.vertex.VertexFormat;
+import com.setusertso.tachyon.block.entity.SingularityControllerBlockEntity;
+import com.setusertso.tachyon.init.ModParticles;
 
 import net.minecraft.client.Camera;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.renderer.LightTexture;
 import net.minecraft.client.renderer.MultiBufferSource;
-import net.minecraft.client.renderer.RenderStateShard;
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.blockentity.BlockEntityRenderer;
 import net.minecraft.client.renderer.blockentity.BlockEntityRendererProvider;
 import net.minecraft.core.BlockPos;
-import com.setusertso.tachyon.init.ModParticles;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 
-/**
- * Helper to access protected RenderStateShard constants for custom RenderType creation.
- */
-class BlackHoleRenderTypes extends RenderStateShard {
-    // Dummy constructor — never instantiated, just used to access protected fields
-    private BlackHoleRenderTypes() { super("dummy", () -> {}, () -> {}); }
+public class SingularityControllerRenderer implements BlockEntityRenderer<SingularityControllerBlockEntity> {
 
-    /**
-     * Additive emissive render type. Uses additive blending (SRC_ALPHA, ONE) so colors
-     * add light rather than alpha-blend. Keeps LEQUAL depth test so the opaque sphere
-     * properly occludes the disk behind it. Renders to WEATHER_TARGET so it draws
-     * after translucent geometry (water). Does not write depth (COLOR_WRITE only).
-     */
-    public static RenderType emissiveNoDepth(ResourceLocation texture) {
-        RenderType.CompositeState state = RenderType.CompositeState.builder()
-                .setShaderState(RENDERTYPE_ENTITY_TRANSLUCENT_EMISSIVE_SHADER)
-                .setTextureState(new RenderStateShard.TextureStateShard(texture, false, false))
-                .setTransparencyState(LIGHTNING_TRANSPARENCY) // additive: SRC_ALPHA, ONE
-                .setCullState(NO_CULL)
-                .setWriteMaskState(COLOR_WRITE)
-                .setOverlayState(OVERLAY)
-                .setDepthTestState(LEQUAL_DEPTH_TEST) // sphere occludes disk behind it
-                .setOutputState(WEATHER_TARGET) // renders after water/translucent
-                .createCompositeState(false);
-        return RenderType.create("black_hole_emissive",
-                DefaultVertexFormat.NEW_ENTITY, VertexFormat.Mode.QUADS,
-                1536, true, true, state);
-    }
-}
+    // Scale factor — the structure is 11 blocks across (radius 5), scale up to fill it
+    private static final float SCALE = 3.0f;
 
-public class SingularityDebugRenderer implements BlockEntityRenderer<SingularityDebugBlockEntity> {
-
-    // Cache the rotation parameters so we can compute world-space positions in spawnParticles
-    private float cachedBillboardYaw = 0;
-    private float cachedDiskRotation = 0;
-
-    // All radii are expressed as multiples of scale
-    private static final float SPHERE_MULT = 1.5f;
-    private static final float PHOTON_RING_MULT = 1.65f;
-    private static final float PHOTON_RING_WIDTH_MULT = 0.08f;
-    private static final float DISK_INNER_MULT = 1.8f;
-    private static final float DISK_FADE_MULT = 4.5f;
-    private static final float LENS_ARC_INNER_MULT = 1.6f;
-    private static final float LENS_ARC_OUTER_MULT = 2.1f;
+    private static final float SPHERE_RADIUS = 1.5f * SCALE;
+    private static final float PHOTON_RING_RADIUS = 1.65f * SCALE;
+    private static final float PHOTON_RING_WIDTH = 0.08f * SCALE;
+    private static final float DISK_INNER = 1.8f * SCALE;
+    private static final float DISK_FADE = 4.5f * SCALE;
+    private static final float LENS_ARC_INNER = 1.6f * SCALE;
+    private static final float LENS_ARC_OUTER = 2.1f * SCALE;
 
     private static final int DISK_SEGMENTS = 64;
     private static final int DISK_RADIAL_STEPS = 24;
     private static final float DISK_TILT = 8.0f;
     private static final float DISK_ROTATION_SPEED = 1.5f;
     private static final int LENS_ARC_SEGMENTS = 32;
+    private static final int SPHERE_SUBDIVISIONS = 3;
+    private static final float SHIELD_RADIUS = 16.0f;
+    private static final int SHIELD_SUBDIVISIONS = 3;
 
     private static final ResourceLocation WHITE_TEX =
             ResourceLocation.withDefaultNamespace("textures/misc/white.png");
 
-    // Cached geometry — regenerated when scale changes
     private static List<float[]> sphereTriangles;
-    private static float cachedSphereScale = -1;
+    private static List<float[]> shieldTriangles;
 
-    public SingularityDebugRenderer(BlockEntityRendererProvider.Context context) {
+    private float cachedBillboardYaw = 0;
+    private float cachedDiskRotation = 0;
+
+    public SingularityControllerRenderer(BlockEntityRendererProvider.Context context) {
     }
 
     @Override
-    public void render(SingularityDebugBlockEntity be, float partialTick, PoseStack poseStack,
+    public void render(SingularityControllerBlockEntity be, float partialTick, PoseStack poseStack,
                        MultiBufferSource bufferSource, int packedLight, int packedOverlay) {
+        if (!be.isFormed()) return;
+
+        BlockPos centerPos = be.getCenterPos();
+        if (centerPos == null) return;
         if (be.getLevel() == null) return;
 
-        float scale = (float) be.getScale();
         float gameTime = be.getLevel().getGameTime() + partialTick;
+
+        // Calculate offset from controller to center of the center block
+        double dx = centerPos.getX() + 0.5 - be.getBlockPos().getX();
+        double dy = centerPos.getY() + 0.5 - be.getBlockPos().getY();
+        double dz = centerPos.getZ() + 0.5 - be.getBlockPos().getZ();
+
+        double centerX = be.getBlockPos().getX() + dx;
+        double centerY = be.getBlockPos().getY() + dy;
+        double centerZ = be.getBlockPos().getZ() + dz;
 
         Camera camera = Minecraft.getInstance().gameRenderer.getMainCamera();
         Vec3 cameraPos = camera.getPosition();
-        BlockPos blockPos = be.getBlockPos();
-        double centerX = blockPos.getX() + 0.5;
-        double centerY = blockPos.getY() + 1.5 * scale;
-        double centerZ = blockPos.getZ() + 0.5;
+        float billboardYaw = (float) Math.toDegrees(Math.atan2(
+                cameraPos.x - centerX, cameraPos.z - centerZ));
 
-        poseStack.pushPose();
-        poseStack.translate(0.5, 1.5 * scale, 0.5);
-
-        // Calculate billboard yaw (disk faces camera horizontally)
-        double dx = cameraPos.x - centerX;
-        double dz = cameraPos.z - centerZ;
-        float billboardYaw = (float) Math.toDegrees(Math.atan2(dx, dz));
-
-        // Cache rotation params for particle spawning
         cachedBillboardYaw = billboardYaw;
         cachedDiskRotation = (gameTime * DISK_ROTATION_SPEED) % 360.0f;
 
-        float sphereRadius = SPHERE_MULT * scale;
-        float photonRingRadius = PHOTON_RING_MULT * scale;
-        float photonRingWidth = PHOTON_RING_WIDTH_MULT * scale;
-        float diskInner = DISK_INNER_MULT * scale;
-        float diskFade = DISK_FADE_MULT * scale;
-        float lensArcInner = LENS_ARC_INNER_MULT * scale;
-        float lensArcOuter = LENS_ARC_OUTER_MULT * scale;
+        poseStack.pushPose();
+        poseStack.translate(dx, dy, dz);
 
-        renderBlackHoleSphere(poseStack, bufferSource, packedOverlay, gameTime, sphereRadius, scale);
-        renderPhotonRing(poseStack, bufferSource, packedOverlay, gameTime, billboardYaw,
-                photonRingRadius, photonRingWidth);
-        renderAccretionDisk(poseStack, bufferSource, packedOverlay, gameTime, billboardYaw,
-                diskInner, diskFade);
+        // Build sphere geometry if needed
+        if (sphereTriangles == null) {
+            sphereTriangles = generateIcosphere(SPHERE_RADIUS, SPHERE_SUBDIVISIONS);
+        }
+        if (shieldTriangles == null) {
+            shieldTriangles = generateIcosphere(SHIELD_RADIUS, SHIELD_SUBDIVISIONS);
+        }
+
+        // Render all effects when formed
+        renderBlackHoleSphere(poseStack, bufferSource, packedOverlay, gameTime);
+        renderPhotonRing(poseStack, bufferSource, packedOverlay, gameTime, billboardYaw);
+        renderAccretionDisk(poseStack, bufferSource, packedOverlay, gameTime, billboardYaw);
         renderLensingArc(poseStack, bufferSource, packedOverlay, gameTime,
-                cameraPos, centerX, centerY, centerZ, lensArcInner, lensArcOuter);
+                cameraPos, centerX, centerY, centerZ);
+
+        // Render containment shield based on stability
+        float stability = (float) be.getStability();
+        renderContainmentShield(poseStack, bufferSource, packedOverlay, gameTime, stability);
 
         poseStack.popPose();
 
-        spawnParticles(be, gameTime, billboardYaw, scale, diskFade, sphereRadius);
+        // Spawn particles
+        spawnParticles(be, gameTime, centerX, centerY, centerZ);
     }
 
     // =========================================================================
-    // 1. BLACK HOLE SPHERE
+    // 1. BLACK HOLE SPHERE — uses entitySolid with black_concrete texture
     // =========================================================================
     private void renderBlackHoleSphere(PoseStack poseStack, MultiBufferSource bufferSource,
-                                        int packedOverlay, float gameTime, float sphereRadius, float scale) {
-        if (sphereTriangles == null || cachedSphereScale != scale) {
-            sphereTriangles = generateIcosphere(sphereRadius, 3);
-            cachedSphereScale = scale;
-        }
-
+                                        int packedOverlay, float gameTime) {
         float pulse = 1.0f
                 + 0.03f * (float) Math.sin(gameTime * 0.03)
                 + 0.01f * (float) Math.sin(gameTime * 0.13);
@@ -165,6 +137,7 @@ public class SingularityDebugRenderer implements BlockEntityRenderer<Singularity
                     3, 3, 5, 255, 0, packedOverlay);
             iVertex(pose, consumer, tri[6], tri[7], tri[8], nx, ny, nz,
                     3, 3, 5, 255, 0, packedOverlay);
+            // Degenerate 4th vertex for QUADS format
             iVertex(pose, consumer, tri[6], tri[7], tri[8], nx, ny, nz,
                     3, 3, 5, 255, 0, packedOverlay);
         }
@@ -176,8 +149,7 @@ public class SingularityDebugRenderer implements BlockEntityRenderer<Singularity
     // 2. PHOTON RING
     // =========================================================================
     private void renderPhotonRing(PoseStack poseStack, MultiBufferSource bufferSource,
-                                   int packedOverlay, float gameTime, float billboardYaw,
-                                   float photonRingRadius, float photonRingWidth) {
+                                   int packedOverlay, float gameTime, float billboardYaw) {
         VertexConsumer consumer = bufferSource.getBuffer(
                 BlackHoleRenderTypes.emissiveNoDepth(WHITE_TEX));
         int light = LightTexture.FULL_BRIGHT;
@@ -188,8 +160,8 @@ public class SingularityDebugRenderer implements BlockEntityRenderer<Singularity
 
         PoseStack.Pose pose = poseStack.last();
 
-        float innerR = photonRingRadius - photonRingWidth;
-        float outerR = photonRingRadius + photonRingWidth;
+        float innerR = PHOTON_RING_RADIUS - PHOTON_RING_WIDTH;
+        float outerR = PHOTON_RING_RADIUS + PHOTON_RING_WIDTH;
 
         float bp = 0.85f + 0.15f * (float) Math.sin(gameTime * 0.1);
         int br = (int)(255 * bp);
@@ -202,11 +174,13 @@ public class SingularityDebugRenderer implements BlockEntityRenderer<Singularity
             float c1 = (float) Math.cos(a1), s1 = (float) Math.sin(a1);
             float c2 = (float) Math.cos(a2), s2 = (float) Math.sin(a2);
 
+            // Front face
             iVertex(pose, consumer, c1*innerR, 0, s1*innerR, 0,0,0, br,bg,bb,240, light, packedOverlay);
             iVertex(pose, consumer, c1*outerR, 0, s1*outerR, 0,0,0, br,bg,(int)(bb*0.7),150, light, packedOverlay);
             iVertex(pose, consumer, c2*outerR, 0, s2*outerR, 0,0,0, br,bg,(int)(bb*0.7),150, light, packedOverlay);
             iVertex(pose, consumer, c2*innerR, 0, s2*innerR, 0,0,0, br,bg,bb,240, light, packedOverlay);
 
+            // Back face
             iVertex(pose, consumer, c2*innerR, 0, s2*innerR, 0,0,0, br,bg,bb,240, light, packedOverlay);
             iVertex(pose, consumer, c2*outerR, 0, s2*outerR, 0,0,0, br,bg,(int)(bb*0.7),150, light, packedOverlay);
             iVertex(pose, consumer, c1*outerR, 0, s1*outerR, 0,0,0, br,bg,(int)(bb*0.7),150, light, packedOverlay);
@@ -220,8 +194,7 @@ public class SingularityDebugRenderer implements BlockEntityRenderer<Singularity
     // 3. ACCRETION DISK
     // =========================================================================
     private void renderAccretionDisk(PoseStack poseStack, MultiBufferSource bufferSource,
-                                      int packedOverlay, float gameTime, float billboardYaw,
-                                      float diskInner, float diskFade) {
+                                      int packedOverlay, float gameTime, float billboardYaw) {
         VertexConsumer consumer = bufferSource.getBuffer(
                 BlackHoleRenderTypes.emissiveNoDepth(WHITE_TEX));
         int light = LightTexture.FULL_BRIGHT;
@@ -235,13 +208,13 @@ public class SingularityDebugRenderer implements BlockEntityRenderer<Singularity
 
         PoseStack.Pose pose = poseStack.last();
 
-        float radialRange = diskFade - diskInner;
+        float radialRange = DISK_FADE - DISK_INNER;
 
         for (int ring = 0; ring < DISK_RADIAL_STEPS; ring++) {
             float t0 = (float) ring / DISK_RADIAL_STEPS;
             float t1 = (float) (ring + 1) / DISK_RADIAL_STEPS;
-            float r0 = diskInner + t0 * radialRange;
-            float r1 = diskInner + t1 * radialRange;
+            float r0 = DISK_INNER + t0 * radialRange;
+            float r1 = DISK_INNER + t1 * radialRange;
 
             int[] c0 = diskColorAt(t0);
             int[] c1 = diskColorAt(t1);
@@ -252,6 +225,7 @@ public class SingularityDebugRenderer implements BlockEntityRenderer<Singularity
                 float cos1 = (float) Math.cos(a1), sin1 = (float) Math.sin(a1);
                 float cos2 = (float) Math.cos(a2), sin2 = (float) Math.sin(a2);
 
+                // Front face
                 iVertex(pose, consumer, cos1*r0, 0, sin1*r0, 0,0,0,
                         c0[0], c0[1], c0[2], c0[3], light, packedOverlay);
                 iVertex(pose, consumer, cos1*r1, 0, sin1*r1, 0,0,0,
@@ -261,6 +235,7 @@ public class SingularityDebugRenderer implements BlockEntityRenderer<Singularity
                 iVertex(pose, consumer, cos2*r0, 0, sin2*r0, 0,0,0,
                         c0[0], c0[1], c0[2], c0[3], light, packedOverlay);
 
+                // Back face
                 iVertex(pose, consumer, cos2*r0, 0, sin2*r0, 0,0,0,
                         c0[0], c0[1], c0[2], c0[3], light, packedOverlay);
                 iVertex(pose, consumer, cos2*r1, 0, sin2*r1, 0,0,0,
@@ -275,7 +250,6 @@ public class SingularityDebugRenderer implements BlockEntityRenderer<Singularity
         poseStack.popPose();
     }
 
-    /** Continuous color gradient for the accretion disk. t=0 is inner edge, t=1 is outer edge. */
     private static int[] diskColorAt(float t) {
         float[][] stops = {
             {0.00f, 255, 255, 240, 255},
@@ -311,17 +285,16 @@ public class SingularityDebugRenderer implements BlockEntityRenderer<Singularity
     // =========================================================================
     private void renderLensingArc(PoseStack poseStack, MultiBufferSource bufferSource,
                                    int packedOverlay, float gameTime,
-                                   Vec3 cameraPos, double cx, double cy, double cz,
-                                   float lensArcInner, float lensArcOuter) {
+                                   Vec3 cameraPos, double cx, double cy, double cz) {
         VertexConsumer consumer = bufferSource.getBuffer(
                 BlackHoleRenderTypes.emissiveNoDepth(WHITE_TEX));
         int light = LightTexture.FULL_BRIGHT;
 
         poseStack.pushPose();
 
-        double dx = cameraPos.x - cx;
-        double dz = cameraPos.z - cz;
-        float yaw = (float) Math.toDegrees(Math.atan2(dx, dz));
+        double ddx = cameraPos.x - cx;
+        double ddz = cameraPos.z - cz;
+        float yaw = (float) Math.toDegrees(Math.atan2(ddx, ddz));
 
         poseStack.mulPose(Axis.YP.rotationDegrees(yaw));
         poseStack.mulPose(Axis.XP.rotationDegrees(DISK_TILT));
@@ -331,13 +304,13 @@ public class SingularityDebugRenderer implements BlockEntityRenderer<Singularity
         float pulse = 0.9f + 0.1f * (float) Math.sin(gameTime * 0.08);
 
         int lensRadialSteps = 8;
-        float lensRadialRange = lensArcOuter - lensArcInner;
+        float lensRadialRange = LENS_ARC_OUTER - LENS_ARC_INNER;
 
         for (int ring = 0; ring < lensRadialSteps; ring++) {
             float rt0 = (float) ring / lensRadialSteps;
             float rt1 = (float) (ring + 1) / lensRadialSteps;
-            float rad0 = lensArcInner + rt0 * lensRadialRange;
-            float rad1 = lensArcInner + rt1 * lensRadialRange;
+            float rad0 = LENS_ARC_INNER + rt0 * lensRadialRange;
+            float rad1 = LENS_ARC_INNER + rt1 * lensRadialRange;
 
             for (int i = 0; i < LENS_ARC_SEGMENTS; i++) {
                 float a1 = (float) (i * 2 * Math.PI / LENS_ARC_SEGMENTS);
@@ -395,7 +368,54 @@ public class SingularityDebugRenderer implements BlockEntityRenderer<Singularity
     }
 
     // =========================================================================
-    // 5. PARTICLES
+    // 5. CONTAINMENT SHIELD
+    // =========================================================================
+    private void renderContainmentShield(PoseStack poseStack, MultiBufferSource bufferSource,
+                                          int packedOverlay, float gameTime, float stability) {
+        if (stability <= 0) return;
+
+        VertexConsumer consumer = bufferSource.getBuffer(
+                BlackHoleRenderTypes.emissiveNoDepth(WHITE_TEX));
+        int light = LightTexture.FULL_BRIGHT;
+
+        // Stability 0-100 mapped to shield properties
+        float t = stability / 100.0f; // 0.0 to 1.0
+
+        // Color: high stability = cyan/blue, low stability = red/orange
+        int r = clamp255((int)(255 * (1.0f - t) + 40 * t));
+        int g = clamp255((int)(40 * (1.0f - t) + 200 * t));
+        int b = clamp255((int)(20 * (1.0f - t) + 255 * t));
+
+        // Alpha: scales with stability, with a subtle pulse
+        float pulse = 0.85f + 0.15f * (float) Math.sin(gameTime * 0.05);
+        // Flicker when low stability
+        float flicker = 1.0f;
+        if (t < 0.3f) {
+            flicker = 0.5f + 0.5f * (float) Math.sin(gameTime * 0.7 + Math.sin(gameTime * 1.3) * 3.0);
+            flicker = Math.max(0.1f, flicker);
+        }
+        int alpha = clamp255((int)(60 * t * pulse * flicker));
+        if (alpha < 3) return; // too faint to bother
+
+        PoseStack.Pose pose = poseStack.last();
+
+        for (float[] tri : shieldTriangles) {
+            float nx = -tri[9], ny = -tri[10], nz = -tri[11];
+            // Front face
+            iVertex(pose, consumer, tri[0], tri[1], tri[2], nx, ny, nz, r, g, b, alpha, light, packedOverlay);
+            iVertex(pose, consumer, tri[3], tri[4], tri[5], nx, ny, nz, r, g, b, alpha, light, packedOverlay);
+            iVertex(pose, consumer, tri[6], tri[7], tri[8], nx, ny, nz, r, g, b, alpha, light, packedOverlay);
+            iVertex(pose, consumer, tri[6], tri[7], tri[8], nx, ny, nz, r, g, b, alpha, light, packedOverlay);
+            // Back face
+            iVertex(pose, consumer, tri[6], tri[7], tri[8], nx, ny, nz, r, g, b, alpha, light, packedOverlay);
+            iVertex(pose, consumer, tri[6], tri[7], tri[8], nx, ny, nz, r, g, b, alpha, light, packedOverlay);
+            iVertex(pose, consumer, tri[3], tri[4], tri[5], nx, ny, nz, r, g, b, alpha, light, packedOverlay);
+            iVertex(pose, consumer, tri[0], tri[1], tri[2], nx, ny, nz, r, g, b, alpha, light, packedOverlay);
+        }
+    }
+
+    // =========================================================================
+    // 6. PARTICLES
     // =========================================================================
     private Vec3 diskToWorld(double lx, double lz, double cx, double cy, double cz,
                               float yawRad, float tiltRad, float rotRad) {
@@ -417,36 +437,26 @@ public class SingularityDebugRenderer implements BlockEntityRenderer<Singularity
         return new Vec3(cx + fx, cy + fy, cz + fz);
     }
 
-    private void spawnParticles(SingularityDebugBlockEntity be, float gameTime, float billboardYaw,
-                                 float scale, float diskFade, float sphereRadius) {
+    private void spawnParticles(SingularityControllerBlockEntity be, float gameTime,
+                                 double cx, double cy, double cz) {
         if (!(be.getLevel() instanceof ClientLevel level)) return;
-
-        BlockPos pos = be.getBlockPos();
-        double cx = pos.getX() + 0.5;
-        double cy = pos.getY() + 1.5 * scale;
-        double cz = pos.getZ() + 0.5;
 
         float yawRad = (float) Math.toRadians(cachedBillboardYaw);
         float tiltRad = (float) Math.toRadians(DISK_TILT);
         float rotRad = (float) Math.toRadians(cachedDiskRotation);
 
-        // === DISK PLANE PARTICLES ===
+        // Disk plane particles
         for (int p = 0; p < 10; p++) {
             if (level.random.nextFloat() < 0.95f) {
                 float angle = level.random.nextFloat() * (float)(2 * Math.PI);
-                float radius = diskFade;
-                double lx = Math.cos(angle) * radius;
-                double lz = Math.sin(angle) * radius;
+                double lx = Math.cos(angle) * DISK_FADE;
+                double lz = Math.sin(angle) * DISK_FADE;
 
                 Vec3 worldPos = diskToWorld(lx, lz, cx, cy, cz, yawRad, tiltRad, rotRad);
 
-                double x = worldPos.x;
-                double y = worldPos.y;
-                double z = worldPos.z;
-
-                double toX = cx - x;
-                double toY = cy - y;
-                double toZ = cz - z;
+                double toX = cx - worldPos.x;
+                double toY = cy - worldPos.y;
+                double toZ = cz - worldPos.z;
                 double dist = Math.sqrt(toX * toX + toY * toY + toZ * toZ);
 
                 double speed = dist / 50.0;
@@ -454,16 +464,16 @@ public class SingularityDebugRenderer implements BlockEntityRenderer<Singularity
                 double vy = (toY / dist) * speed;
                 double vz = (toZ / dist) * speed;
 
-                level.addParticle(ModParticles.ACCRETION_DISK.get(), x, y, z, vx, vy, vz);
+                level.addParticle(ModParticles.ACCRETION_DISK.get(), worldPos.x, worldPos.y, worldPos.z, vx, vy, vz);
             }
         }
 
-        // === INFALL PARTICLES ===
+        // Infall particles
         for (int p = 0; p < 2; p++) {
             if (level.random.nextFloat() < 0.4f) {
                 float angle = level.random.nextFloat() * (float)(2 * Math.PI);
-                float radius = diskFade + 0.5f * scale + level.random.nextFloat() * 3.0f * scale;
-                float heightOff = (level.random.nextFloat() - 0.5f) * 2.0f * scale;
+                float radius = DISK_FADE + 0.5f * SCALE + level.random.nextFloat() * 3.0f * SCALE;
+                float heightOff = (level.random.nextFloat() - 0.5f) * 2.0f * SCALE;
 
                 double x = cx + Math.cos(angle) * radius;
                 double y = cy + heightOff;
@@ -477,12 +487,12 @@ public class SingularityDebugRenderer implements BlockEntityRenderer<Singularity
             }
         }
 
-        // === SPHERE INFALL PARTICLES ===
+        // Sphere infall particles
         for (int p = 0; p < 3; p++) {
             if (level.random.nextFloat() < 0.5f) {
                 float angle = level.random.nextFloat() * (float)(2 * Math.PI);
                 float phi = (level.random.nextFloat() - 0.5f) * (float) Math.PI;
-                float radius = sphereRadius + 1.5f * scale;
+                float radius = SPHERE_RADIUS + 1.5f * SCALE;
 
                 double x = cx + Math.cos(angle) * Math.cos(phi) * radius;
                 double y = cy + Math.sin(phi) * radius;
@@ -494,11 +504,8 @@ public class SingularityDebugRenderer implements BlockEntityRenderer<Singularity
                 double dist = Math.sqrt(toX * toX + toY * toY + toZ * toZ);
                 double speed = dist / 50.0;
 
-                double vx = (toX / dist) * speed;
-                double vy = (toY / dist) * speed;
-                double vz = (toZ / dist) * speed;
-
-                level.addParticle(ModParticles.ACCRETION_DISK.get(), x, y, z, vx, vy, vz);
+                level.addParticle(ModParticles.ACCRETION_DISK.get(), x, y, z,
+                        (toX / dist) * speed, (toY / dist) * speed, (toZ / dist) * speed);
             }
         }
     }
@@ -524,8 +531,21 @@ public class SingularityDebugRenderer implements BlockEntityRenderer<Singularity
                 .setNormal(pose, nx, ny, nz);
     }
 
+    @Override
+    public AABB getRenderBoundingBox(SingularityControllerBlockEntity be) {
+        BlockPos pos = be.getBlockPos();
+        int r = (int)(DISK_FADE + 2);
+        return new AABB(pos.getX() - r, pos.getY() - r, pos.getZ() - r,
+                         pos.getX() + r + 1, pos.getY() + r + 1, pos.getZ() + r + 1);
+    }
+
+    @Override
+    public boolean shouldRenderOffScreen(SingularityControllerBlockEntity be) {
+        return true;
+    }
+
     // =========================================================================
-    // ICOSPHERE GENERATION
+    // ICOSPHERE GENERATION (same as SingularityDebugRenderer)
     // =========================================================================
     private static List<float[]> generateIcosphere(float radius, int subdivisions) {
         float t = (float) ((1.0 + Math.sqrt(5.0)) / 2.0);
@@ -595,20 +615,5 @@ public class SingularityDebugRenderer implements BlockEntityRenderer<Singularity
     private static float[] normalize(float[] v) {
         float len = (float) Math.sqrt(v[0]*v[0] + v[1]*v[1] + v[2]*v[2]);
         return new float[]{v[0]/len, v[1]/len, v[2]/len};
-    }
-
-    @Override
-    public boolean shouldRenderOffScreen(SingularityDebugBlockEntity be) {
-        return true;
-    }
-
-    @Override
-    public AABB getRenderBoundingBox(SingularityDebugBlockEntity be) {
-        BlockPos pos = be.getBlockPos();
-        float scale = (float) be.getScale();
-        int r = (int)(6 * scale) + 1;
-        return new AABB(
-                pos.getX() - r, pos.getY() - r, pos.getZ() - r,
-                pos.getX() + r + 1, pos.getY() + r + 2, pos.getZ() + r + 1);
     }
 }

@@ -8,7 +8,12 @@ import com.setusertso.tachyon.block.entity.AcceleratorCasingBlockEntity;
 import com.setusertso.tachyon.block.entity.AcceleratorControllerBlockEntity;
 import com.setusertso.tachyon.block.entity.AcceleratorPortBlockEntity;
 import com.setusertso.tachyon.block.entity.CreativePowerBlockEntity;
+import com.setusertso.tachyon.block.entity.ExoticMatterCoreBlockEntity;
+import com.setusertso.tachyon.block.entity.PhotonicInjectorBlockEntity;
+import com.setusertso.tachyon.block.entity.SingularityCasingBlockEntity;
+import com.setusertso.tachyon.block.entity.SingularityControllerBlockEntity;
 import com.setusertso.tachyon.block.entity.SingularityDebugBlockEntity;
+import com.setusertso.tachyon.block.entity.SingularityPortBlockEntity;
 import com.setusertso.tachyon.block.entity.SuperluminalEmitterBlockEntity;
 import com.setusertso.tachyon.block.entity.TachyonLightGeneratorBlockEntity;
 
@@ -50,6 +55,31 @@ public class ModBlockEntities {
             BLOCK_ENTITIES.register("creative_power_source",
                     () -> BlockEntityType.Builder.of(CreativePowerBlockEntity::new,
                             ModBlocks.CREATIVE_POWER_SOURCE.get()).build(null));
+
+    public static final Supplier<BlockEntityType<SingularityControllerBlockEntity>> SINGULARITY_CONTROLLER =
+            BLOCK_ENTITIES.register("singularity_controller",
+                    () -> BlockEntityType.Builder.of(SingularityControllerBlockEntity::new,
+                            ModBlocks.SINGULARITY_CONTROLLER.get()).build(null));
+
+    public static final Supplier<BlockEntityType<SingularityCasingBlockEntity>> SINGULARITY_CASING =
+            BLOCK_ENTITIES.register("singularity_casing",
+                    () -> BlockEntityType.Builder.of(SingularityCasingBlockEntity::new,
+                            ModBlocks.SINGULARITY_CASING.get()).build(null));
+
+    public static final Supplier<BlockEntityType<SingularityPortBlockEntity>> SINGULARITY_PORT =
+            BLOCK_ENTITIES.register("singularity_port",
+                    () -> BlockEntityType.Builder.of(SingularityPortBlockEntity::new,
+                            ModBlocks.SINGULARITY_PORT.get()).build(null));
+
+    public static final Supplier<BlockEntityType<ExoticMatterCoreBlockEntity>> EXOTIC_MATTER_CORE =
+            BLOCK_ENTITIES.register("exotic_matter_core",
+                    () -> BlockEntityType.Builder.of(ExoticMatterCoreBlockEntity::new,
+                            ModBlocks.EXOTIC_MATTER_CORE.get()).build(null));
+
+    public static final Supplier<BlockEntityType<PhotonicInjectorBlockEntity>> PHOTONIC_INJECTOR =
+            BLOCK_ENTITIES.register("photonic_injector",
+                    () -> BlockEntityType.Builder.of(PhotonicInjectorBlockEntity::new,
+                            ModBlocks.PHOTONIC_INJECTOR.get()).build(null));
 
     public static final Supplier<BlockEntityType<SingularityDebugBlockEntity>> SINGULARITY_DEBUG =
             BLOCK_ENTITIES.register("singularity_debug",

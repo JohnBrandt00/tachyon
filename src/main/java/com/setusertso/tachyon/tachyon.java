@@ -112,6 +112,16 @@ public class tachyon {
                 output.accept(ModBlocks.ACCELERATOR_GLASS_ITEM.get());
                 // Fluids
                 output.accept(ModItems.HELIUM_BUCKET.get());
+                // Singularity Engine
+                output.accept(ModItems.PHOTONIC_MATRIX.get());
+                output.accept(ModItems.CONDENSED_LIGHT.get());
+                output.accept(ModItems.EXOTIC_MATTER.get());
+                // Singularity Engine blocks
+                output.accept(ModBlocks.SINGULARITY_CONTROLLER_ITEM.get());
+                output.accept(ModBlocks.SINGULARITY_CASING_ITEM.get());
+                output.accept(ModBlocks.SINGULARITY_PORT_ITEM.get());
+                output.accept(ModBlocks.EXOTIC_MATTER_CORE_ITEM.get());
+                output.accept(ModBlocks.PHOTONIC_INJECTOR_ITEM.get());
                 // Creative / Testing
                 output.accept(ModBlocks.CREATIVE_POWER_SOURCE_ITEM.get());
                 output.accept(ModBlocks.SINGULARITY_DEBUG_ITEM.get());

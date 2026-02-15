@@ -20,6 +20,11 @@
     "tachyon:accelerator_port",
     "tachyon:accelerator_glass",
     "tachyon:creative_power_source",
-    "tachyon:singularity_debug"
+    "tachyon:singularity_debug",
+    "tachyon:singularity_controller",
+    "tachyon:singularity_casing",
+    "tachyon:singularity_port",
+    "tachyon:exotic_matter_core",
+    "tachyon:photonic_injector"
   ]
 }

@@ -1,6 +1,8 @@
 package com.setusertso.tachyon;
 
 import com.setusertso.tachyon.client.AcceleratorControllerRenderer;
+import com.setusertso.tachyon.client.PhotonicInjectorRenderer;
+import com.setusertso.tachyon.client.SingularityControllerRenderer;
 import com.setusertso.tachyon.client.SingularityDebugRenderer;
 import com.setusertso.tachyon.client.particle.AccretionDiskParticle;
 import com.setusertso.tachyon.init.ModBlockEntities;
@@ -9,6 +11,9 @@ import com.setusertso.tachyon.init.ModMenuTypes;
 import com.setusertso.tachyon.init.ModParticles;
 import com.setusertso.tachyon.screen.AcceleratorControllerScreen;
 import com.setusertso.tachyon.screen.AcceleratorPortScreen;
+import com.setusertso.tachyon.screen.PhotonicInjectorScreen;
+import com.setusertso.tachyon.screen.SingularityControllerScreen;
+import com.setusertso.tachyon.screen.SingularityPortScreen;
 import com.setusertso.tachyon.screen.SuperluminalEmitterScreen;
 
 import net.minecraft.client.Minecraft;
@@ -48,6 +53,9 @@ public class tachyonClient {
         event.register(ModMenuTypes.SUPERLUMINAL_EMITTER.get(), SuperluminalEmitterScreen::new);
         event.register(ModMenuTypes.ACCELERATOR_CONTROLLER.get(), AcceleratorControllerScreen::new);
         event.register(ModMenuTypes.ACCELERATOR_PORT.get(), AcceleratorPortScreen::new);
+        event.register(ModMenuTypes.SINGULARITY_CONTROLLER.get(), SingularityControllerScreen::new);
+        event.register(ModMenuTypes.SINGULARITY_PORT.get(), SingularityPortScreen::new);
+        event.register(ModMenuTypes.PHOTONIC_INJECTOR.get(), PhotonicInjectorScreen::new);
     }
 
     private void onRegisterRenderers(EntityRenderersEvent.RegisterRenderers event) {
@@ -55,6 +63,10 @@ public class tachyonClient {
                 AcceleratorControllerRenderer::new);
         event.registerBlockEntityRenderer(ModBlockEntities.SINGULARITY_DEBUG.get(),
                 SingularityDebugRenderer::new);
+        event.registerBlockEntityRenderer(ModBlockEntities.SINGULARITY_CONTROLLER.get(),
+                SingularityControllerRenderer::new);
+        event.registerBlockEntityRenderer(ModBlockEntities.PHOTONIC_INJECTOR.get(),
+                PhotonicInjectorRenderer::new);
     }
 
     private void onRegisterParticleProviders(RegisterParticleProvidersEvent event) {
