@@ -80,6 +80,24 @@ public class ModItems {
     public static final DeferredItem<Item> CAPACITY_UPGRADE = ITEMS.register("capacity_upgrade",
             () -> new Item(new Item.Properties().stacksTo(32)));
 
+    // Void Miner Modules
+    public static final DeferredItem<Item> ORE_EXTRACTION_MODULE = ITEMS.register("ore_extraction_module",
+            () -> new Item(new Item.Properties().stacksTo(64)));
+    public static final DeferredItem<Item> SILK_TOUCH_MODULE = ITEMS.register("silk_touch_module",
+            () -> new Item(new Item.Properties().stacksTo(64)));
+    public static final DeferredItem<Item> RARE_EARTH_MODULE = ITEMS.register("rare_earth_module",
+            () -> new Item(new Item.Properties().stacksTo(64)));
+    public static final DeferredItem<Item> NETHER_SIPHON_MODULE = ITEMS.register("nether_siphon_module",
+            () -> new Item(new Item.Properties().stacksTo(64)));
+    public static final DeferredItem<Item> END_SIPHON_MODULE = ITEMS.register("end_siphon_module",
+            () -> new Item(new Item.Properties().stacksTo(64)));
+    public static final DeferredItem<Item> EXOTIC_ATTUNEMENT_MODULE = ITEMS.register("exotic_attunement_module",
+            () -> new Item(new Item.Properties().stacksTo(64)));
+    public static final DeferredItem<Item> SPEED_MODULE = ITEMS.register("speed_module",
+            () -> new Item(new Item.Properties().stacksTo(64)));
+    public static final DeferredItem<Item> FORTUNE_MODULE = ITEMS.register("fortune_module",
+            () -> new Item(new Item.Properties().stacksTo(64)));
+
     public static void register(IEventBus modEventBus) {
         ITEMS.register(modEventBus);
     }

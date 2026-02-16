@@ -1,0 +1,12 @@
+{
+  "variants": {
+    "active=false,facing=north": { "model": "tachyon:block/ore_crusher" },
+    "active=false,facing=south": { "model": "tachyon:block/ore_crusher", "y": 180 },
+    "active=false,facing=west": { "model": "tachyon:block/ore_crusher", "y": 270 },
+    "active=false,facing=east": { "model": "tachyon:block/ore_crusher", "y": 90 },
+    "active=true,facing=north": { "model": "tachyon:block/ore_crusher_active" },
+    "active=true,facing=south": { "model": "tachyon:block/ore_crusher_active", "y": 180 },
+    "active=true,facing=west": { "model": "tachyon:block/ore_crusher_active", "y": 270 },
+    "active=true,facing=east": { "model": "tachyon:block/ore_crusher_active", "y": 90 }
+  }
+}

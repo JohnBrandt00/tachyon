@@ -1,0 +1,20 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+    " T ",
+    "TFT",
+    " T "
+  ],
+  "key": {
+    "T": {
+      "item": "tachyon:tachyon_alloy_ingot"
+    },
+    "F": {
+      "item": "tachyon:stabilized_void_frame"
+    }
+  },
+  "result": {
+    "id": "tachyon:reinforced_void_frame",
+    "count": 1
+  }
+}

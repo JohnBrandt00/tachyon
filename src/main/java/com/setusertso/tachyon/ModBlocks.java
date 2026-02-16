@@ -1,11 +1,13 @@
 package com.setusertso.tachyon;
 
+import com.setusertso.tachyon.block.AlloyForgeBlock;
 import com.setusertso.tachyon.block.AcceleratorCasingBlock;
 import com.setusertso.tachyon.block.AcceleratorControllerBlock;
 import com.setusertso.tachyon.block.AcceleratorGlassBlock;
 import com.setusertso.tachyon.block.AcceleratorPortBlock;
 import com.setusertso.tachyon.block.PhotonCompressorBlock;
 import com.setusertso.tachyon.block.SolarCollectorBlock;
+import com.setusertso.tachyon.block.OreCrusherBlock;
 import com.setusertso.tachyon.block.CreativePowerBlock;
 import com.setusertso.tachyon.block.CreativePowerSinkBlock;
 import com.setusertso.tachyon.block.ExoticMatterCoreBlock;
@@ -17,6 +19,9 @@ import com.setusertso.tachyon.block.SingularityPortBlock;
 import com.setusertso.tachyon.block.SuperluminalEmitterBlock;
 import com.setusertso.tachyon.block.TachyonLightGeneratorBlock;
 import com.setusertso.tachyon.block.ThoriumReactorBlock;
+import com.setusertso.tachyon.block.VoidFrameBlock;
+import com.setusertso.tachyon.block.VoidMinerControllerBlock;
+import com.setusertso.tachyon.block.VoidMinerPortBlock;
 import com.setusertso.tachyon.init.ModFluids;
 
 import net.minecraft.world.item.BlockItem;
@@ -199,6 +204,59 @@ public class ModBlocks {
                     .lightLevel(state -> state.getValue(PhotonCompressorBlock.ACTIVE) ? 12 : 0)));
     public static final DeferredItem<BlockItem> PHOTON_COMPRESSOR_ITEM = BLOCK_ITEMS.register("photon_compressor",
             () -> new BlockItem(PHOTON_COMPRESSOR.get(), new Item.Properties()));
+
+    // Ore Crusher
+    public static final DeferredBlock<OreCrusherBlock> ORE_CRUSHER = BLOCKS.register("ore_crusher",
+            () -> new OreCrusherBlock(BlockBehaviour.Properties.of()
+                    .mapColor(MapColor.METAL).strength(4.0F, 6.0F).sound(SoundType.METAL).requiresCorrectToolForDrops()
+                    .lightLevel(state -> state.getValue(OreCrusherBlock.ACTIVE) ? 4 : 0)));
+    public static final DeferredItem<BlockItem> ORE_CRUSHER_ITEM = BLOCK_ITEMS.register("ore_crusher",
+            () -> new BlockItem(ORE_CRUSHER.get(), new Item.Properties()));
+
+    // Alloy Forge
+    public static final DeferredBlock<AlloyForgeBlock> ALLOY_FORGE = BLOCKS.register("alloy_forge",
+            () -> new AlloyForgeBlock(BlockBehaviour.Properties.of()
+                    .mapColor(MapColor.METAL).strength(5.0F, 6.0F).sound(SoundType.METAL).requiresCorrectToolForDrops()
+                    .lightLevel(state -> state.getValue(AlloyForgeBlock.ACTIVE) ? 10 : 0)));
+    public static final DeferredItem<BlockItem> ALLOY_FORGE_ITEM = BLOCK_ITEMS.register("alloy_forge",
+            () -> new BlockItem(ALLOY_FORGE.get(), new Item.Properties()));
+
+    // Void Miner
+    public static final DeferredBlock<VoidMinerControllerBlock> VOID_MINER_CONTROLLER = BLOCKS.register("void_miner_controller",
+            () -> new VoidMinerControllerBlock(BlockBehaviour.Properties.of()
+                    .mapColor(MapColor.METAL).strength(5.0F, 6.0F).sound(SoundType.METAL).requiresCorrectToolForDrops()));
+    public static final DeferredItem<BlockItem> VOID_MINER_CONTROLLER_ITEM = BLOCK_ITEMS.register("void_miner_controller",
+            () -> new BlockItem(VOID_MINER_CONTROLLER.get(), new Item.Properties()));
+
+    public static final DeferredBlock<VoidFrameBlock> VOID_FRAME = BLOCKS.register("void_frame",
+            () -> new VoidFrameBlock(BlockBehaviour.Properties.of()
+                    .mapColor(MapColor.METAL).strength(5.0F, 6.0F).sound(SoundType.METAL).requiresCorrectToolForDrops(), 1));
+    public static final DeferredItem<BlockItem> VOID_FRAME_ITEM = BLOCK_ITEMS.register("void_frame",
+            () -> new BlockItem(VOID_FRAME.get(), new Item.Properties()));
+
+    public static final DeferredBlock<VoidFrameBlock> STABILIZED_VOID_FRAME = BLOCKS.register("stabilized_void_frame",
+            () -> new VoidFrameBlock(BlockBehaviour.Properties.of()
+                    .mapColor(MapColor.METAL).strength(5.0F, 6.0F).sound(SoundType.METAL).requiresCorrectToolForDrops(), 2));
+    public static final DeferredItem<BlockItem> STABILIZED_VOID_FRAME_ITEM = BLOCK_ITEMS.register("stabilized_void_frame",
+            () -> new BlockItem(STABILIZED_VOID_FRAME.get(), new Item.Properties()));
+
+    public static final DeferredBlock<VoidFrameBlock> REINFORCED_VOID_FRAME = BLOCKS.register("reinforced_void_frame",
+            () -> new VoidFrameBlock(BlockBehaviour.Properties.of()
+                    .mapColor(MapColor.METAL).strength(6.0F, 8.0F).sound(SoundType.METAL).requiresCorrectToolForDrops(), 3));
+    public static final DeferredItem<BlockItem> REINFORCED_VOID_FRAME_ITEM = BLOCK_ITEMS.register("reinforced_void_frame",
+            () -> new BlockItem(REINFORCED_VOID_FRAME.get(), new Item.Properties()));
+
+    public static final DeferredBlock<VoidFrameBlock> QUANTUM_VOID_FRAME = BLOCKS.register("quantum_void_frame",
+            () -> new VoidFrameBlock(BlockBehaviour.Properties.of()
+                    .mapColor(MapColor.COLOR_PURPLE).strength(6.0F, 10.0F).sound(SoundType.METAL).requiresCorrectToolForDrops(), 4));
+    public static final DeferredItem<BlockItem> QUANTUM_VOID_FRAME_ITEM = BLOCK_ITEMS.register("quantum_void_frame",
+            () -> new BlockItem(QUANTUM_VOID_FRAME.get(), new Item.Properties()));
+
+    public static final DeferredBlock<VoidMinerPortBlock> VOID_MINER_PORT = BLOCKS.register("void_miner_port",
+            () -> new VoidMinerPortBlock(BlockBehaviour.Properties.of()
+                    .mapColor(MapColor.METAL).strength(5.0F, 6.0F).sound(SoundType.METAL).requiresCorrectToolForDrops()));
+    public static final DeferredItem<BlockItem> VOID_MINER_PORT_ITEM = BLOCK_ITEMS.register("void_miner_port",
+            () -> new BlockItem(VOID_MINER_PORT.get(), new Item.Properties()));
 
     // Creative Power Source (test block)
     public static final DeferredBlock<CreativePowerBlock> CREATIVE_POWER_SOURCE = BLOCKS.register("creative_power_source",

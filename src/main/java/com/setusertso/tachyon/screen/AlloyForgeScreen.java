@@ -1,0 +1,52 @@
+package com.setusertso.tachyon.screen;
+
+import com.setusertso.tachyon.menu.AlloyForgeMenu;
+import com.setusertso.tachyon.tachyon;
+
+import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
+import net.minecraft.network.chat.Component;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.entity.player.Inventory;
+
+public class AlloyForgeScreen extends AbstractContainerScreen<AlloyForgeMenu> {
+    private static final ResourceLocation TEXTURE =
+            ResourceLocation.fromNamespaceAndPath(tachyon.MODID, "textures/gui/alloy_forge.png");
+
+    public AlloyForgeScreen(AlloyForgeMenu menu, Inventory playerInventory, Component title) {
+        super(menu, playerInventory, title);
+        this.imageWidth = 176;
+        this.imageHeight = 166;
+    }
+
+    @Override
+    protected void renderBg(GuiGraphics graphics, float partialTick, int mouseX, int mouseY) {
+        graphics.blit(TEXTURE, this.leftPos, this.topPos, 0, 0, this.imageWidth, this.imageHeight);
+
+        float energyScaled = this.menu.getEnergyScaled();
+        if (energyScaled > 0) {
+            int barHeight = (int) (energyScaled * 52);
+            graphics.blit(TEXTURE, this.leftPos + 10, this.topPos + 16 + 52 - barHeight,
+                    176, 52 - barHeight, 16, barHeight);
+        }
+
+        float progressScaled = this.menu.getProgressScaled();
+        if (progressScaled > 0) {
+            int arrowWidth = (int) (progressScaled * 24);
+            graphics.blit(TEXTURE, this.leftPos + 79, this.topPos + 34,
+                    176, 52, arrowWidth, 17);
+        }
+    }
+
+    @Override
+    public void render(GuiGraphics graphics, int mouseX, int mouseY, float partialTick) {
+        super.render(graphics, mouseX, mouseY, partialTick);
+        this.renderTooltip(graphics, mouseX, mouseY);
+
+        if (isHovering(10, 16, 16, 52, mouseX, mouseY)) {
+            graphics.renderTooltip(this.font,
+                    Component.literal(this.menu.getEnergy() + " / " + this.menu.getMaxEnergy() + " FE"),
+                    mouseX, mouseY);
+        }
+    }
+}

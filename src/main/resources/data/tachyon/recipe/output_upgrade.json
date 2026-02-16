@@ -1,0 +1,16 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+    " D ",
+    "DLD",
+    " D "
+  ],
+  "key": {
+    "D": { "item": "minecraft:diamond" },
+    "L": { "item": "minecraft:lapis_lazuli" }
+  },
+  "result": {
+    "id": "tachyon:output_upgrade",
+    "count": 2
+  }
+}

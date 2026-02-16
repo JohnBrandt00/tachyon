@@ -1,0 +1,11 @@
+{
+  "type": "tachyon:void_mining",
+  "result_item": "minecraft:coal",
+  "result_count": 4,
+  "weight": 15,
+  "min_count": 3,
+  "max_count": 6,
+  "tier": 1,
+  "category": "common_ore",
+  "silk_touch_item": "minecraft:coal_ore"
+}

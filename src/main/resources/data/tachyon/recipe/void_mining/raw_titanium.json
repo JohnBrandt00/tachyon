@@ -1,0 +1,11 @@
+{
+  "type": "tachyon:void_mining",
+  "result_item": "tachyon:raw_titanium",
+  "result_count": 2,
+  "weight": 12,
+  "min_count": 1,
+  "max_count": 3,
+  "tier": 2,
+  "category": "mod_ore",
+  "silk_touch_item": "tachyon:titanium_ore"
+}

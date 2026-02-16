@@ -1,0 +1,11 @@
+{
+  "type": "tachyon:void_mining",
+  "result_item": "minecraft:quartz",
+  "result_count": 4,
+  "weight": 8,
+  "min_count": 3,
+  "max_count": 5,
+  "tier": 2,
+  "category": "nether",
+  "silk_touch_item": "minecraft:nether_quartz_ore"
+}

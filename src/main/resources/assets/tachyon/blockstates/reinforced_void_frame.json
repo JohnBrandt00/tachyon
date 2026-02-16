@@ -1,0 +1,7 @@
+{
+  "variants": {
+    "": {
+      "model": "tachyon:block/reinforced_void_frame"
+    }
+  }
+}

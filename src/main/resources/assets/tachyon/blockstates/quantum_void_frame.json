@@ -1,0 +1,7 @@
+{
+  "variants": {
+    "": {
+      "model": "tachyon:block/quantum_void_frame"
+    }
+  }
+}

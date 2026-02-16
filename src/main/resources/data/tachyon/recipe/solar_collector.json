@@ -1,0 +1,18 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+    "GGG",
+    "TLT",
+    "III"
+  ],
+  "key": {
+    "G": { "item": "minecraft:glass" },
+    "T": { "item": "tachyon:titanium_ingot" },
+    "L": { "item": "minecraft:daylight_detector" },
+    "I": { "item": "minecraft:iron_ingot" }
+  },
+  "result": {
+    "id": "tachyon:solar_collector",
+    "count": 1
+  }
+}

@@ -1,0 +1,10 @@
+{
+  "type": "tachyon:void_mining",
+  "result_item": "minecraft:ancient_debris",
+  "result_count": 1,
+  "weight": 3,
+  "min_count": 1,
+  "max_count": 1,
+  "tier": 4,
+  "category": "ultra_rare"
+}

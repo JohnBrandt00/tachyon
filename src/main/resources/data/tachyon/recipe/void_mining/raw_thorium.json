@@ -1,0 +1,11 @@
+{
+  "type": "tachyon:void_mining",
+  "result_item": "tachyon:raw_thorium",
+  "result_count": 1,
+  "weight": 10,
+  "min_count": 1,
+  "max_count": 2,
+  "tier": 2,
+  "category": "mod_ore",
+  "silk_touch_item": "tachyon:thorium_ore"
+}

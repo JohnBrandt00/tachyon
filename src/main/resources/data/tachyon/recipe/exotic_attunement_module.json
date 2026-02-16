@@ -1,0 +1,20 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+    " S ",
+    "SQS",
+    " S "
+  ],
+  "key": {
+    "S": {
+      "item": "tachyon:exotic_shard"
+    },
+    "Q": {
+      "item": "tachyon:quantum_processor"
+    }
+  },
+  "result": {
+    "id": "tachyon:exotic_attunement_module",
+    "count": 1
+  }
+}

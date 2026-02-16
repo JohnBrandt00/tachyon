@@ -20,6 +20,11 @@ import com.setusertso.tachyon.block.entity.TachyonLightGeneratorBlockEntity;
 import com.setusertso.tachyon.block.entity.ThoriumReactorBlockEntity;
 import com.setusertso.tachyon.block.entity.SolarCollectorBlockEntity;
 import com.setusertso.tachyon.block.entity.PhotonCompressorBlockEntity;
+import com.setusertso.tachyon.block.entity.OreCrusherBlockEntity;
+import com.setusertso.tachyon.block.entity.AlloyForgeBlockEntity;
+import com.setusertso.tachyon.block.entity.VoidMinerControllerBlockEntity;
+import com.setusertso.tachyon.block.entity.VoidFrameBlockEntity;
+import com.setusertso.tachyon.block.entity.VoidMinerPortBlockEntity;
 
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.world.level.block.entity.BlockEntityType;
@@ -109,6 +114,33 @@ public class ModBlockEntities {
             BLOCK_ENTITIES.register("photon_compressor",
                     () -> BlockEntityType.Builder.of(PhotonCompressorBlockEntity::new,
                             ModBlocks.PHOTON_COMPRESSOR.get()).build(null));
+
+    public static final Supplier<BlockEntityType<OreCrusherBlockEntity>> ORE_CRUSHER =
+            BLOCK_ENTITIES.register("ore_crusher",
+                    () -> BlockEntityType.Builder.of(OreCrusherBlockEntity::new,
+                            ModBlocks.ORE_CRUSHER.get()).build(null));
+
+    public static final Supplier<BlockEntityType<AlloyForgeBlockEntity>> ALLOY_FORGE =
+            BLOCK_ENTITIES.register("alloy_forge",
+                    () -> BlockEntityType.Builder.of(AlloyForgeBlockEntity::new,
+                            ModBlocks.ALLOY_FORGE.get()).build(null));
+
+    // Void Miner
+    public static final Supplier<BlockEntityType<VoidMinerControllerBlockEntity>> VOID_MINER_CONTROLLER =
+            BLOCK_ENTITIES.register("void_miner_controller",
+                    () -> BlockEntityType.Builder.of(VoidMinerControllerBlockEntity::new,
+                            ModBlocks.VOID_MINER_CONTROLLER.get()).build(null));
+
+    public static final Supplier<BlockEntityType<VoidFrameBlockEntity>> VOID_FRAME =
+            BLOCK_ENTITIES.register("void_frame",
+                    () -> BlockEntityType.Builder.of(VoidFrameBlockEntity::new,
+                            ModBlocks.VOID_FRAME.get(), ModBlocks.STABILIZED_VOID_FRAME.get(),
+                            ModBlocks.REINFORCED_VOID_FRAME.get(), ModBlocks.QUANTUM_VOID_FRAME.get()).build(null));
+
+    public static final Supplier<BlockEntityType<VoidMinerPortBlockEntity>> VOID_MINER_PORT =
+            BLOCK_ENTITIES.register("void_miner_port",
+                    () -> BlockEntityType.Builder.of(VoidMinerPortBlockEntity::new,
+                            ModBlocks.VOID_MINER_PORT.get()).build(null));
 
     public static void register(IEventBus modEventBus) {
         BLOCK_ENTITIES.register(modEventBus);

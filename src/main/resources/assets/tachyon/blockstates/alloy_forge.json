@@ -1,0 +1,12 @@
+{
+  "variants": {
+    "active=false,facing=north": { "model": "tachyon:block/alloy_forge" },
+    "active=false,facing=south": { "model": "tachyon:block/alloy_forge", "y": 180 },
+    "active=false,facing=west": { "model": "tachyon:block/alloy_forge", "y": 270 },
+    "active=false,facing=east": { "model": "tachyon:block/alloy_forge", "y": 90 },
+    "active=true,facing=north": { "model": "tachyon:block/alloy_forge_active" },
+    "active=true,facing=south": { "model": "tachyon:block/alloy_forge_active", "y": 180 },
+    "active=true,facing=west": { "model": "tachyon:block/alloy_forge_active", "y": 270 },
+    "active=true,facing=east": { "model": "tachyon:block/alloy_forge_active", "y": 90 }
+  }
+}

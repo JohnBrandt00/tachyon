@@ -1,0 +1,6 @@
+{
+  "parent": "minecraft:block/cube_all",
+  "textures": {
+    "all": "tachyon:block/reinforced_void_frame"
+  }
+}

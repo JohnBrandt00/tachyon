@@ -1,0 +1,10 @@
+{
+  "type": "tachyon:void_mining",
+  "result_item": "tachyon:tachyon_shard",
+  "result_count": 1,
+  "weight": 6,
+  "min_count": 1,
+  "max_count": 2,
+  "tier": 3,
+  "category": "rare"
+}

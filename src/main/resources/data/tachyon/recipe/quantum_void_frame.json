@@ -1,0 +1,20 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+    " Q ",
+    "QFQ",
+    " Q "
+  ],
+  "key": {
+    "Q": {
+      "item": "tachyon:quantum_processor"
+    },
+    "F": {
+      "item": "tachyon:reinforced_void_frame"
+    }
+  },
+  "result": {
+    "id": "tachyon:quantum_void_frame",
+    "count": 1
+  }
+}

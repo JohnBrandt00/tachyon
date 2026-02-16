@@ -1,0 +1,8 @@
+{
+  "parent": "minecraft:block/orientable",
+  "textures": {
+    "top": "tachyon:block/alloy_forge_top",
+    "front": "tachyon:block/alloy_forge_front",
+    "side": "tachyon:block/alloy_forge_side"
+  }
+}

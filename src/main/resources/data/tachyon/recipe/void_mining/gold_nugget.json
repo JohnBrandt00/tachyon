@@ -1,0 +1,10 @@
+{
+  "type": "tachyon:void_mining",
+  "result_item": "minecraft:gold_nugget",
+  "result_count": 6,
+  "weight": 6,
+  "min_count": 4,
+  "max_count": 8,
+  "tier": 1,
+  "category": "nether"
+}

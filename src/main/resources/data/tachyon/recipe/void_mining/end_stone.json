@@ -1,0 +1,10 @@
+{
+  "type": "tachyon:void_mining",
+  "result_item": "minecraft:end_stone",
+  "result_count": 1,
+  "weight": 6,
+  "min_count": 1,
+  "max_count": 2,
+  "tier": 2,
+  "category": "end"
+}

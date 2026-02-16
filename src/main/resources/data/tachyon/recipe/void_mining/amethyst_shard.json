@@ -1,0 +1,11 @@
+{
+  "type": "tachyon:void_mining",
+  "result_item": "minecraft:amethyst_shard",
+  "result_count": 3,
+  "weight": 8,
+  "min_count": 2,
+  "max_count": 4,
+  "tier": 2,
+  "category": "gem",
+  "silk_touch_item": "minecraft:amethyst_block"
+}

@@ -1,0 +1,67 @@
+package com.setusertso.tachyon.screen;
+
+import com.setusertso.tachyon.menu.VoidMinerMenu;
+import com.setusertso.tachyon.tachyon;
+
+import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
+import net.minecraft.network.chat.Component;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.entity.player.Inventory;
+
+public class VoidMinerScreen extends AbstractContainerScreen<VoidMinerMenu> {
+    private static final ResourceLocation TEXTURE =
+            ResourceLocation.fromNamespaceAndPath(tachyon.MODID, "textures/gui/void_miner.png");
+
+    public VoidMinerScreen(VoidMinerMenu menu, Inventory playerInventory, Component title) {
+        super(menu, playerInventory, title);
+        this.imageWidth = 176;
+        this.imageHeight = 166;
+    }
+
+    @Override
+    protected void renderBg(GuiGraphics graphics, float partialTick, int mouseX, int mouseY) {
+        graphics.blit(TEXTURE, this.leftPos, this.topPos, 0, 0, this.imageWidth, this.imageHeight);
+
+        // Energy bar fill (UV at 176, 0 — 16x52)
+        float energyScaled = this.menu.getEnergyScaled();
+        if (energyScaled > 0) {
+            int barHeight = (int) (energyScaled * 52);
+            graphics.blit(TEXTURE, this.leftPos + 10, this.topPos + 16 + 52 - barHeight,
+                    176, 52 - barHeight, 16, barHeight);
+        }
+
+        // Progress arrow fill (UV at 176, 52 — 24x17)
+        float progressScaled = this.menu.getProgressScaled();
+        if (progressScaled > 0) {
+            int arrowWidth = (int) (progressScaled * 24);
+            graphics.blit(TEXTURE, this.leftPos + 59, this.topPos + 34,
+                    176, 52, arrowWidth, 17);
+        }
+    }
+
+    @Override
+    public void render(GuiGraphics graphics, int mouseX, int mouseY, float partialTick) {
+        super.render(graphics, mouseX, mouseY, partialTick);
+        this.renderTooltip(graphics, mouseX, mouseY);
+
+        // Energy tooltip
+        if (isHovering(10, 16, 16, 52, mouseX, mouseY)) {
+            graphics.renderTooltip(this.font,
+                    Component.literal(this.menu.getEnergy() + " / " + this.menu.getMaxEnergy() + " FE"),
+                    mouseX, mouseY);
+        }
+
+        // Render tier and catalyst text
+        int tier = this.menu.getStructureTier();
+        int cycles = this.menu.getCatalystCycles();
+
+        if (tier > 0) {
+            graphics.drawString(this.font, "Tier: " + tier,
+                    this.leftPos + 59, this.topPos + 54, 0x404040, false);
+        }
+
+        graphics.drawString(this.font, cycles + "/10",
+                this.leftPos + 34, this.topPos + 54, 0x404040, false);
+    }
+}

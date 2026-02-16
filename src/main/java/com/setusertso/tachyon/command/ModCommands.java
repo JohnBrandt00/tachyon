@@ -1,6 +1,7 @@
 package com.setusertso.tachyon.command;
 
 import com.mojang.brigadier.CommandDispatcher;
+import com.mojang.brigadier.arguments.IntegerArgumentType;
 import com.mojang.brigadier.context.CommandContext;
 import com.setusertso.tachyon.ModBlocks;
 import com.setusertso.tachyon.block.AcceleratorControllerBlock;
@@ -9,9 +10,13 @@ import com.setusertso.tachyon.block.PhotonicInjectorBlock;
 import com.setusertso.tachyon.block.SingularityControllerBlock;
 import com.setusertso.tachyon.block.SingularityPattern;
 import com.setusertso.tachyon.block.SingularityPortBlock;
+import com.setusertso.tachyon.block.VoidMinerControllerBlock;
+import com.setusertso.tachyon.block.VoidMinerPattern;
+import com.setusertso.tachyon.block.VoidMinerPortBlock;
 import com.setusertso.tachyon.block.entity.PhotonicInjectorBlockEntity;
 import com.setusertso.tachyon.block.entity.PortMode;
 import com.setusertso.tachyon.block.entity.SingularityControllerBlockEntity;
+import com.setusertso.tachyon.block.entity.VoidMinerControllerBlockEntity;
 import com.setusertso.tachyon.ModItems;
 
 import net.minecraft.commands.CommandSourceStack;
@@ -20,12 +25,14 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.HitResult;
+
 
 public class ModCommands {
 
@@ -40,6 +47,11 @@ public class ModCommands {
                         .executes(ModCommands::buildSingularity))
                 .then(Commands.literal("singularity_clear")
                         .executes(ModCommands::clearSingularity))
+                .then(Commands.literal("void_miner_build")
+                        .then(Commands.argument("tier", IntegerArgumentType.integer(1, 4))
+                                .executes(ModCommands::buildVoidMiner)))
+                .then(Commands.literal("void_miner_clear")
+                        .executes(ModCommands::clearVoidMiner))
         );
     }
 
@@ -365,6 +377,223 @@ public class ModCommands {
         }
 
         source.sendSuccess(() -> Component.literal("Cleared " + removed[0] + " singularity blocks"), true);
+        return 1;
+    }
+
+    private static int buildVoidMiner(CommandContext<CommandSourceStack> context) {
+        CommandSourceStack source = context.getSource();
+        ServerPlayer player = source.getPlayer();
+        if (player == null) {
+            source.sendFailure(Component.literal("Must be run by a player"));
+            return 0;
+        }
+
+        int tier = IntegerArgumentType.getInteger(context, "tier");
+
+        HitResult hit = player.pick(20.0, 0.0f, false);
+        if (!(hit instanceof BlockHitResult blockHit) || hit.getType() == HitResult.Type.MISS) {
+            source.sendFailure(Component.literal("Look at a block to place the void miner there"));
+            return 0;
+        }
+
+        BlockPos targetPos = blockHit.getBlockPos().relative(blockHit.getDirection());
+        Level level = player.level();
+
+        int outerSize = VoidMinerPattern.SHELL_SIZES[tier];
+        int originX = targetPos.getX();
+        int originY = targetPos.getY();
+        int originZ = targetPos.getZ();
+
+        // Place controller at origin (0,0,0) of the outermost shell
+        level.setBlock(targetPos, ModBlocks.VOID_MINER_CONTROLLER.get().defaultBlockState(), Block.UPDATE_ALL);
+        int placed = 1;
+
+        // Place each shell from tier 1 up to the requested tier
+        for (int t = 1; t <= tier; t++) {
+            int shellSize = VoidMinerPattern.SHELL_SIZES[t];
+            int offset = (outerSize - shellSize) / 2;
+            Block frameBlock = VoidMinerPattern.getFrameBlockForTier(t);
+
+            for (int y = 0; y < shellSize; y++) {
+                for (int x = 0; x < shellSize; x++) {
+                    for (int z = 0; z < shellSize; z++) {
+                        if (!VoidMinerPattern.isStructureBlock(x, y, z, shellSize)) continue;
+
+                        BlockPos pos = new BlockPos(
+                                originX + offset + x,
+                                originY + offset + y,
+                                originZ + offset + z);
+
+                        if (pos.equals(targetPos)) continue;
+
+                        level.setBlock(pos, frameBlock.defaultBlockState(), Block.UPDATE_ALL);
+                        placed++;
+                    }
+                }
+            }
+        }
+
+        // Clear 3x3x3 interior
+        int interiorOffset = (outerSize - VoidMinerPattern.INTERIOR_SIZE) / 2;
+        for (int y = 0; y < VoidMinerPattern.INTERIOR_SIZE; y++) {
+            for (int x = 0; x < VoidMinerPattern.INTERIOR_SIZE; x++) {
+                for (int z = 0; z < VoidMinerPattern.INTERIOR_SIZE; z++) {
+                    BlockPos airPos = new BlockPos(
+                            originX + interiorOffset + x,
+                            originY + interiorOffset + y,
+                            originZ + interiorOffset + z);
+                    if (!level.getBlockState(airPos).isAir()) {
+                        level.setBlock(airPos, Blocks.AIR.defaultBlockState(), Block.UPDATE_ALL);
+                    }
+                }
+            }
+        }
+
+        // Clear chimney (from top of interior through all shell tops)
+        int chimneyStartY = originY + interiorOffset + VoidMinerPattern.INTERIOR_SIZE;
+        int chimneyEndY = originY + outerSize;
+        int chimneyXStart = originX + (outerSize - VoidMinerPattern.INTERIOR_SIZE) / 2;
+        int chimneyZStart = originZ + (outerSize - VoidMinerPattern.INTERIOR_SIZE) / 2;
+        for (int y = chimneyStartY; y < chimneyEndY; y++) {
+            for (int x = 0; x < VoidMinerPattern.INTERIOR_SIZE; x++) {
+                for (int z = 0; z < VoidMinerPattern.INTERIOR_SIZE; z++) {
+                    BlockPos chimneyPos = new BlockPos(chimneyXStart + x, y, chimneyZStart + z);
+                    if (!level.getBlockState(chimneyPos).isAir()) {
+                        level.setBlock(chimneyPos, Blocks.AIR.defaultBlockState(), Block.UPDATE_ALL);
+                    }
+                }
+            }
+        }
+
+        // Clear sky access above (10 blocks)
+        for (int dy = 0; dy < 10; dy++) {
+            for (int x = 0; x < VoidMinerPattern.INTERIOR_SIZE; x++) {
+                for (int z = 0; z < VoidMinerPattern.INTERIOR_SIZE; z++) {
+                    BlockPos skyPos = new BlockPos(chimneyXStart + x, chimneyEndY + dy, chimneyZStart + z);
+                    if (!level.getBlockState(skyPos).isAir()) {
+                        level.setBlock(skyPos, Blocks.AIR.defaultBlockState(), Block.UPDATE_ALL);
+                    }
+                }
+            }
+        }
+
+        // Place 3 ports on the outer shell bottom face
+        BlockPos energyPortPos = new BlockPos(originX + outerSize / 2, originY, originZ);
+        level.setBlock(energyPortPos, ModBlocks.VOID_MINER_PORT.get().defaultBlockState()
+                .setValue(VoidMinerPortBlock.MODE, VoidMinerPortBlock.VoidMinerPortMode.ENERGY_INPUT), Block.UPDATE_ALL);
+
+        BlockPos itemPortPos = new BlockPos(originX + outerSize / 2, originY, originZ + outerSize - 1);
+        level.setBlock(itemPortPos, ModBlocks.VOID_MINER_PORT.get().defaultBlockState()
+                .setValue(VoidMinerPortBlock.MODE, VoidMinerPortBlock.VoidMinerPortMode.ITEM_OUTPUT), Block.UPDATE_ALL);
+
+        BlockPos catalystPortPos = new BlockPos(originX, originY, originZ + outerSize / 2);
+        level.setBlock(catalystPortPos, ModBlocks.VOID_MINER_PORT.get().defaultBlockState()
+                .setValue(VoidMinerPortBlock.MODE, VoidMinerPortBlock.VoidMinerPortMode.CATALYST_INPUT), Block.UPDATE_ALL);
+
+        // Place Creative Power Source adjacent to energy port
+        BlockPos powerSourcePos = new BlockPos(originX + outerSize / 2, originY, originZ - 1);
+        if (level.getBlockState(powerSourcePos).canBeReplaced()) {
+            level.setBlock(powerSourcePos, ModBlocks.CREATIVE_POWER_SOURCE.get().defaultBlockState(), Block.UPDATE_ALL);
+            placed++;
+        }
+
+        // Auto-form and load catalyst
+        int totalPlaced = placed;
+        if (level.getBlockEntity(targetPos) instanceof VoidMinerControllerBlockEntity be) {
+            be.tryFormStructure();
+            if (be.isFormed()) {
+                be.getItems().setStackInSlot(VoidMinerControllerBlockEntity.CATALYST_SLOT,
+                        new ItemStack(ModItems.EXOTIC_MATTER.get(), 64));
+                source.sendSuccess(() -> Component.literal("Built and formed Tier " + tier + " Void Miner ("
+                        + outerSize + "x" + outerSize + "x" + outerSize + ", " + totalPlaced + " blocks). Power source + exotic matter placed."), true);
+            } else {
+                source.sendSuccess(() -> Component.literal("Placed " + totalPlaced + " blocks but formation failed - check sky access"), true);
+            }
+        } else {
+            source.sendSuccess(() -> Component.literal("Placed " + totalPlaced + " blocks for Tier " + tier + " Void Miner"), true);
+        }
+
+        return 1;
+    }
+
+    private static int clearVoidMiner(CommandContext<CommandSourceStack> context) {
+        CommandSourceStack source = context.getSource();
+        ServerPlayer player = source.getPlayer();
+        if (player == null) {
+            source.sendFailure(Component.literal("Must be run by a player"));
+            return 0;
+        }
+
+        HitResult hit = player.pick(20.0, 0.0f, false);
+        if (!(hit instanceof BlockHitResult blockHit) || hit.getType() == HitResult.Type.MISS) {
+            source.sendFailure(Component.literal("Look at a Void Miner Controller block"));
+            return 0;
+        }
+
+        BlockPos controllerPos = blockHit.getBlockPos();
+        Level level = player.level();
+        BlockState state = level.getBlockState(controllerPos);
+
+        if (!(state.getBlock() instanceof VoidMinerControllerBlock)) {
+            source.sendFailure(Component.literal("Look at a Void Miner Controller block"));
+            return 0;
+        }
+
+        // Get structure origin from the controller entity if formed
+        BlockPos origin = null;
+        int outerSize = 0;
+
+        if (level.getBlockEntity(controllerPos) instanceof VoidMinerControllerBlockEntity be) {
+            if (be.getStructureOrigin() != null) {
+                origin = be.getStructureOrigin();
+                outerSize = VoidMinerPattern.SHELL_SIZES[be.getStructureTier()];
+            }
+            be.disassembleStructure();
+        }
+
+        // If we couldn't get origin from the entity, assume controller is at corner
+        if (origin == null) {
+            origin = controllerPos;
+            outerSize = VoidMinerPattern.SHELL_SIZES[1]; // assume T1
+        }
+
+        if (origin == null) {
+            source.sendFailure(Component.literal("Could not determine void miner structure origin"));
+            return 0;
+        }
+
+        int removed = 0;
+
+        // Clear the entire bounding box of the largest possible structure
+        for (int y = 0; y < outerSize; y++) {
+            for (int x = 0; x < outerSize; x++) {
+                for (int z = 0; z < outerSize; z++) {
+                    BlockPos pos = new BlockPos(origin.getX() + x, origin.getY() + y, origin.getZ() + z);
+                    if (!level.getBlockState(pos).isAir()) {
+                        level.destroyBlock(pos, false);
+                        removed++;
+                    }
+                }
+            }
+        }
+
+        // Remove creative power source if present nearby (check 1 block out from each face)
+        for (int x = -1; x <= outerSize; x++) {
+            for (int z = -1; z <= outerSize; z++) {
+                for (int y = -1; y <= outerSize; y++) {
+                    // Only check border positions
+                    if (x >= 0 && x < outerSize && z >= 0 && z < outerSize && y >= 0 && y < outerSize) continue;
+                    BlockPos checkPos = new BlockPos(origin.getX() + x, origin.getY() + y, origin.getZ() + z);
+                    if (level.getBlockState(checkPos).getBlock() == ModBlocks.CREATIVE_POWER_SOURCE.get()) {
+                        level.destroyBlock(checkPos, false);
+                        removed++;
+                    }
+                }
+            }
+        }
+
+        int totalRemoved = removed;
+        source.sendSuccess(() -> Component.literal("Cleared " + totalRemoved + " void miner blocks"), true);
         return 1;
     }
 }

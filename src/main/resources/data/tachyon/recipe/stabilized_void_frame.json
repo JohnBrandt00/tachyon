@@ -1,0 +1,20 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+    " E ",
+    "EFE",
+    " E "
+  ],
+  "key": {
+    "E": {
+      "item": "tachyon:energy_crystal"
+    },
+    "F": {
+      "item": "tachyon:void_frame"
+    }
+  },
+  "result": {
+    "id": "tachyon:stabilized_void_frame",
+    "count": 1
+  }
+}

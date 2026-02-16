@@ -1,0 +1,10 @@
+{
+  "type": "tachyon:void_mining",
+  "result_item": "tachyon:exotic_shard",
+  "result_count": 1,
+  "weight": 2,
+  "min_count": 1,
+  "max_count": 1,
+  "tier": 4,
+  "category": "ultra_rare"
+}

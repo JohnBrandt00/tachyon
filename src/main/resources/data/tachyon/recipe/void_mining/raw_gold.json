@@ -1,0 +1,11 @@
+{
+  "type": "tachyon:void_mining",
+  "result_item": "minecraft:raw_gold",
+  "result_count": 1,
+  "weight": 15,
+  "min_count": 1,
+  "max_count": 2,
+  "tier": 1,
+  "category": "common_ore",
+  "silk_touch_item": "minecraft:gold_ore"
+}

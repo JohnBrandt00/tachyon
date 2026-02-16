@@ -1,0 +1,20 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+    " S ",
+    "STS",
+    " S "
+  ],
+  "key": {
+    "S": {
+      "item": "tachyon:speed_upgrade"
+    },
+    "T": {
+      "item": "tachyon:tachyon_alloy_ingot"
+    }
+  },
+  "result": {
+    "id": "tachyon:speed_module",
+    "count": 1
+  }
+}

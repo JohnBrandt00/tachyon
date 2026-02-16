@@ -1,0 +1,19 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+    "TWT",
+    "GPG",
+    "TRT"
+  ],
+  "key": {
+    "T": { "item": "tachyon:tungsten_ingot" },
+    "W": { "item": "tachyon:titanium_ingot" },
+    "G": { "item": "minecraft:glowstone" },
+    "P": { "item": "minecraft:piston" },
+    "R": { "item": "minecraft:redstone_block" }
+  },
+  "result": {
+    "id": "tachyon:photon_compressor",
+    "count": 1
+  }
+}

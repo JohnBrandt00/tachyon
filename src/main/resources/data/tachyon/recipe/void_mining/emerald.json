@@ -1,0 +1,11 @@
+{
+  "type": "tachyon:void_mining",
+  "result_item": "minecraft:emerald",
+  "result_count": 1,
+  "weight": 8,
+  "min_count": 1,
+  "max_count": 2,
+  "tier": 2,
+  "category": "gem",
+  "silk_touch_item": "minecraft:emerald_ore"
+}

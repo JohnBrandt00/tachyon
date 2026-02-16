@@ -1,0 +1,20 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+    " B ",
+    "BTB",
+    " B "
+  ],
+  "key": {
+    "B": {
+      "item": "minecraft:blaze_rod"
+    },
+    "T": {
+      "item": "tachyon:tachyon_alloy_ingot"
+    }
+  },
+  "result": {
+    "id": "tachyon:nether_siphon_module",
+    "count": 1
+  }
+}

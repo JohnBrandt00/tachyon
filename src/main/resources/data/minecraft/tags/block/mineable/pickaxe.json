@@ -28,6 +28,14 @@
     "tachyon:photonic_injector",
     "tachyon:thorium_reactor",
     "tachyon:solar_collector",
-    "tachyon:photon_compressor"
+    "tachyon:photon_compressor",
+    "tachyon:ore_crusher",
+    "tachyon:alloy_forge",
+    "tachyon:void_miner_controller",
+    "tachyon:void_frame",
+    "tachyon:stabilized_void_frame",
+    "tachyon:reinforced_void_frame",
+    "tachyon:quantum_void_frame",
+    "tachyon:void_miner_port"
   ]
 }

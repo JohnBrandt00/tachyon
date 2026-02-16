@@ -1,0 +1,20 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+    " D ",
+    "DED",
+    " D "
+  ],
+  "key": {
+    "D": {
+      "item": "minecraft:diamond"
+    },
+    "E": {
+      "item": "tachyon:energy_crystal"
+    }
+  },
+  "result": {
+    "id": "tachyon:silk_touch_module",
+    "count": 1
+  }
+}

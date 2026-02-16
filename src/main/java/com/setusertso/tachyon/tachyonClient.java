@@ -4,6 +4,7 @@ import com.setusertso.tachyon.client.AcceleratorControllerRenderer;
 import com.setusertso.tachyon.client.PhotonicInjectorRenderer;
 import com.setusertso.tachyon.client.SingularityControllerRenderer;
 import com.setusertso.tachyon.client.SingularityDebugRenderer;
+import com.setusertso.tachyon.client.VoidMinerRiftRenderer;
 import com.setusertso.tachyon.client.particle.AccretionDiskParticle;
 import com.setusertso.tachyon.init.ModBlockEntities;
 import com.setusertso.tachyon.init.ModFluids;
@@ -18,6 +19,9 @@ import com.setusertso.tachyon.screen.SuperluminalEmitterScreen;
 import com.setusertso.tachyon.screen.ThoriumReactorScreen;
 import com.setusertso.tachyon.screen.SolarCollectorScreen;
 import com.setusertso.tachyon.screen.PhotonCompressorScreen;
+import com.setusertso.tachyon.screen.OreCrusherScreen;
+import com.setusertso.tachyon.screen.AlloyForgeScreen;
+import com.setusertso.tachyon.screen.VoidMinerScreen;
 
 import net.minecraft.client.Minecraft;
 import net.minecraft.resources.ResourceLocation;
@@ -62,6 +66,9 @@ public class tachyonClient {
         event.register(ModMenuTypes.THORIUM_REACTOR.get(), ThoriumReactorScreen::new);
         event.register(ModMenuTypes.SOLAR_COLLECTOR.get(), SolarCollectorScreen::new);
         event.register(ModMenuTypes.PHOTON_COMPRESSOR.get(), PhotonCompressorScreen::new);
+        event.register(ModMenuTypes.ORE_CRUSHER.get(), OreCrusherScreen::new);
+        event.register(ModMenuTypes.ALLOY_FORGE.get(), AlloyForgeScreen::new);
+        event.register(ModMenuTypes.VOID_MINER.get(), VoidMinerScreen::new);
     }
 
     private void onRegisterRenderers(EntityRenderersEvent.RegisterRenderers event) {
@@ -73,6 +80,8 @@ public class tachyonClient {
                 SingularityControllerRenderer::new);
         event.registerBlockEntityRenderer(ModBlockEntities.PHOTONIC_INJECTOR.get(),
                 PhotonicInjectorRenderer::new);
+        event.registerBlockEntityRenderer(ModBlockEntities.VOID_MINER_CONTROLLER.get(),
+                VoidMinerRiftRenderer::new);
     }
 
     private void onRegisterParticleProviders(RegisterParticleProvidersEvent event) {

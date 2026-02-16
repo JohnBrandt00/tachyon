@@ -87,7 +87,59 @@ public class ModCapabilities {
         event.registerBlockEntity(
                 Capabilities.ItemHandler.BLOCK,
                 ModBlockEntities.PHOTON_COMPRESSOR.get(),
+                (be, side) -> be.getSidedItemHandler(side)
+        );
+
+        // Ore Crusher
+        event.registerBlockEntity(
+                Capabilities.EnergyStorage.BLOCK,
+                ModBlockEntities.ORE_CRUSHER.get(),
+                (be, side) -> be.getEnergyStorage()
+        );
+
+        event.registerBlockEntity(
+                Capabilities.ItemHandler.BLOCK,
+                ModBlockEntities.ORE_CRUSHER.get(),
+                (be, side) -> be.getSidedItemHandler(side)
+        );
+
+        // Alloy Forge
+        event.registerBlockEntity(
+                Capabilities.EnergyStorage.BLOCK,
+                ModBlockEntities.ALLOY_FORGE.get(),
+                (be, side) -> be.getEnergyStorage()
+        );
+
+        event.registerBlockEntity(
+                Capabilities.ItemHandler.BLOCK,
+                ModBlockEntities.ALLOY_FORGE.get(),
+                (be, side) -> be.getSidedItemHandler(side)
+        );
+
+        // Void Miner Controller
+        event.registerBlockEntity(
+                Capabilities.EnergyStorage.BLOCK,
+                ModBlockEntities.VOID_MINER_CONTROLLER.get(),
+                (be, side) -> be.getEnergy()
+        );
+
+        event.registerBlockEntity(
+                Capabilities.ItemHandler.BLOCK,
+                ModBlockEntities.VOID_MINER_CONTROLLER.get(),
+                (be, side) -> be.getItems()
+        );
+
+        // Void Miner Port
+        event.registerBlockEntity(
+                Capabilities.ItemHandler.BLOCK,
+                ModBlockEntities.VOID_MINER_PORT.get(),
                 (be, side) -> be.getItemHandler()
+        );
+
+        event.registerBlockEntity(
+                Capabilities.EnergyStorage.BLOCK,
+                ModBlockEntities.VOID_MINER_PORT.get(),
+                (be, side) -> be.getEnergyHandler()
         );
     }
 }

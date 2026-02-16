@@ -1,0 +1,23 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+    "TQT",
+    "QEQ",
+    "TQT"
+  ],
+  "key": {
+    "T": {
+      "item": "tachyon:tachyon_alloy_ingot"
+    },
+    "Q": {
+      "item": "tachyon:quantum_processor"
+    },
+    "E": {
+      "item": "tachyon:exotic_matter"
+    }
+  },
+  "result": {
+    "id": "tachyon:void_miner_controller",
+    "count": 1
+  }
+}

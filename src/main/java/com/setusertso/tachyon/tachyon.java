@@ -9,6 +9,7 @@ import com.setusertso.tachyon.init.ModCapabilities;
 import com.setusertso.tachyon.init.ModFluids;
 import com.setusertso.tachyon.init.ModMenuTypes;
 import com.setusertso.tachyon.init.ModParticles;
+import com.setusertso.tachyon.init.ModRecipes;
 import com.setusertso.tachyon.init.ModSounds;
 import com.setusertso.tachyon.network.ModNetworking;
 
@@ -153,6 +154,24 @@ public class tachyon {
                 output.accept(ModBlocks.THORIUM_REACTOR_ITEM.get());
                 output.accept(ModBlocks.SOLAR_COLLECTOR_ITEM.get());
                 output.accept(ModBlocks.PHOTON_COMPRESSOR_ITEM.get());
+                output.accept(ModBlocks.ORE_CRUSHER_ITEM.get());
+                output.accept(ModBlocks.ALLOY_FORGE_ITEM.get());
+                // Void Miner
+                output.accept(ModBlocks.VOID_MINER_CONTROLLER_ITEM.get());
+                output.accept(ModBlocks.VOID_FRAME_ITEM.get());
+                output.accept(ModBlocks.STABILIZED_VOID_FRAME_ITEM.get());
+                output.accept(ModBlocks.REINFORCED_VOID_FRAME_ITEM.get());
+                output.accept(ModBlocks.QUANTUM_VOID_FRAME_ITEM.get());
+                output.accept(ModBlocks.VOID_MINER_PORT_ITEM.get());
+                // Void Miner Modules
+                output.accept(ModItems.ORE_EXTRACTION_MODULE.get());
+                output.accept(ModItems.SILK_TOUCH_MODULE.get());
+                output.accept(ModItems.RARE_EARTH_MODULE.get());
+                output.accept(ModItems.NETHER_SIPHON_MODULE.get());
+                output.accept(ModItems.END_SIPHON_MODULE.get());
+                output.accept(ModItems.EXOTIC_ATTUNEMENT_MODULE.get());
+                output.accept(ModItems.SPEED_MODULE.get());
+                output.accept(ModItems.FORTUNE_MODULE.get());
                 // Creative / Testing
                 output.accept(ModBlocks.CREATIVE_POWER_SOURCE_ITEM.get());
                 output.accept(ModBlocks.CREATIVE_POWER_SINK_ITEM.get());
@@ -179,9 +198,10 @@ public class tachyon {
         // Register fluids
         ModFluids.register(modEventBus);
 
-        // Register block entities and menu types
+        // Register block entities, menu types, and recipes
         ModBlockEntities.register(modEventBus);
         ModMenuTypes.register(modEventBus);
+        ModRecipes.register(modEventBus);
 
         // Register sounds
         ModSounds.SOUND_EVENTS.register(modEventBus);

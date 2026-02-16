@@ -1,0 +1,16 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+    " L ",
+    "LRL",
+    " L "
+  ],
+  "key": {
+    "L": { "item": "tachyon:lithium_ingot" },
+    "R": { "item": "minecraft:redstone" }
+  },
+  "result": {
+    "id": "tachyon:energy_upgrade",
+    "count": 2
+  }
+}

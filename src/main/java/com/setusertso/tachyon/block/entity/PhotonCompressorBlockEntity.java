@@ -22,7 +22,10 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.core.Direction;
+import net.neoforged.neoforge.items.IItemHandler;
 import net.neoforged.neoforge.items.ItemStackHandler;
+import net.neoforged.neoforge.items.wrapper.RangedWrapper;
 
 public class PhotonCompressorBlockEntity extends BlockEntity implements MenuProvider, IUpgradeable {
     public static final int INPUT_PHOTON = 0;
@@ -49,6 +52,15 @@ public class PhotonCompressorBlockEntity extends BlockEntity implements MenuProv
                 case OUTPUT_SLOT -> false;
                 default -> false;
             };
+        }
+    };
+
+    private final IItemHandler topHandler = new RangedWrapper(items, INPUT_PHOTON, INPUT_PHOTON + 1);
+    private final IItemHandler sideHandler = new RangedWrapper(items, INPUT_GLOWSTONE, INPUT_GLOWSTONE + 1);
+    private final IItemHandler bottomHandler = new RangedWrapper(items, OUTPUT_SLOT, OUTPUT_SLOT + 1) {
+        @Override
+        public ItemStack insertItem(int slot, ItemStack stack, boolean simulate) {
+            return stack;
         }
     };
 
@@ -89,6 +101,15 @@ public class PhotonCompressorBlockEntity extends BlockEntity implements MenuProv
 
     public ItemStackHandler getItemHandler() {
         return items;
+    }
+
+    public IItemHandler getSidedItemHandler(Direction side) {
+        if (side == null) return items;
+        return switch (side) {
+            case DOWN -> bottomHandler;
+            case UP -> topHandler;
+            default -> sideHandler;
+        };
     }
 
     @Override

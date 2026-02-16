@@ -1,0 +1,11 @@
+{
+  "type": "tachyon:void_mining",
+  "result_item": "minecraft:raw_copper",
+  "result_count": 3,
+  "weight": 20,
+  "min_count": 2,
+  "max_count": 4,
+  "tier": 1,
+  "category": "common_ore",
+  "silk_touch_item": "minecraft:copper_ore"
+}
