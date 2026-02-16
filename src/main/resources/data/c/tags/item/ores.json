@@ -1,0 +1,9 @@
+{
+  "replace": false,
+  "values": [
+    "#c:ores/titanium",
+    "#c:ores/tungsten",
+    "#c:ores/lithium",
+    "#c:ores/thorium"
+  ]
+}

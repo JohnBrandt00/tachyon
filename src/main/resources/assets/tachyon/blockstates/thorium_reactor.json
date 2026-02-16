@@ -1,0 +1,12 @@
+{
+  "variants": {
+    "burning=false,facing=north": { "model": "tachyon:block/thorium_reactor" },
+    "burning=false,facing=south": { "model": "tachyon:block/thorium_reactor", "y": 180 },
+    "burning=false,facing=west": { "model": "tachyon:block/thorium_reactor", "y": 270 },
+    "burning=false,facing=east": { "model": "tachyon:block/thorium_reactor", "y": 90 },
+    "burning=true,facing=north": { "model": "tachyon:block/thorium_reactor_on" },
+    "burning=true,facing=south": { "model": "tachyon:block/thorium_reactor_on", "y": 180 },
+    "burning=true,facing=west": { "model": "tachyon:block/thorium_reactor_on", "y": 270 },
+    "burning=true,facing=east": { "model": "tachyon:block/thorium_reactor_on", "y": 90 }
+  }
+}

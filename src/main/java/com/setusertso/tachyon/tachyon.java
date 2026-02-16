@@ -123,6 +123,29 @@ public class tachyon {
                 output.accept(ModBlocks.SINGULARITY_PORT_ITEM.get());
                 output.accept(ModBlocks.EXOTIC_MATTER_CORE_ITEM.get());
                 output.accept(ModBlocks.PHOTONIC_INJECTOR_ITEM.get());
+                // Alloy Forge Materials
+                output.accept(ModItems.TACHYON_ALLOY_INGOT.get());
+                output.accept(ModItems.REACTOR_PLATING.get());
+                output.accept(ModItems.ENERGY_CRYSTAL.get());
+                output.accept(ModItems.EXOTIC_SHARD.get());
+                // Crushed Ores
+                output.accept(ModItems.CRUSHED_TITANIUM.get());
+                output.accept(ModItems.CRUSHED_TUNGSTEN.get());
+                output.accept(ModItems.CRUSHED_LITHIUM.get());
+                output.accept(ModItems.CRUSHED_THORIUM.get());
+                output.accept(ModItems.CRUSHED_IRON.get());
+                output.accept(ModItems.CRUSHED_GOLD.get());
+                output.accept(ModItems.CRUSHED_COPPER.get());
+                // Advanced Components
+                output.accept(ModItems.TACHYON_CORE.get());
+                output.accept(ModItems.QUANTUM_PROCESSOR.get());
+                // Condensed Light Pipeline
+                output.accept(ModItems.RAW_PHOTON.get());
+                output.accept(ModItems.EXCITED_PHOTON.get());
+                // Graviton Crystal
+                output.accept(ModItems.GRAVITON_CRYSTAL.get());
+                // Machines
+                output.accept(ModBlocks.THORIUM_REACTOR_ITEM.get());
                 // Creative / Testing
                 output.accept(ModBlocks.CREATIVE_POWER_SOURCE_ITEM.get());
                 output.accept(ModBlocks.CREATIVE_POWER_SINK_ITEM.get());

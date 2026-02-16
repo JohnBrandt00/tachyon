@@ -9,6 +9,7 @@ import com.setusertso.tachyon.menu.AcceleratorPortMenu;
 import com.setusertso.tachyon.menu.SingularityControllerMenu;
 import com.setusertso.tachyon.menu.SingularityPortMenu;
 import com.setusertso.tachyon.menu.SuperluminalEmitterMenu;
+import com.setusertso.tachyon.menu.ThoriumReactorMenu;
 
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.world.flag.FeatureFlags;
@@ -48,6 +49,10 @@ public class ModMenuTypes {
             MENUS.register("photonic_injector",
                     () -> IMenuTypeExtension.create(
                             (containerId, inv, buf) -> new PhotonicInjectorMenu(containerId, inv, buf.readBlockPos())));
+
+    public static final Supplier<MenuType<ThoriumReactorMenu>> THORIUM_REACTOR =
+            MENUS.register("thorium_reactor",
+                    () -> new MenuType<>(ThoriumReactorMenu::new, FeatureFlags.DEFAULT_FLAGS));
 
     public static void register(IEventBus modEventBus) {
         MENUS.register(modEventBus);

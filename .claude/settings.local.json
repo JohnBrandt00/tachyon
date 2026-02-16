@@ -24,7 +24,9 @@
       "Bash(cmd.exe /c \"cd /d d:\\\\MCMODDING\\\\tachyon && .\\\\gradlew.bat build --console=plain 2>&1\":*)",
       "WebFetch(domain:ftb.fandom.com)",
       "WebFetch(domain:forum.feed-the-beast.com)",
-      "WebFetch(domain:wiki.gtnewhorizons.com)"
+      "WebFetch(domain:wiki.gtnewhorizons.com)",
+      "Bash(python3:*)",
+      "Bash(/c/Users/notjo/anaconda3/python:*)"
     ]
   }
 }

@@ -50,6 +50,19 @@ public class ModCapabilities {
                 (be, side) -> be.getEnergyStorage()
         );
 
+        // Thorium Reactor
+        event.registerBlockEntity(
+                Capabilities.EnergyStorage.BLOCK,
+                ModBlockEntities.THORIUM_REACTOR.get(),
+                (be, side) -> be.getEnergy()
+        );
+
+        event.registerBlockEntity(
+                Capabilities.ItemHandler.BLOCK,
+                ModBlockEntities.THORIUM_REACTOR.get(),
+                (be, side) -> be.getItems()
+        );
+
         // Photonic Injector item handler
         event.registerBlockEntity(
                 Capabilities.ItemHandler.BLOCK,

@@ -17,6 +17,7 @@ import com.setusertso.tachyon.block.entity.SingularityDebugBlockEntity;
 import com.setusertso.tachyon.block.entity.SingularityPortBlockEntity;
 import com.setusertso.tachyon.block.entity.SuperluminalEmitterBlockEntity;
 import com.setusertso.tachyon.block.entity.TachyonLightGeneratorBlockEntity;
+import com.setusertso.tachyon.block.entity.ThoriumReactorBlockEntity;
 
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.world.level.block.entity.BlockEntityType;
@@ -91,6 +92,11 @@ public class ModBlockEntities {
             BLOCK_ENTITIES.register("singularity_debug",
                     () -> BlockEntityType.Builder.of(SingularityDebugBlockEntity::new,
                             ModBlocks.SINGULARITY_DEBUG.get()).build(null));
+
+    public static final Supplier<BlockEntityType<ThoriumReactorBlockEntity>> THORIUM_REACTOR =
+            BLOCK_ENTITIES.register("thorium_reactor",
+                    () -> BlockEntityType.Builder.of(ThoriumReactorBlockEntity::new,
+                            ModBlocks.THORIUM_REACTOR.get()).build(null));
 
     public static void register(IEventBus modEventBus) {
         BLOCK_ENTITIES.register(modEventBus);

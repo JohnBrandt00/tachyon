@@ -1,0 +1,9 @@
+{
+  "replace": false,
+  "values": [
+    "#c:ingots/titanium",
+    "#c:ingots/tungsten",
+    "#c:ingots/lithium",
+    "#c:ingots/thorium"
+  ]
+}

@@ -14,6 +14,7 @@ import com.setusertso.tachyon.block.SingularityDebugBlock;
 import com.setusertso.tachyon.block.SingularityPortBlock;
 import com.setusertso.tachyon.block.SuperluminalEmitterBlock;
 import com.setusertso.tachyon.block.TachyonLightGeneratorBlock;
+import com.setusertso.tachyon.block.ThoriumReactorBlock;
 import com.setusertso.tachyon.init.ModFluids;
 
 import net.minecraft.world.item.BlockItem;
@@ -172,6 +173,14 @@ public class ModBlocks {
                     .lightLevel(state -> state.getValue(PhotonicInjectorBlock.ACTIVE) ? 12 : 0)));
     public static final DeferredItem<BlockItem> PHOTONIC_INJECTOR_ITEM = BLOCK_ITEMS.register("photonic_injector",
             () -> new BlockItem(PHOTONIC_INJECTOR.get(), new Item.Properties()));
+
+    // Thorium Reactor
+    public static final DeferredBlock<ThoriumReactorBlock> THORIUM_REACTOR = BLOCKS.register("thorium_reactor",
+            () -> new ThoriumReactorBlock(BlockBehaviour.Properties.of()
+                    .mapColor(MapColor.METAL).strength(5.0F, 6.0F).sound(SoundType.METAL).requiresCorrectToolForDrops()
+                    .lightLevel(state -> state.getValue(ThoriumReactorBlock.BURNING) ? 13 : 0)));
+    public static final DeferredItem<BlockItem> THORIUM_REACTOR_ITEM = BLOCK_ITEMS.register("thorium_reactor",
+            () -> new BlockItem(THORIUM_REACTOR.get(), new Item.Properties()));
 
     // Creative Power Source (test block)
     public static final DeferredBlock<CreativePowerBlock> CREATIVE_POWER_SOURCE = BLOCKS.register("creative_power_source",

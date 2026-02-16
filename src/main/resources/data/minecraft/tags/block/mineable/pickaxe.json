@@ -25,6 +25,7 @@
     "tachyon:singularity_casing",
     "tachyon:singularity_port",
     "tachyon:exotic_matter_core",
-    "tachyon:photonic_injector"
+    "tachyon:photonic_injector",
+    "tachyon:thorium_reactor"
   ]
 }
