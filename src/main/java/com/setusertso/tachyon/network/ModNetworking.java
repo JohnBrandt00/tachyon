@@ -19,5 +19,17 @@ public class ModNetworking {
                 ReformStructurePacket.STREAM_CODEC,
                 ReformStructurePacket::handle
         );
+
+        registrar.playToServer(
+                SetInjectorRatePacket.TYPE,
+                SetInjectorRatePacket.STREAM_CODEC,
+                SetInjectorRatePacket::handle
+        );
+
+        registrar.playToServer(
+                SetShieldPowerPacket.TYPE,
+                SetShieldPowerPacket.STREAM_CODEC,
+                SetShieldPowerPacket::handle
+        );
     }
 }

@@ -5,11 +5,14 @@ import com.mojang.brigadier.context.CommandContext;
 import com.setusertso.tachyon.ModBlocks;
 import com.setusertso.tachyon.block.AcceleratorControllerBlock;
 import com.setusertso.tachyon.block.AcceleratorPattern;
+import com.setusertso.tachyon.block.PhotonicInjectorBlock;
 import com.setusertso.tachyon.block.SingularityControllerBlock;
 import com.setusertso.tachyon.block.SingularityPattern;
 import com.setusertso.tachyon.block.SingularityPortBlock;
+import com.setusertso.tachyon.block.entity.PhotonicInjectorBlockEntity;
 import com.setusertso.tachyon.block.entity.PortMode;
 import com.setusertso.tachyon.block.entity.SingularityControllerBlockEntity;
+import com.setusertso.tachyon.ModItems;
 
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
@@ -191,20 +194,25 @@ public class ModCommands {
             placed++;
         }
 
-        // Place 3 Singularity Ports on the horizontal ring for I/O
-        BlockState energyPort = ModBlocks.SINGULARITY_PORT.get().defaultBlockState()
+        // Place 4 Singularity Ports on the horizontal ring for I/O
+        BlockState energyInPort = ModBlocks.SINGULARITY_PORT.get().defaultBlockState()
                 .setValue(SingularityPortBlock.MODE, PortMode.ENERGY_INPUT);
+        BlockState energyOutPort = ModBlocks.SINGULARITY_PORT.get().defaultBlockState()
+                .setValue(SingularityPortBlock.MODE, PortMode.ENERGY_OUTPUT);
         BlockState itemInPort = ModBlocks.SINGULARITY_PORT.get().defaultBlockState()
                 .setValue(SingularityPortBlock.MODE, PortMode.ITEM_INPUT);
         BlockState itemOutPort = ModBlocks.SINGULARITY_PORT.get().defaultBlockState()
                 .setValue(SingularityPortBlock.MODE, PortMode.ITEM_OUTPUT);
 
-        // Energy input at +x side, item input at +z side, item output at -z side
-        BlockPos energyPortPos = new BlockPos(center.getX() + radius, center.getY(), center.getZ());
+        // Energy input at +x, energy output at top, item input at +z, item output at -z
+        BlockPos energyInPortPos = new BlockPos(center.getX() + radius, center.getY(), center.getZ());
+        BlockPos energyOutPortPos = new BlockPos(center.getX(), center.getY() + radius, center.getZ());
         BlockPos itemInPortPos = new BlockPos(center.getX(), center.getY(), center.getZ() + radius);
         BlockPos itemOutPortPos = new BlockPos(center.getX(), center.getY(), center.getZ() - radius);
 
-        for (var entry : new Object[][]{{energyPortPos, energyPort}, {itemInPortPos, itemInPort}, {itemOutPortPos, itemOutPort}}) {
+        for (var entry : new Object[][]{
+                {energyInPortPos, energyInPort}, {energyOutPortPos, energyOutPort},
+                {itemInPortPos, itemInPort}, {itemOutPortPos, itemOutPort}}) {
             BlockPos portPos = (BlockPos) entry[0];
             BlockState portState = (BlockState) entry[1];
             if (!portPos.equals(controllerPos)) {
@@ -226,13 +234,40 @@ public class ModCommands {
             }
         }
 
+        // Place a Photonic Injector on the +Z side, 1 block beyond the shell, facing -Z (toward center)
+        BlockPos injectorPos = new BlockPos(center.getX(), center.getY(), center.getZ() + radius + 1);
+        if (level.getBlockState(injectorPos).canBeReplaced()) {
+            BlockState injectorState = ModBlocks.PHOTONIC_INJECTOR.get().defaultBlockState()
+                    .setValue(PhotonicInjectorBlock.FACING, Direction.NORTH); // facing -Z = toward center
+            level.setBlock(injectorPos, injectorState, Block.UPDATE_ALL);
+            placed++;
+            // Load it with condensed light
+            if (level.getBlockEntity(injectorPos) instanceof PhotonicInjectorBlockEntity injector) {
+                injector.getItems().setStackInSlot(0, new net.minecraft.world.item.ItemStack(ModItems.CONDENSED_LIGHT.get(), 64));
+            }
+        }
+
+        // Place Creative Power Source next to energy input port (+x side, one more out)
+        BlockPos powerSourcePos = new BlockPos(center.getX() + radius + 1, center.getY(), center.getZ());
+        if (level.getBlockState(powerSourcePos).canBeReplaced()) {
+            level.setBlock(powerSourcePos, ModBlocks.CREATIVE_POWER_SOURCE.get().defaultBlockState(), Block.UPDATE_ALL);
+            placed++;
+        }
+
+        // Place Creative Power Sink next to energy output port (top, one more up)
+        BlockPos powerSinkPos = new BlockPos(center.getX(), center.getY() + radius + 1, center.getZ());
+        if (level.getBlockState(powerSinkPos).canBeReplaced()) {
+            level.setBlock(powerSinkPos, ModBlocks.CREATIVE_POWER_SINK.get().defaultBlockState(), Block.UPDATE_ALL);
+            placed++;
+        }
+
         int totalPlaced = placed;
 
         // Auto-form the structure
         if (level.getBlockEntity(controllerPos) instanceof SingularityControllerBlockEntity be) {
             be.tryFormStructure();
             if (be.isFormed()) {
-                source.sendSuccess(() -> Component.literal("Built and formed singularity sphere (" + totalPlaced + " blocks)"), true);
+                source.sendSuccess(() -> Component.literal("Built and formed singularity sphere (" + totalPlaced + " blocks). Injector + power blocks placed."), true);
             } else {
                 source.sendSuccess(() -> Component.literal("Placed " + totalPlaced + " blocks but formation failed - check structure"), true);
             }

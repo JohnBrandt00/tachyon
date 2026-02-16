@@ -45,9 +45,13 @@
   "gui.tachyon.port_mode.fluid_input": "Fluid Input",
   "gui.tachyon.port_mode.fluid_output": "Fluid Output",
   "gui.tachyon.port_mode.energy_input": "Energy Input",
+  "gui.tachyon.port_mode.energy_output": "Energy Output",
   "gui.tachyon.cycle_mode": "Cycle Mode",
+  "gui.tachyon.injection_rate": "Injection Rate",
+  "gui.tachyon.shield_power": "Shield Power",
 
   "block.tachyon.creative_power_source": "Creative Power Source",
+  "block.tachyon.creative_power_sink": "Creative Power Sink",
   "block.tachyon.singularity_debug": "Singularity Debug",
   "subtitles.tachyon.black_hole_ambient": "Black hole warbles",
   "fluid_type.tachyon.helium": "Helium",

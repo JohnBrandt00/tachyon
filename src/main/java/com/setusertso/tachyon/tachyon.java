@@ -125,6 +125,7 @@ public class tachyon {
                 output.accept(ModBlocks.PHOTONIC_INJECTOR_ITEM.get());
                 // Creative / Testing
                 output.accept(ModBlocks.CREATIVE_POWER_SOURCE_ITEM.get());
+                output.accept(ModBlocks.CREATIVE_POWER_SINK_ITEM.get());
                 output.accept(ModBlocks.SINGULARITY_DEBUG_ITEM.get());
             }).build());
 

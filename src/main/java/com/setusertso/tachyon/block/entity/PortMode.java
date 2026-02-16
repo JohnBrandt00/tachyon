@@ -7,7 +7,8 @@ public enum PortMode implements StringRepresentable {
     ITEM_OUTPUT("item_output"),
     FLUID_INPUT("fluid_input"),
     FLUID_OUTPUT("fluid_output"),
-    ENERGY_INPUT("energy_input");
+    ENERGY_INPUT("energy_input"),
+    ENERGY_OUTPUT("energy_output");
 
     private final String serializedName;
 

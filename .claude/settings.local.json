@@ -21,7 +21,10 @@
       "Bash(python:*)",
       "Bash(ls \"d:\\\\MCMODDING\\\\tachyon\\\\src\\\\main\\\\resources\\\\data\\\\tachyon\\\\multiblock\"\" 2>nul || echo \"Directory does not exist yet \")",
       "Bash(gradlew build:*)",
-      "Bash(cmd.exe /c \"cd /d d:\\\\MCMODDING\\\\tachyon && .\\\\gradlew.bat build --console=plain 2>&1\":*)"
+      "Bash(cmd.exe /c \"cd /d d:\\\\MCMODDING\\\\tachyon && .\\\\gradlew.bat build --console=plain 2>&1\":*)",
+      "WebFetch(domain:ftb.fandom.com)",
+      "WebFetch(domain:forum.feed-the-beast.com)",
+      "WebFetch(domain:wiki.gtnewhorizons.com)"
     ]
   }
 }

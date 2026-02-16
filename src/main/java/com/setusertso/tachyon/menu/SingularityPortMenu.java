@@ -22,7 +22,7 @@ public class SingularityPortMenu extends AbstractContainerMenu {
 
     // Client constructor (from IMenuTypeExtension)
     public SingularityPortMenu(int containerId, Inventory playerInventory, BlockPos pos) {
-        this(containerId, playerInventory, pos, new ItemStackHandler(1), new SimpleContainerData(1));
+        this(containerId, playerInventory, pos, new ItemStackHandler(1), new SimpleContainerData(2));
     }
 
     // Server constructor
@@ -30,7 +30,11 @@ public class SingularityPortMenu extends AbstractContainerMenu {
         this(containerId, playerInventory, be.getBlockPos(), be.getItems(), new ContainerData() {
             @Override
             public int get(int index) {
-                return index == 0 ? be.getMode().ordinal() : 0;
+                return switch (index) {
+                    case 0 -> be.getMode().ordinal();
+                    case 1 -> be.getShieldPowerRate();
+                    default -> 0;
+                };
             }
 
             @Override
@@ -39,7 +43,7 @@ public class SingularityPortMenu extends AbstractContainerMenu {
 
             @Override
             public int getCount() {
-                return 1;
+                return 2;
             }
         });
     }
@@ -74,6 +78,10 @@ public class SingularityPortMenu extends AbstractContainerMenu {
 
     public PortMode getMode() {
         return PortMode.fromOrdinal(data.get(0));
+    }
+
+    public int getShieldPowerRate() {
+        return data.get(1);
     }
 
     @Override

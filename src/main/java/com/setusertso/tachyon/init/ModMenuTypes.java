@@ -46,7 +46,8 @@ public class ModMenuTypes {
 
     public static final Supplier<MenuType<PhotonicInjectorMenu>> PHOTONIC_INJECTOR =
             MENUS.register("photonic_injector",
-                    () -> new MenuType<>(PhotonicInjectorMenu::new, FeatureFlags.DEFAULT_FLAGS));
+                    () -> IMenuTypeExtension.create(
+                            (containerId, inv, buf) -> new PhotonicInjectorMenu(containerId, inv, buf.readBlockPos())));
 
     public static void register(IEventBus modEventBus) {
         MENUS.register(modEventBus);

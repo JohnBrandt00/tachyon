@@ -5,6 +5,7 @@ import com.setusertso.tachyon.init.ModBlockEntities;
 import com.setusertso.tachyon.menu.SingularityPortMenu;
 
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
@@ -18,6 +19,7 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
+import net.neoforged.neoforge.capabilities.Capabilities;
 import net.neoforged.neoforge.energy.IEnergyStorage;
 import net.neoforged.neoforge.items.IItemHandler;
 import net.neoforged.neoforge.items.ItemStackHandler;
@@ -25,6 +27,7 @@ import net.neoforged.neoforge.items.ItemStackHandler;
 public class SingularityPortBlockEntity extends BlockEntity implements MenuProvider {
     private BlockPos masterPos = null;
     private PortMode mode = PortMode.ITEM_INPUT;
+    private int shieldPowerRate = 0; // RF/tick consumed for stability (0-10000)
 
     private final ItemStackHandler items = new ItemStackHandler(1) {
         @Override
@@ -58,11 +61,22 @@ public class SingularityPortBlockEntity extends BlockEntity implements MenuProvi
         return items;
     }
 
+    public int getShieldPowerRate() {
+        return shieldPowerRate;
+    }
+
+    public void setShieldPowerRate(int rate) {
+        this.shieldPowerRate = Math.max(0, Math.min(100000, rate));
+        setChanged();
+    }
+
     public void cycleMode() {
-        // Only cycle between modes relevant to Singularity Engine: ITEM_INPUT, ITEM_OUTPUT, ENERGY_INPUT
+        // Cycle: ITEM_INPUT -> ITEM_OUTPUT -> ENERGY_INPUT -> ENERGY_OUTPUT -> ITEM_INPUT
         this.mode = switch (this.mode) {
             case ITEM_INPUT -> PortMode.ITEM_OUTPUT;
             case ITEM_OUTPUT -> PortMode.ENERGY_INPUT;
+            case ENERGY_INPUT -> PortMode.ENERGY_OUTPUT;
+            case ENERGY_OUTPUT -> PortMode.ITEM_INPUT;
             default -> PortMode.ITEM_INPUT;
         };
         setChanged();
@@ -99,14 +113,6 @@ public class SingularityPortBlockEntity extends BlockEntity implements MenuProvi
         if (!(level.getBlockEntity(be.masterPos) instanceof SingularityControllerBlockEntity controller)) return;
 
         switch (be.mode) {
-            case ITEM_INPUT -> {
-                ItemStack portStack = be.items.getStackInSlot(0);
-                if (!portStack.isEmpty() && portStack.is(ModItems.CONDENSED_LIGHT.get())) {
-                    ItemStack remaining = controller.getItemHandler().insertItem(
-                            SingularityControllerBlockEntity.INPUT_SLOT, portStack, false);
-                    be.items.setStackInSlot(0, remaining);
-                }
-            }
             case ITEM_OUTPUT -> {
                 ItemStack portStack = be.items.getStackInSlot(0);
                 if (portStack.isEmpty() || (portStack.is(ModItems.EXOTIC_MATTER.get())
@@ -122,7 +128,54 @@ public class SingularityPortBlockEntity extends BlockEntity implements MenuProvi
                     }
                 }
             }
-            default -> {}
+            default -> {
+                // ITEM_INPUT, ENERGY_INPUT, ENERGY_OUTPUT: no item transfer
+            }
+        }
+    }
+
+    // --- Shield RF consumption: pull RF from adjacent blocks ---
+
+    public int consumeShieldRfFromAdjacent() {
+        if (mode != PortMode.ENERGY_INPUT || shieldPowerRate <= 0) return 0;
+        if (level == null || level.isClientSide()) return 0;
+
+        int totalConsumed = 0;
+        int remaining = shieldPowerRate;
+
+        for (Direction dir : Direction.values()) {
+            if (remaining <= 0) break;
+            BlockPos adjPos = worldPosition.relative(dir);
+            IEnergyStorage adjacent = level.getCapability(Capabilities.EnergyStorage.BLOCK, adjPos, dir.getOpposite());
+            if (adjacent != null && adjacent.canExtract()) {
+                int extracted = adjacent.extractEnergy(remaining, false);
+                totalConsumed += extracted;
+                remaining -= extracted;
+            }
+        }
+
+        return totalConsumed;
+    }
+
+    // --- RF output: push RF from controller's buffer to adjacent blocks ---
+
+    public void pushRfToAdjacent(CustomEnergyStorage source) {
+        if (mode != PortMode.ENERGY_OUTPUT) return;
+        if (level == null || level.isClientSide()) return;
+
+        int available = source.getEnergyStored();
+        if (available <= 0) return;
+
+        for (Direction dir : Direction.values()) {
+            if (available <= 0) break;
+            BlockPos adjPos = worldPosition.relative(dir);
+            IEnergyStorage adjacent = level.getCapability(Capabilities.EnergyStorage.BLOCK, adjPos, dir.getOpposite());
+            if (adjacent != null && adjacent.canReceive()) {
+                int maxPush = Math.min(available, source.getMaxEnergyStored() / 20); // up to 5% of buffer per tick per face
+                int accepted = adjacent.receiveEnergy(maxPush, false);
+                source.consumeEnergy(accepted);
+                available -= accepted;
+            }
         }
     }
 
@@ -132,7 +185,6 @@ public class SingularityPortBlockEntity extends BlockEntity implements MenuProvi
         if (masterPos == null || level == null) return null;
         if (level.getBlockEntity(masterPos) instanceof SingularityControllerBlockEntity controller) {
             return switch (mode) {
-                case ITEM_INPUT -> new InputOnlyItemHandler(controller.getItemHandler(), SingularityControllerBlockEntity.INPUT_SLOT);
                 case ITEM_OUTPUT -> new OutputOnlyItemHandler(controller.getItemHandler(), SingularityControllerBlockEntity.OUTPUT_SLOT);
                 default -> null;
             };
@@ -142,9 +194,11 @@ public class SingularityPortBlockEntity extends BlockEntity implements MenuProvi
 
     public IEnergyStorage getEnergyHandler() {
         if (masterPos == null || level == null) return null;
-        if (mode != PortMode.ENERGY_INPUT) return null;
         if (level.getBlockEntity(masterPos) instanceof SingularityControllerBlockEntity controller) {
-            return controller.getEnergyStorage();
+            return switch (mode) {
+                case ENERGY_OUTPUT -> controller.getRfBuffer();
+                default -> null;
+            };
         }
         return null;
     }
@@ -169,6 +223,7 @@ public class SingularityPortBlockEntity extends BlockEntity implements MenuProvi
         }
         tag.putInt("Mode", mode.ordinal());
         tag.put("PortItems", items.serializeNBT(registries));
+        tag.putInt("ShieldPowerRate", shieldPowerRate);
     }
 
     @Override
@@ -183,6 +238,7 @@ public class SingularityPortBlockEntity extends BlockEntity implements MenuProvi
         if (tag.contains("PortItems")) {
             items.deserializeNBT(registries, tag.getCompound("PortItems"));
         }
+        shieldPowerRate = tag.contains("ShieldPowerRate") ? Math.max(0, Math.min(100000, tag.getInt("ShieldPowerRate"))) : 0;
     }
 
     @Override

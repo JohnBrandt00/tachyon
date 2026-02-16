@@ -3,6 +3,7 @@ package com.setusertso.tachyon.screen;
 import com.setusertso.tachyon.block.entity.PortMode;
 import com.setusertso.tachyon.menu.SingularityPortMenu;
 import com.setusertso.tachyon.network.CyclePortModePacket;
+import com.setusertso.tachyon.network.SetShieldPowerPacket;
 import com.setusertso.tachyon.tachyon;
 
 import net.minecraft.client.gui.GuiGraphics;
@@ -17,6 +18,8 @@ public class SingularityPortScreen extends AbstractContainerScreen<SingularityPo
     private static final ResourceLocation TEXTURE =
             ResourceLocation.fromNamespaceAndPath(tachyon.MODID, "textures/gui/accelerator_port.png");
 
+    private Button[] shieldButtons = new Button[6];
+
     public SingularityPortScreen(SingularityPortMenu menu, Inventory playerInventory, Component title) {
         super(menu, playerInventory, title);
         this.imageWidth = 176;
@@ -28,10 +31,45 @@ public class SingularityPortScreen extends AbstractContainerScreen<SingularityPo
     @Override
     protected void init() {
         super.init();
+
+        // Cycle mode button
         this.addRenderableWidget(Button.builder(
                 Component.translatable("gui.tachyon.cycle_mode"),
                 button -> PacketDistributor.sendToServer(new CyclePortModePacket(this.menu.getPortPos()))
         ).bounds(this.leftPos + 58, this.topPos + 56, 60, 20).build());
+
+        // Shield power buttons: -1k, -100, -10, +10, +100, +1k
+        int btnY = this.topPos + 38;
+        shieldButtons[0] = Button.builder(Component.literal("-1k"),
+                b -> sendShield(-1000)).bounds(this.leftPos + 8, btnY, 24, 14).build();
+        shieldButtons[1] = Button.builder(Component.literal("-100"),
+                b -> sendShield(-100)).bounds(this.leftPos + 34, btnY, 28, 14).build();
+        shieldButtons[2] = Button.builder(Component.literal("-10"),
+                b -> sendShield(-10)).bounds(this.leftPos + 64, btnY, 24, 14).build();
+        shieldButtons[3] = Button.builder(Component.literal("+10"),
+                b -> sendShield(10)).bounds(this.leftPos + 90, btnY, 24, 14).build();
+        shieldButtons[4] = Button.builder(Component.literal("+100"),
+                b -> sendShield(100)).bounds(this.leftPos + 116, btnY, 28, 14).build();
+        shieldButtons[5] = Button.builder(Component.literal("+1k"),
+                b -> sendShield(1000)).bounds(this.leftPos + 146, btnY, 24, 14).build();
+        for (Button btn : shieldButtons) {
+            this.addRenderableWidget(btn);
+        }
+    }
+
+    private void sendShield(int delta) {
+        int current = this.menu.getShieldPowerRate();
+        int newRate = Math.max(0, Math.min(100000, current + delta));
+        PacketDistributor.sendToServer(new SetShieldPowerPacket(this.menu.getPortPos(), newRate));
+    }
+
+    @Override
+    public void containerTick() {
+        super.containerTick();
+        boolean showShield = this.menu.getMode() == PortMode.ENERGY_INPUT;
+        for (Button btn : shieldButtons) {
+            btn.visible = showShield;
+        }
     }
 
     @Override
@@ -48,7 +86,15 @@ public class SingularityPortScreen extends AbstractContainerScreen<SingularityPo
         Component modeText = Component.translatable("gui.tachyon.port_mode." + mode.getSerializedName());
         int textWidth = this.font.width(modeText);
         graphics.drawString(this.font, modeText,
-                this.leftPos + (this.imageWidth - textWidth) / 2, this.topPos + 42, 0xFFFFFF);
+                this.leftPos + (this.imageWidth - textWidth) / 2, this.topPos + 26, 0xFFFFFF);
+
+        // Shield power display (only in ENERGY_INPUT mode)
+        if (mode == PortMode.ENERGY_INPUT) {
+            String shieldText = "Shield: " + this.menu.getShieldPowerRate() + " RF/t";
+            int shieldWidth = this.font.width(shieldText);
+            graphics.drawString(this.font, shieldText,
+                    this.leftPos + (this.imageWidth - shieldWidth) / 2, this.topPos + 42, 0x40C0FF, false);
+        }
 
         this.renderTooltip(graphics, mouseX, mouseY);
     }

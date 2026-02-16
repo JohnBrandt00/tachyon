@@ -59,6 +59,7 @@ public class SingularityControllerRenderer implements BlockEntityRenderer<Singul
 
     private float cachedBillboardYaw = 0;
     private float cachedDiskRotation = 0;
+    private float prevRenderScale = -1;
 
     public SingularityControllerRenderer(BlockEntityRendererProvider.Context context) {
     }
@@ -72,7 +73,11 @@ public class SingularityControllerRenderer implements BlockEntityRenderer<Singul
         if (centerPos == null) return;
         if (be.getLevel() == null) return;
 
-        float bhScale = be.getBlackHoleScale();
+        float rawScale = be.getBlackHoleScale();
+        // Client-side lerp for smooth inter-tick interpolation
+        if (prevRenderScale < 0) prevRenderScale = rawScale;
+        float bhScale = prevRenderScale + (rawScale - prevRenderScale) * 0.05f;
+        prevRenderScale = bhScale;
         // Skip all rendering if neutralized (scale near zero)
         if (bhScale <= 0.01f) return;
 
@@ -707,8 +712,14 @@ public class SingularityControllerRenderer implements BlockEntityRenderer<Singul
         float tiltRad = (float) Math.toRadians(DISK_TILT);
         float rotRad = (float) Math.toRadians(cachedDiskRotation);
 
+        // Scale particle count with black hole energy
+        float energyFactor = Math.max(0.1f, be.getBlackHoleScale());
+        int diskParticleCount = (int)(10 * energyFactor);
+        int infallParticleCount = (int)(2 * energyFactor);
+        int sphereParticleCount = (int)(3 * energyFactor);
+
         // Disk plane particles
-        for (int p = 0; p < 10; p++) {
+        for (int p = 0; p < diskParticleCount; p++) {
             if (level.random.nextFloat() < 0.95f) {
                 float angle = level.random.nextFloat() * (float)(2 * Math.PI);
                 double lx = Math.cos(angle) * DISK_FADE;
@@ -731,7 +742,7 @@ public class SingularityControllerRenderer implements BlockEntityRenderer<Singul
         }
 
         // Infall particles
-        for (int p = 0; p < 2; p++) {
+        for (int p = 0; p < infallParticleCount; p++) {
             if (level.random.nextFloat() < 0.4f) {
                 float angle = level.random.nextFloat() * (float)(2 * Math.PI);
                 float radius = DISK_FADE + 0.5f * SCALE + level.random.nextFloat() * 3.0f * SCALE;
@@ -750,7 +761,7 @@ public class SingularityControllerRenderer implements BlockEntityRenderer<Singul
         }
 
         // Sphere infall particles
-        for (int p = 0; p < 3; p++) {
+        for (int p = 0; p < sphereParticleCount; p++) {
             if (level.random.nextFloat() < 0.5f) {
                 float angle = level.random.nextFloat() * (float)(2 * Math.PI);
                 float phi = (level.random.nextFloat() - 0.5f) * (float) Math.PI;

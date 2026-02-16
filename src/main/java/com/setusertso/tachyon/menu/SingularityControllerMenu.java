@@ -1,6 +1,5 @@
 package com.setusertso.tachyon.menu;
 
-import com.setusertso.tachyon.ModItems;
 import com.setusertso.tachyon.block.entity.EngineState;
 import com.setusertso.tachyon.init.ModMenuTypes;
 
@@ -22,7 +21,7 @@ public class SingularityControllerMenu extends AbstractContainerMenu {
 
     // Client constructor (receives BlockPos from buffer)
     public SingularityControllerMenu(int containerId, Inventory playerInventory, BlockPos pos) {
-        this(containerId, playerInventory, new ItemStackHandler(2), new SimpleContainerData(12), pos);
+        this(containerId, playerInventory, new ItemStackHandler(1), new SimpleContainerData(19), pos);
     }
 
     // Server constructor
@@ -32,16 +31,8 @@ public class SingularityControllerMenu extends AbstractContainerMenu {
         this.data = data;
         this.controllerPos = pos;
 
-        // Input slot (Condensed Light)
-        this.addSlot(new SlotItemHandler(handler, 0, 56, 35) {
-            @Override
-            public boolean mayPlace(ItemStack stack) {
-                return stack.is(ModItems.CONDENSED_LIGHT.get());
-            }
-        });
-
-        // Output slot (Exotic Matter)
-        this.addSlot(new SlotItemHandler(handler, 1, 116, 35) {
+        // Output slot (Exotic Matter) — no input slot anymore
+        this.addSlot(new SlotItemHandler(handler, 0, 116, 35) {
             @Override
             public boolean mayPlace(ItemStack stack) {
                 return false;
@@ -63,28 +54,42 @@ public class SingularityControllerMenu extends AbstractContainerMenu {
         this.addDataSlots(data);
     }
 
-    public int getProgress() { return data.get(0); }
-    public int getMaxProgress() { return data.get(1); }
-    public int getEnergy() { return data.get(2); }
-    public int getMaxEnergy() { return data.get(3); }
-    public int getLightBuffer() { return data.get(4); }
-    public int getMaxLightBuffer() { return data.get(5); }
+    // --- Data accessors (slots 0-17) ---
+
+    public int getCraftProgress() { return data.get(0); }
+    public int getCraftMaxProgress() { return data.get(1); }
+    public int getRfStored() { return data.get(2); }
+    public int getRfCapacity() { return data.get(3); }
+    public int getBlackHoleEnergy() { return data.get(4); }
+    public int getMaxBlackHoleEnergy() { return data.get(5); }
     public int getStability() { return data.get(6); }
     public int getMaxStability() { return data.get(7); }
     public int getActiveInjectors() { return data.get(8); }
     public int getCoreCount() { return data.get(9); }
     public EngineState getEngineState() { return EngineState.fromOrdinal(data.get(10)); }
     public int getBlackHoleScaleRaw() { return data.get(11); }
+    public int getHawkingRf() { return data.get(12); }
+    public int getTidalStress() { return data.get(13); }
+    public int getNetStability() { return data.get(14); }
+    public int getPhotonRate() { return data.get(15); }
+    public int getShieldPower() { return data.get(16); }
+    public boolean isCrafting() { return data.get(17) == 1; }
+    public int getTemperature() { return data.get(18); }
     public BlockPos getControllerPos() { return controllerPos; }
 
-    public float getProgressScaled() {
+    public float getCraftProgressScaled() {
         int max = data.get(1);
         return max == 0 ? 0 : (float) data.get(0) / max;
     }
 
-    public float getEnergyScaled() {
+    public float getRfScaled() {
         int max = data.get(3);
         return max == 0 ? 0 : (float) data.get(2) / max;
+    }
+
+    public float getBlackHoleEnergyScaled() {
+        int max = data.get(5);
+        return max == 0 ? 0 : (float) data.get(4) / max;
     }
 
     public float getStabilityScaled() {
@@ -100,25 +105,19 @@ public class SingularityControllerMenu extends AbstractContainerMenu {
             ItemStack slotStack = slot.getItem();
             result = slotStack.copy();
 
-            // From machine slots (0-1) to player inventory (2-37)
-            if (index < 2) {
-                if (!this.moveItemStackTo(slotStack, 2, 38, true)) {
-                    return ItemStack.EMPTY;
-                }
-            }
-            // From player inventory to input slot (condensed light only)
-            else if (slotStack.is(ModItems.CONDENSED_LIGHT.get())) {
-                if (!this.moveItemStackTo(slotStack, 0, 1, false)) {
+            // From machine slot (0) to player inventory (1-36)
+            if (index == 0) {
+                if (!this.moveItemStackTo(slotStack, 1, 37, true)) {
                     return ItemStack.EMPTY;
                 }
             }
             // Between inventory and hotbar
-            else if (index < 29) {
-                if (!this.moveItemStackTo(slotStack, 29, 38, false)) {
+            else if (index < 28) {
+                if (!this.moveItemStackTo(slotStack, 28, 37, false)) {
                     return ItemStack.EMPTY;
                 }
             } else {
-                if (!this.moveItemStackTo(slotStack, 2, 29, false)) {
+                if (!this.moveItemStackTo(slotStack, 1, 28, false)) {
                     return ItemStack.EMPTY;
                 }
             }

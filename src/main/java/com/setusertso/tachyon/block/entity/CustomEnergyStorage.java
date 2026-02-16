@@ -17,4 +17,8 @@ public class CustomEnergyStorage extends EnergyStorage {
         this.energy -= consumed;
         return consumed;
     }
+
+    public void addEnergy(int amount) {
+        this.energy = Math.min(this.capacity, this.energy + amount);
+    }
 }

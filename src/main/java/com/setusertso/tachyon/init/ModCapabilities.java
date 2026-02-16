@@ -43,6 +43,13 @@ public class ModCapabilities {
                 (be, side) -> be.getEnergyHandler()
         );
 
+        // Creative Power Sink energy handler
+        event.registerBlockEntity(
+                Capabilities.EnergyStorage.BLOCK,
+                ModBlockEntities.CREATIVE_POWER_SINK.get(),
+                (be, side) -> be.getEnergyStorage()
+        );
+
         // Photonic Injector item handler
         event.registerBlockEntity(
                 Capabilities.ItemHandler.BLOCK,

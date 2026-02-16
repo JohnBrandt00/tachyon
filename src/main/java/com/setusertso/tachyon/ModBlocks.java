@@ -5,6 +5,7 @@ import com.setusertso.tachyon.block.AcceleratorControllerBlock;
 import com.setusertso.tachyon.block.AcceleratorGlassBlock;
 import com.setusertso.tachyon.block.AcceleratorPortBlock;
 import com.setusertso.tachyon.block.CreativePowerBlock;
+import com.setusertso.tachyon.block.CreativePowerSinkBlock;
 import com.setusertso.tachyon.block.ExoticMatterCoreBlock;
 import com.setusertso.tachyon.block.PhotonicInjectorBlock;
 import com.setusertso.tachyon.block.SingularityCasingBlock;
@@ -178,6 +179,13 @@ public class ModBlocks {
                     .mapColor(MapColor.COLOR_PURPLE).strength(3.0F, 6.0F).sound(SoundType.METAL)));
     public static final DeferredItem<BlockItem> CREATIVE_POWER_SOURCE_ITEM = BLOCK_ITEMS.register("creative_power_source",
             () -> new BlockItem(CREATIVE_POWER_SOURCE.get(), new Item.Properties()));
+
+    // Creative Power Sink (test block)
+    public static final DeferredBlock<CreativePowerSinkBlock> CREATIVE_POWER_SINK = BLOCKS.register("creative_power_sink",
+            () -> new CreativePowerSinkBlock(BlockBehaviour.Properties.of()
+                    .mapColor(MapColor.COLOR_PURPLE).strength(3.0F, 6.0F).sound(SoundType.METAL)));
+    public static final DeferredItem<BlockItem> CREATIVE_POWER_SINK_ITEM = BLOCK_ITEMS.register("creative_power_sink",
+            () -> new BlockItem(CREATIVE_POWER_SINK.get(), new Item.Properties()));
 
     public static void register(IEventBus modEventBus) {
         BLOCKS.register(modEventBus);

@@ -39,6 +39,7 @@ public class PhotonicInjectorBlockEntity extends BlockEntity implements MenuProv
 
     private int burnTime = 0;
     private boolean active = false;
+    private int injectionRate = 100; // hundredths: 100 = 1.00/t, range 1-1000 (0.01 to 10.00)
 
     public PhotonicInjectorBlockEntity(BlockPos pos, BlockState state) {
         super(ModBlockEntities.PHOTONIC_INJECTOR.get(), pos, state);
@@ -52,11 +53,21 @@ public class PhotonicInjectorBlockEntity extends BlockEntity implements MenuProv
         return active;
     }
 
+    public int getInjectionRate() {
+        return injectionRate;
+    }
+
+    public void setInjectionRate(int rate) {
+        this.injectionRate = Math.max(1, Math.min(1000, rate));
+        setChanged();
+    }
+
     public static void serverTick(Level level, BlockPos pos, BlockState state, PhotonicInjectorBlockEntity be) {
         boolean wasActive = be.active;
 
         if (be.burnTime > 0) {
-            be.burnTime--;
+            be.burnTime -= be.injectionRate;
+            if (be.burnTime < 0) be.burnTime = 0;
             be.active = true;
         } else {
             ItemStack fuel = be.items.getStackInSlot(0);
@@ -142,6 +153,7 @@ public class PhotonicInjectorBlockEntity extends BlockEntity implements MenuProv
         tag.put("Items", items.serializeNBT(registries));
         tag.putInt("BurnTime", burnTime);
         tag.putBoolean("Active", active);
+        tag.putInt("InjectionRate", injectionRate);
     }
 
     @Override
@@ -152,6 +164,7 @@ public class PhotonicInjectorBlockEntity extends BlockEntity implements MenuProv
         }
         burnTime = tag.getInt("BurnTime");
         active = tag.getBoolean("Active");
+        injectionRate = tag.contains("InjectionRate") ? Math.max(1, Math.min(1000, tag.getInt("InjectionRate"))) : 100;
     }
 
     @Override

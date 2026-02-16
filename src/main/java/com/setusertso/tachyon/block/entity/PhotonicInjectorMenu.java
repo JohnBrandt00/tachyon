@@ -3,6 +3,7 @@ package com.setusertso.tachyon.block.entity;
 import com.setusertso.tachyon.ModItems;
 import com.setusertso.tachyon.init.ModMenuTypes;
 
+import net.minecraft.core.BlockPos;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.AbstractContainerMenu;
@@ -16,19 +17,21 @@ import net.neoforged.neoforge.items.SlotItemHandler;
 
 public class PhotonicInjectorMenu extends AbstractContainerMenu {
     private final ContainerData data;
+    private final BlockPos injectorPos;
 
-    // Client constructor
-    public PhotonicInjectorMenu(int containerId, Inventory playerInventory) {
-        this(containerId, playerInventory, new ItemStackHandler(1), new SimpleContainerData(2));
+    // Client constructor (from IMenuTypeExtension)
+    public PhotonicInjectorMenu(int containerId, Inventory playerInventory, BlockPos pos) {
+        this(containerId, playerInventory, pos, new ItemStackHandler(1), new SimpleContainerData(2));
     }
 
     // Server constructor
     public PhotonicInjectorMenu(int containerId, Inventory playerInventory, PhotonicInjectorBlockEntity be) {
-        this(containerId, playerInventory, be.getItems(), new ContainerData() {
+        this(containerId, playerInventory, be.getBlockPos(), be.getItems(), new ContainerData() {
             @Override
             public int get(int index) {
                 return switch (index) {
                     case 0 -> be.isActive() ? 1 : 0;
+                    case 1 -> be.getInjectionRate();
                     default -> 0;
                 };
             }
@@ -44,10 +47,11 @@ public class PhotonicInjectorMenu extends AbstractContainerMenu {
         });
     }
 
-    private PhotonicInjectorMenu(int containerId, Inventory playerInventory,
+    private PhotonicInjectorMenu(int containerId, Inventory playerInventory, BlockPos pos,
                                   IItemHandler handler, ContainerData data) {
         super(ModMenuTypes.PHOTONIC_INJECTOR.get(), containerId);
         this.data = data;
+        this.injectorPos = pos;
 
         // Fuel slot (Condensed Light)
         this.addSlot(new SlotItemHandler(handler, 0, 80, 35) {
@@ -74,6 +78,14 @@ public class PhotonicInjectorMenu extends AbstractContainerMenu {
 
     public boolean isActive() {
         return data.get(0) == 1;
+    }
+
+    public int getInjectionRate() {
+        return data.get(1);
+    }
+
+    public BlockPos getInjectorPos() {
+        return injectorPos;
     }
 
     @Override
