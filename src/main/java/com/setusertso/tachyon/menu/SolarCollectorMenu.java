@@ -1,8 +1,6 @@
 package com.setusertso.tachyon.menu;
 
-import com.setusertso.tachyon.ModItems;
 import com.setusertso.tachyon.block.entity.IUpgradeable;
-import com.setusertso.tachyon.block.entity.ThoriumReactorBlockEntity;
 import com.setusertso.tachyon.init.ModMenuTypes;
 
 import net.minecraft.world.entity.player.Inventory;
@@ -16,37 +14,31 @@ import net.neoforged.neoforge.items.IItemHandler;
 import net.neoforged.neoforge.items.ItemStackHandler;
 import net.neoforged.neoforge.items.SlotItemHandler;
 
-public class ThoriumReactorMenu extends AbstractContainerMenu {
+public class SolarCollectorMenu extends AbstractContainerMenu {
     private final ContainerData data;
 
     private static final int MACHINE_SLOTS = 1;
     private static final int UPGRADE_SLOTS = 3;
-    private static final int TE_SLOTS = MACHINE_SLOTS + UPGRADE_SLOTS; // 4
+    private static final int TE_SLOTS = MACHINE_SLOTS + UPGRADE_SLOTS;
     private static final int PLAYER_INV_START = TE_SLOTS;
-    private static final int PLAYER_INV_END = PLAYER_INV_START + 36; // 40
+    private static final int PLAYER_INV_END = PLAYER_INV_START + 36;
 
     // Client constructor
-    public ThoriumReactorMenu(int containerId, Inventory playerInventory) {
-        this(containerId, playerInventory, new ItemStackHandler(1), new ItemStackHandler(3), new SimpleContainerData(4));
+    public SolarCollectorMenu(int containerId, Inventory playerInventory) {
+        this(containerId, playerInventory, new ItemStackHandler(1), new ItemStackHandler(3), new SimpleContainerData(2));
     }
 
-    // Server constructor (from block entity)
-    public ThoriumReactorMenu(int containerId, Inventory playerInventory,
-                              ThoriumReactorBlockEntity be, IItemHandler upgradeHandler) {
-        this(containerId, playerInventory, be.getItems(), upgradeHandler, be.getDataAccess());
-    }
-
-    // Main constructor
-    public ThoriumReactorMenu(int containerId, Inventory playerInventory,
-                              IItemHandler handler, IItemHandler upgradeHandler, ContainerData data) {
-        super(ModMenuTypes.THORIUM_REACTOR.get(), containerId);
+    // Server constructor
+    public SolarCollectorMenu(int containerId, Inventory playerInventory,
+                               IItemHandler handler, IItemHandler upgradeHandler, ContainerData data) {
+        super(ModMenuTypes.SOLAR_COLLECTOR.get(), containerId);
         this.data = data;
 
-        // Fuel slot (center of GUI)
-        this.addSlot(new SlotItemHandler(handler, 0, 80, 44) {
+        // Output slot (center)
+        this.addSlot(new SlotItemHandler(handler, 0, 80, 35) {
             @Override
             public boolean mayPlace(ItemStack stack) {
-                return stack.is(ModItems.THORIUM_INGOT.get());
+                return false; // Output only
             }
         });
 
@@ -65,7 +57,7 @@ public class ThoriumReactorMenu extends AbstractContainerMenu {
             });
         }
 
-        // Player inventory (3 rows)
+        // Player inventory
         for (int row = 0; row < 3; row++) {
             for (int col = 0; col < 9; col++) {
                 this.addSlot(new Slot(playerInventory, col + row * 9 + 9, 8 + col * 18, 84 + row * 18));
@@ -80,36 +72,12 @@ public class ThoriumReactorMenu extends AbstractContainerMenu {
         this.addDataSlots(data);
     }
 
-    public int getBurnTime() {
+    public boolean isActive() {
+        return data.get(1) > 0;
+    }
+
+    public int getProductionProgress() {
         return data.get(0);
-    }
-
-    public int getMaxBurnTime() {
-        return data.get(1);
-    }
-
-    public boolean isBurning() {
-        return data.get(0) > 0;
-    }
-
-    public float getBurnProgress() {
-        int max = data.get(1);
-        if (max == 0) return 0;
-        return (float) data.get(0) / max;
-    }
-
-    public int getEnergyStored() {
-        return data.get(2);
-    }
-
-    public int getEnergyCapacity() {
-        return data.get(3);
-    }
-
-    public float getEnergyProgress() {
-        int max = data.get(3);
-        if (max == 0) return 0;
-        return (float) data.get(2) / max;
     }
 
     @Override
@@ -120,24 +88,16 @@ public class ThoriumReactorMenu extends AbstractContainerMenu {
             ItemStack slotStack = slot.getItem();
             result = slotStack.copy();
 
-            // From machine/upgrade slots to player inventory
             if (index < TE_SLOTS) {
                 if (!this.moveItemStackTo(slotStack, PLAYER_INV_START, PLAYER_INV_END, true)) {
                     return ItemStack.EMPTY;
                 }
             }
-            // From player inventory: try upgrade slots first, then fuel slot
             else if (IUpgradeable.isUpgradeItem(slotStack)) {
                 if (!this.moveItemStackTo(slotStack, MACHINE_SLOTS, TE_SLOTS, false)) {
                     return ItemStack.EMPTY;
                 }
             }
-            else if (slotStack.is(ModItems.THORIUM_INGOT.get())) {
-                if (!this.moveItemStackTo(slotStack, 0, 1, false)) {
-                    return ItemStack.EMPTY;
-                }
-            }
-            // Between inventory and hotbar
             else if (index < PLAYER_INV_START + 27) {
                 if (!this.moveItemStackTo(slotStack, PLAYER_INV_START + 27, PLAYER_INV_END, false)) {
                     return ItemStack.EMPTY;

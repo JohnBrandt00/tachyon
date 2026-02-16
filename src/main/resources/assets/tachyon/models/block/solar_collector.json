@@ -1,0 +1,8 @@
+{
+  "parent": "minecraft:block/cube_bottom_top",
+  "textures": {
+    "top": "tachyon:block/solar_collector_top",
+    "bottom": "tachyon:block/solar_collector_side",
+    "side": "tachyon:block/solar_collector_side"
+  }
+}

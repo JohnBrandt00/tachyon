@@ -36,7 +36,7 @@ import net.neoforged.neoforge.fluids.capability.IFluidHandler;
 import net.neoforged.neoforge.fluids.capability.templates.FluidTank;
 import net.neoforged.neoforge.items.ItemStackHandler;
 
-public class AcceleratorControllerBlockEntity extends BlockEntity implements MenuProvider {
+public class AcceleratorControllerBlockEntity extends BlockEntity implements MenuProvider, IUpgradeable {
 
     // Slots
     public static final int INPUT_SLOT = 0;
@@ -50,6 +50,7 @@ public class AcceleratorControllerBlockEntity extends BlockEntity implements Men
     public static final int FLUID_CAPACITY = 16_000;
     public static final int FLUID_PER_CRAFT_THORIUM = 1_000;
     public static final int FLUID_PER_CRAFT_ENDERPEARL = 100;
+    public static final int FLUID_PER_CRAFT_PHOTON = 200;
     public static final int PROCESS_TIME = 200;
 
     // Windup mechanic constants
@@ -66,6 +67,8 @@ public class AcceleratorControllerBlockEntity extends BlockEntity implements Men
             setChanged();
         }
     };
+
+    private final ItemStackHandler upgradeHandler = IUpgradeable.createUpgradeHandler(this::setChanged);
 
     private final CustomEnergyStorage energy = new CustomEnergyStorage(ENERGY_CAPACITY, MAX_ENERGY_RECEIVE, 0);
 
@@ -154,10 +157,16 @@ public class AcceleratorControllerBlockEntity extends BlockEntity implements Men
         return momentum;
     }
 
+    @Override
+    public ItemStackHandler getUpgradeHandler() {
+        return upgradeHandler;
+    }
+
     public float getSpeedMultiplier() {
         // Interpolate between min and max speed based on momentum
         float momentumRatio = (float) momentum / MAX_MOMENTUM;
-        return MIN_SPEED_MULTIPLIER + (MAX_SPEED_MULTIPLIER - MIN_SPEED_MULTIPLIER) * momentumRatio;
+        float baseSpeed = MIN_SPEED_MULTIPLIER + (MAX_SPEED_MULTIPLIER - MIN_SPEED_MULTIPLIER) * momentumRatio;
+        return baseSpeed * IUpgradeable.super.getSpeedMultiplier();
     }
 
     // --- Structure Management ---
@@ -232,6 +241,10 @@ public class AcceleratorControllerBlockEntity extends BlockEntity implements Men
             Containers.dropItemStack(level, worldPosition.getX(), worldPosition.getY(),
                     worldPosition.getZ(), items.getStackInSlot(i));
         }
+        for (int i = 0; i < upgradeHandler.getSlots(); i++) {
+            Containers.dropItemStack(level, worldPosition.getX(), worldPosition.getY(),
+                    worldPosition.getZ(), upgradeHandler.getStackInSlot(i));
+        }
     }
 
     // --- Processing ---
@@ -244,11 +257,13 @@ public class AcceleratorControllerBlockEntity extends BlockEntity implements Men
         boolean wasProcessing = be.progress > 0;
 
         if (be.canProcess()) {
-            // Apply speed multiplier to processing
+            // Apply speed multiplier to processing (momentum + upgrades)
             float speedMultiplier = be.getSpeedMultiplier();
             int progressIncrement = Math.max(1, Math.round(speedMultiplier));
 
-            be.energy.consumeEnergy(ENERGY_PER_TICK);
+            // Apply energy upgrade multiplier
+            int energyCost = Math.max(1, Math.round(ENERGY_PER_TICK * be.getEnergyMultiplier()));
+            be.energy.consumeEnergy(energyCost);
             be.progress += progressIncrement;
             changed = true;
 
@@ -284,8 +299,9 @@ public class AcceleratorControllerBlockEntity extends BlockEntity implements Men
     }
 
     private boolean canProcess() {
-        // Need energy
-        if (energy.getEnergyStored() < ENERGY_PER_TICK) return false;
+        // Need energy (accounting for energy upgrade)
+        int energyCost = Math.max(1, Math.round(ENERGY_PER_TICK * getEnergyMultiplier()));
+        if (energy.getEnergyStored() < energyCost) return false;
 
         // Check input item
         var input = items.getStackInSlot(INPUT_SLOT);
@@ -294,17 +310,21 @@ public class AcceleratorControllerBlockEntity extends BlockEntity implements Men
         // Determine recipe and fluid requirement
         boolean isThorium = input.is(ModTags.Items.INGOTS_THORIUM);
         boolean isEnderPearl = input.is(Items.ENDER_PEARL);
+        boolean isRawPhoton = input.is(ModItems.RAW_PHOTON.get());
 
-        if (!isThorium && !isEnderPearl) return false;
+        if (!isThorium && !isEnderPearl && !isRawPhoton) return false;
 
         // Check fluid requirement based on input
-        int requiredFluid = isThorium ? FLUID_PER_CRAFT_THORIUM : FLUID_PER_CRAFT_ENDERPEARL;
+        int requiredFluid = isThorium ? FLUID_PER_CRAFT_THORIUM
+                : isRawPhoton ? FLUID_PER_CRAFT_PHOTON
+                : FLUID_PER_CRAFT_ENDERPEARL;
         if (fluidTank.getFluidAmount() < requiredFluid) return false;
 
-        // Need space for output
+        // Need space for output (Tachyon Shard or Excited Photon)
         var output = items.getStackInSlot(OUTPUT_SLOT);
+        var expectedOutput = isRawPhoton ? ModItems.EXCITED_PHOTON.get() : ModItems.TACHYON_SHARD.get();
         if (!output.isEmpty()) {
-            if (!output.is(ModItems.TACHYON_SHARD.get())) return false;
+            if (!output.is(expectedOutput)) return false;
             if (output.getCount() >= output.getMaxStackSize()) return false;
         }
         return true;
@@ -313,21 +333,37 @@ public class AcceleratorControllerBlockEntity extends BlockEntity implements Men
     private void processItem() {
         var input = items.getStackInSlot(INPUT_SLOT);
 
+        boolean isRawPhoton = input.is(ModItems.RAW_PHOTON.get());
+
         // Determine fluid consumption based on input
         int fluidToConsume = input.is(ModTags.Items.INGOTS_THORIUM)
             ? FLUID_PER_CRAFT_THORIUM
+            : isRawPhoton ? FLUID_PER_CRAFT_PHOTON
             : FLUID_PER_CRAFT_ENDERPEARL;
 
         // Consume input
         items.extractItem(INPUT_SLOT, 1, false);
         // Consume helium
         fluidTank.drain(fluidToConsume, IFluidHandler.FluidAction.EXECUTE);
+
+        // Determine output item
+        var outputItem = isRawPhoton ? ModItems.EXCITED_PHOTON.get() : ModItems.TACHYON_SHARD.get();
+
+        // Determine output count (output upgrade gives chance to double)
+        int outputCount = 1;
+        float outputChance = getOutputChance();
+        if (outputChance > 0 && level != null && level.getRandom().nextFloat() < outputChance) {
+            outputCount = 2;
+        }
+
         // Produce output
         var existing = items.getStackInSlot(OUTPUT_SLOT);
         if (existing.isEmpty()) {
-            items.setStackInSlot(OUTPUT_SLOT, ModItems.TACHYON_SHARD.get().getDefaultInstance());
+            var stack = outputItem.getDefaultInstance();
+            stack.setCount(outputCount);
+            items.setStackInSlot(OUTPUT_SLOT, stack);
         } else {
-            existing.grow(1);
+            existing.grow(outputCount);
         }
     }
 
@@ -340,7 +376,7 @@ public class AcceleratorControllerBlockEntity extends BlockEntity implements Men
 
     @Override
     public AbstractContainerMenu createMenu(int containerId, Inventory playerInventory, Player player) {
-        return new AcceleratorControllerMenu(containerId, playerInventory, items, dataAccess);
+        return new AcceleratorControllerMenu(containerId, playerInventory, items, upgradeHandler, dataAccess);
     }
 
     // --- NBT ---
@@ -349,6 +385,7 @@ public class AcceleratorControllerBlockEntity extends BlockEntity implements Men
     protected void saveAdditional(CompoundTag tag, HolderLookup.Provider registries) {
         super.saveAdditional(tag, registries);
         tag.put("Inventory", items.serializeNBT(registries));
+        tag.put("Upgrades", upgradeHandler.serializeNBT(registries));
         tag.putInt("Energy", energy.getEnergyStored());
         tag.put("Fluid", fluidTank.writeToNBT(registries, new CompoundTag()));
         tag.putInt("Progress", progress);
@@ -382,6 +419,9 @@ public class AcceleratorControllerBlockEntity extends BlockEntity implements Men
     protected void loadAdditional(CompoundTag tag, HolderLookup.Provider registries) {
         super.loadAdditional(tag, registries);
         items.deserializeNBT(registries, tag.getCompound("Inventory"));
+        if (tag.contains("Upgrades")) {
+            upgradeHandler.deserializeNBT(registries, tag.getCompound("Upgrades"));
+        }
         energy.setEnergy(tag.getInt("Energy"));
         fluidTank.readFromNBT(registries, tag.getCompound("Fluid"));
         progress = tag.getInt("Progress");

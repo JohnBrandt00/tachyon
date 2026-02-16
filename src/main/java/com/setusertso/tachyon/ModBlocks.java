@@ -4,6 +4,8 @@ import com.setusertso.tachyon.block.AcceleratorCasingBlock;
 import com.setusertso.tachyon.block.AcceleratorControllerBlock;
 import com.setusertso.tachyon.block.AcceleratorGlassBlock;
 import com.setusertso.tachyon.block.AcceleratorPortBlock;
+import com.setusertso.tachyon.block.PhotonCompressorBlock;
+import com.setusertso.tachyon.block.SolarCollectorBlock;
 import com.setusertso.tachyon.block.CreativePowerBlock;
 import com.setusertso.tachyon.block.CreativePowerSinkBlock;
 import com.setusertso.tachyon.block.ExoticMatterCoreBlock;
@@ -181,6 +183,22 @@ public class ModBlocks {
                     .lightLevel(state -> state.getValue(ThoriumReactorBlock.BURNING) ? 13 : 0)));
     public static final DeferredItem<BlockItem> THORIUM_REACTOR_ITEM = BLOCK_ITEMS.register("thorium_reactor",
             () -> new BlockItem(THORIUM_REACTOR.get(), new Item.Properties()));
+
+    // Solar Collector
+    public static final DeferredBlock<SolarCollectorBlock> SOLAR_COLLECTOR = BLOCKS.register("solar_collector",
+            () -> new SolarCollectorBlock(BlockBehaviour.Properties.of()
+                    .mapColor(MapColor.METAL).strength(3.0F, 6.0F).sound(SoundType.METAL).requiresCorrectToolForDrops()
+                    .lightLevel(state -> state.getValue(SolarCollectorBlock.ACTIVE) ? 8 : 0)));
+    public static final DeferredItem<BlockItem> SOLAR_COLLECTOR_ITEM = BLOCK_ITEMS.register("solar_collector",
+            () -> new BlockItem(SOLAR_COLLECTOR.get(), new Item.Properties()));
+
+    // Photon Compressor
+    public static final DeferredBlock<PhotonCompressorBlock> PHOTON_COMPRESSOR = BLOCKS.register("photon_compressor",
+            () -> new PhotonCompressorBlock(BlockBehaviour.Properties.of()
+                    .mapColor(MapColor.METAL).strength(5.0F, 6.0F).sound(SoundType.METAL).requiresCorrectToolForDrops()
+                    .lightLevel(state -> state.getValue(PhotonCompressorBlock.ACTIVE) ? 12 : 0)));
+    public static final DeferredItem<BlockItem> PHOTON_COMPRESSOR_ITEM = BLOCK_ITEMS.register("photon_compressor",
+            () -> new BlockItem(PHOTON_COMPRESSOR.get(), new Item.Properties()));
 
     // Creative Power Source (test block)
     public static final DeferredBlock<CreativePowerBlock> CREATIVE_POWER_SOURCE = BLOCKS.register("creative_power_source",

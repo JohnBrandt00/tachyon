@@ -16,6 +16,8 @@ import com.setusertso.tachyon.screen.SingularityControllerScreen;
 import com.setusertso.tachyon.screen.SingularityPortScreen;
 import com.setusertso.tachyon.screen.SuperluminalEmitterScreen;
 import com.setusertso.tachyon.screen.ThoriumReactorScreen;
+import com.setusertso.tachyon.screen.SolarCollectorScreen;
+import com.setusertso.tachyon.screen.PhotonCompressorScreen;
 
 import net.minecraft.client.Minecraft;
 import net.minecraft.resources.ResourceLocation;
@@ -58,6 +60,8 @@ public class tachyonClient {
         event.register(ModMenuTypes.SINGULARITY_PORT.get(), SingularityPortScreen::new);
         event.register(ModMenuTypes.PHOTONIC_INJECTOR.get(), PhotonicInjectorScreen::new);
         event.register(ModMenuTypes.THORIUM_REACTOR.get(), ThoriumReactorScreen::new);
+        event.register(ModMenuTypes.SOLAR_COLLECTOR.get(), SolarCollectorScreen::new);
+        event.register(ModMenuTypes.PHOTON_COMPRESSOR.get(), PhotonCompressorScreen::new);
     }
 
     private void onRegisterRenderers(EntityRenderersEvent.RegisterRenderers event) {

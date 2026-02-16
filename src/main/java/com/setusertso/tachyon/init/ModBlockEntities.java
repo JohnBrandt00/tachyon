@@ -18,6 +18,8 @@ import com.setusertso.tachyon.block.entity.SingularityPortBlockEntity;
 import com.setusertso.tachyon.block.entity.SuperluminalEmitterBlockEntity;
 import com.setusertso.tachyon.block.entity.TachyonLightGeneratorBlockEntity;
 import com.setusertso.tachyon.block.entity.ThoriumReactorBlockEntity;
+import com.setusertso.tachyon.block.entity.SolarCollectorBlockEntity;
+import com.setusertso.tachyon.block.entity.PhotonCompressorBlockEntity;
 
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.world.level.block.entity.BlockEntityType;
@@ -97,6 +99,16 @@ public class ModBlockEntities {
             BLOCK_ENTITIES.register("thorium_reactor",
                     () -> BlockEntityType.Builder.of(ThoriumReactorBlockEntity::new,
                             ModBlocks.THORIUM_REACTOR.get()).build(null));
+
+    public static final Supplier<BlockEntityType<SolarCollectorBlockEntity>> SOLAR_COLLECTOR =
+            BLOCK_ENTITIES.register("solar_collector",
+                    () -> BlockEntityType.Builder.of(SolarCollectorBlockEntity::new,
+                            ModBlocks.SOLAR_COLLECTOR.get()).build(null));
+
+    public static final Supplier<BlockEntityType<PhotonCompressorBlockEntity>> PHOTON_COMPRESSOR =
+            BLOCK_ENTITIES.register("photon_compressor",
+                    () -> BlockEntityType.Builder.of(PhotonCompressorBlockEntity::new,
+                            ModBlocks.PHOTON_COMPRESSOR.get()).build(null));
 
     public static void register(IEventBus modEventBus) {
         BLOCK_ENTITIES.register(modEventBus);

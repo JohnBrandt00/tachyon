@@ -26,6 +26,8 @@
     "tachyon:singularity_port",
     "tachyon:exotic_matter_core",
     "tachyon:photonic_injector",
-    "tachyon:thorium_reactor"
+    "tachyon:thorium_reactor",
+    "tachyon:solar_collector",
+    "tachyon:photon_compressor"
   ]
 }

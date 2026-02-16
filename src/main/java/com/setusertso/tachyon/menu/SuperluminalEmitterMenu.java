@@ -1,6 +1,7 @@
 package com.setusertso.tachyon.menu;
 
 import com.setusertso.tachyon.ModItems;
+import com.setusertso.tachyon.block.entity.IUpgradeable;
 import com.setusertso.tachyon.init.ModMenuTypes;
 
 import net.minecraft.world.entity.player.Inventory;
@@ -17,14 +18,20 @@ import net.neoforged.neoforge.items.SlotItemHandler;
 public class SuperluminalEmitterMenu extends AbstractContainerMenu {
     private final ContainerData data;
 
+    private static final int MACHINE_SLOTS = 1;
+    private static final int UPGRADE_SLOTS = 3;
+    private static final int TE_SLOTS = MACHINE_SLOTS + UPGRADE_SLOTS; // 4
+    private static final int PLAYER_INV_START = TE_SLOTS;
+    private static final int PLAYER_INV_END = PLAYER_INV_START + 36; // 40
+
     // Client constructor
     public SuperluminalEmitterMenu(int containerId, Inventory playerInventory) {
-        this(containerId, playerInventory, new ItemStackHandler(4), new SimpleContainerData(2));
+        this(containerId, playerInventory, new ItemStackHandler(1), new ItemStackHandler(3), new SimpleContainerData(2));
     }
 
     // Server constructor
     public SuperluminalEmitterMenu(int containerId, Inventory playerInventory,
-                                    IItemHandler handler, ContainerData data) {
+                                    IItemHandler handler, IItemHandler upgradeHandler, ContainerData data) {
         super(ModMenuTypes.SUPERLUMINAL_EMITTER.get(), containerId);
         this.data = data;
 
@@ -36,22 +43,17 @@ public class SuperluminalEmitterMenu extends AbstractContainerMenu {
             }
         });
 
-        // 3 locked upgrade slots (greyed out)
-        for (int i = 0; i < 3; i++) {
-            this.addSlot(new SlotItemHandler(handler, 1 + i, 26 + i * 27, 62) {
+        // Upgrade slots (right side column)
+        for (int i = 0; i < UPGRADE_SLOTS; i++) {
+            this.addSlot(new SlotItemHandler(upgradeHandler, i, 152, 8 + i * 18) {
                 @Override
                 public boolean mayPlace(ItemStack stack) {
-                    return false;
+                    return IUpgradeable.isUpgradeItem(stack);
                 }
 
                 @Override
-                public boolean mayPickup(Player player) {
-                    return false;
-                }
-
-                @Override
-                public boolean isActive() {
-                    return false;
+                public int getMaxStackSize() {
+                    return 32;
                 }
             });
         }
@@ -97,25 +99,30 @@ public class SuperluminalEmitterMenu extends AbstractContainerMenu {
             ItemStack slotStack = slot.getItem();
             result = slotStack.copy();
 
-            // From fuel/upgrade slots (0-3) to player inventory (4-39)
-            if (index < 4) {
-                if (!this.moveItemStackTo(slotStack, 4, 40, true)) {
+            // From machine/upgrade slots to player inventory
+            if (index < TE_SLOTS) {
+                if (!this.moveItemStackTo(slotStack, PLAYER_INV_START, PLAYER_INV_END, true)) {
                     return ItemStack.EMPTY;
                 }
             }
-            // From player inventory to fuel slot
+            // From player inventory: try upgrade slots first, then fuel slot
+            else if (IUpgradeable.isUpgradeItem(slotStack)) {
+                if (!this.moveItemStackTo(slotStack, MACHINE_SLOTS, TE_SLOTS, false)) {
+                    return ItemStack.EMPTY;
+                }
+            }
             else if (slotStack.is(ModItems.TACHYON_SHARD.get())) {
                 if (!this.moveItemStackTo(slotStack, 0, 1, false)) {
                     return ItemStack.EMPTY;
                 }
             }
             // Between inventory and hotbar
-            else if (index < 31) {
-                if (!this.moveItemStackTo(slotStack, 31, 40, false)) {
+            else if (index < PLAYER_INV_START + 27) {
+                if (!this.moveItemStackTo(slotStack, PLAYER_INV_START + 27, PLAYER_INV_END, false)) {
                     return ItemStack.EMPTY;
                 }
             } else {
-                if (!this.moveItemStackTo(slotStack, 4, 31, false)) {
+                if (!this.moveItemStackTo(slotStack, PLAYER_INV_START, PLAYER_INV_START + 27, false)) {
                     return ItemStack.EMPTY;
                 }
             }

@@ -26,7 +26,12 @@
       "WebFetch(domain:forum.feed-the-beast.com)",
       "WebFetch(domain:wiki.gtnewhorizons.com)",
       "Bash(python3:*)",
-      "Bash(/c/Users/notjo/anaconda3/python:*)"
+      "Bash(/c/Users/notjo/anaconda3/python:*)",
+      "Bash(\"d:/MCMODDING/tachyon/fix_gui_texture.py\" << 'PYEOF'\nfrom PIL import Image\n\nimg_path = r\"d:\\\\MCMODDING\\\\tachyon\\\\src\\\\main\\\\resources\\\\assets\\\\tachyon\\\\textures\\\\gui\\\\accelerator_controller.png\"\nimg = Image.open\\(img_path\\).convert\\(\"RGBA\"\\)\n\nBG = \\(198, 198, 198, 255\\)        # standard light grey background 0xC6C6C6\nDARK = \\(55, 55, 55, 255\\)         # top/left border\nLIGHT = \\(255, 255, 255, 255\\)     # bottom/right border\nINNER = \\(139, 139, 139, 255\\)     # inner slot fill\n\n# Step 1: Erase old upgrade slot outlines on the far right\n# They are at approximately \\(151,7\\), \\(151,25\\), \\(151,43\\), each 18x18\nfor sy in [7, 25, 43]:\n    for y in range\\(sy, sy + 18\\):\n        for x in range\\(151, 151 + 18\\):\n            img.putpixel\\(\\(x, y\\), BG\\)\n\n# Step 2: Draw 3 new vanilla-style slot outlines at \\(30,7\\), \\(30,25\\), \\(30,43\\)\ndef draw_slot\\(img, sx, sy\\):\n    \"\"\"Draw an 18x18 vanilla inventory slot at \\(sx, sy\\).\"\"\"\n    # Top-left corner pixel\n    img.putpixel\\(\\(sx, sy\\), DARK\\)\n    # Top edge: x+1 to x+16\n    for x in range\\(sx + 1, sx + 17\\):\n        img.putpixel\\(\\(x, sy\\), DARK\\)\n    # Left edge: y+1 to y+16\n    for y in range\\(sy + 1, sy + 17\\):\n        img.putpixel\\(\\(sx, y\\), DARK\\)\n    # Bottom edge: x to x+17 at y+17\n    for x in range\\(sx, sx + 18\\):\n        img.putpixel\\(\\(x, sy + 17\\), LIGHT\\)\n    # Right edge: x+17, y to y+17\n    for y in range\\(sy, sy + 18\\):\n        img.putpixel\\(\\(sx + 17, y\\), LIGHT\\)\n    # Inner 16x16 fill\n    for y in range\\(sy + 1, sy + 17\\):\n        for x in range\\(sx + 1, sx + 17\\):\n            img.putpixel\\(\\(x, y\\), INNER\\)\n\nfor sy in [7, 25, 43]:\n    draw_slot\\(img, 30, sy\\)\n\nimg.save\\(img_path\\)\nprint\\(f\"Saved fixed texture to {img_path}\"\\)\nprint\\(f\"Image size: {img.size}\"\\)\nPYEOF)",
+      "Bash(C:/Users/notjo/anaconda3/python:*)",
+      "Bash(ls:*)",
+      "Bash(cmd.exe /c \"cd /d D:\\\\MCMODDING\\\\tachyon & call gradlew.bat build 2>&1\")",
+      "Bash(cmd.exe /c \"cd /d D:\\\\MCMODDING\\\\tachyon & D:\\\\MCMODDING\\\\tachyon\\\\gradlew.bat build 2>&1\")"
     ]
   }
 }

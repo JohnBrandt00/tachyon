@@ -98,6 +98,16 @@
   "item.tachyon.excited_photon": "Excited Photon",
   "item.tachyon.graviton_crystal": "Graviton Crystal",
 
+  "block.tachyon.solar_collector": "Solar Collector",
+  "menu.tachyon.solar_collector": "Solar Collector",
+  "block.tachyon.photon_compressor": "Photon Compressor",
+  "menu.tachyon.photon_compressor": "Photon Compressor",
+
+  "item.tachyon.speed_upgrade": "Speed Upgrade",
+  "item.tachyon.energy_upgrade": "Energy Upgrade",
+  "item.tachyon.output_upgrade": "Output Upgrade",
+  "item.tachyon.capacity_upgrade": "Capacity Upgrade",
+
   "tachyon.configuration.title": "tachyon Configs",
   "tachyon.configuration.section.tachyon.common.toml": "tachyon Configs",
   "tachyon.configuration.section.tachyon.common.toml.title": "tachyon Configs",

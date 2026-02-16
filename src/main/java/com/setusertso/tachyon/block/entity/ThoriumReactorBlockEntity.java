@@ -22,16 +22,15 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
-import net.neoforged.neoforge.energy.EnergyStorage;
 import net.neoforged.neoforge.items.ItemStackHandler;
 
-public class ThoriumReactorBlockEntity extends BlockEntity implements MenuProvider {
+public class ThoriumReactorBlockEntity extends BlockEntity implements MenuProvider, IUpgradeable {
     public static final int FUEL_SLOT = 0;
     public static final int SLOT_COUNT = 1;
     public static final int BURN_TIME_PER_INGOT = 6000; // 5 minutes
-    public static final int RF_PER_TICK = 500;
+    public static final int RF_PER_TICK = 100;
     public static final int MAX_ENERGY = 100_000;
-    public static final int MAX_EXTRACT = 500;
+    public static final int MAX_EXTRACT = 100;
 
     private final ItemStackHandler items = new ItemStackHandler(SLOT_COUNT) {
         @Override
@@ -45,14 +44,9 @@ public class ThoriumReactorBlockEntity extends BlockEntity implements MenuProvid
         }
     };
 
-    private final EnergyStorage energy = new EnergyStorage(MAX_ENERGY, 0, MAX_EXTRACT, 0) {
-        @Override
-        public int extractEnergy(int maxExtract, boolean simulate) {
-            int extracted = super.extractEnergy(maxExtract, simulate);
-            if (!simulate && extracted > 0) setChanged();
-            return extracted;
-        }
-    };
+    private final ItemStackHandler upgradeHandler = IUpgradeable.createUpgradeHandler(this::setChanged);
+
+    private final CustomEnergyStorage energy = new CustomEnergyStorage(MAX_ENERGY, 0, MAX_EXTRACT);
 
     private int burnTime = 0;
     private int maxBurnTime = 0;
@@ -91,7 +85,7 @@ public class ThoriumReactorBlockEntity extends BlockEntity implements MenuProvid
         return items;
     }
 
-    public EnergyStorage getEnergy() {
+    public CustomEnergyStorage getEnergy() {
         return energy;
     }
 
@@ -99,26 +93,32 @@ public class ThoriumReactorBlockEntity extends BlockEntity implements MenuProvid
         return dataAccess;
     }
 
+    @Override
+    public ItemStackHandler getUpgradeHandler() {
+        return upgradeHandler;
+    }
+
     public static void serverTick(Level level, BlockPos pos, BlockState state, ThoriumReactorBlockEntity be) {
         boolean wasBurning = be.burnTime > 0;
 
-        // 1. Generate RF while burning
+        // 1. Generate RF while burning (speed upgrade increases RF/t)
         if (be.burnTime > 0) {
             be.burnTime--;
             if (be.energy.getEnergyStored() < be.energy.getMaxEnergyStored()) {
-                int space = be.energy.getMaxEnergyStored() - be.energy.getEnergyStored();
-                int toAdd = Math.min(RF_PER_TICK, space);
-                be.energy.receiveEnergy(toAdd, false);
+                int rfPerTick = Math.round(RF_PER_TICK * be.getSpeedMultiplier());
+                be.energy.addEnergy(rfPerTick);
             }
             be.setChanged();
         }
 
         // 2. Try consume new fuel if not burning and buffer not full
+        // Energy upgrade extends burn duration
         if (be.burnTime == 0 && be.energy.getEnergyStored() < be.energy.getMaxEnergyStored()) {
             ItemStack fuel = be.items.getStackInSlot(FUEL_SLOT);
             if (!fuel.isEmpty() && fuel.is(ModItems.THORIUM_INGOT.get())) {
-                be.burnTime = BURN_TIME_PER_INGOT;
-                be.maxBurnTime = BURN_TIME_PER_INGOT;
+                int burnDuration = Math.round(BURN_TIME_PER_INGOT / be.getEnergyMultiplier());
+                be.burnTime = burnDuration;
+                be.maxBurnTime = burnDuration;
                 fuel.shrink(1);
                 be.setChanged();
             }
@@ -137,7 +137,7 @@ public class ThoriumReactorBlockEntity extends BlockEntity implements MenuProvid
                         int pushed = cap.receiveEnergy(
                                 Math.min(MAX_EXTRACT, be.energy.getEnergyStored()), false);
                         if (pushed > 0) {
-                            be.energy.extractEnergy(pushed, false);
+                            be.energy.consumeEnergy(pushed);
                             be.setChanged();
                         }
                     }
@@ -160,6 +160,12 @@ public class ThoriumReactorBlockEntity extends BlockEntity implements MenuProvid
                 Containers.dropItemStack(level, pos.getX(), pos.getY(), pos.getZ(), stack);
             }
         }
+        for (int i = 0; i < upgradeHandler.getSlots(); i++) {
+            ItemStack stack = upgradeHandler.getStackInSlot(i);
+            if (!stack.isEmpty()) {
+                Containers.dropItemStack(level, pos.getX(), pos.getY(), pos.getZ(), stack);
+            }
+        }
     }
 
     @Override
@@ -169,13 +175,14 @@ public class ThoriumReactorBlockEntity extends BlockEntity implements MenuProvid
 
     @Override
     public AbstractContainerMenu createMenu(int containerId, Inventory playerInventory, Player player) {
-        return new ThoriumReactorMenu(containerId, playerInventory, this);
+        return new ThoriumReactorMenu(containerId, playerInventory, this, upgradeHandler);
     }
 
     @Override
     protected void saveAdditional(CompoundTag tag, HolderLookup.Provider registries) {
         super.saveAdditional(tag, registries);
         tag.put("Inventory", items.serializeNBT(registries));
+        tag.put("Upgrades", upgradeHandler.serializeNBT(registries));
         tag.putInt("BurnTime", burnTime);
         tag.putInt("MaxBurnTime", maxBurnTime);
         tag.putInt("Energy", energy.getEnergyStored());
@@ -185,9 +192,12 @@ public class ThoriumReactorBlockEntity extends BlockEntity implements MenuProvid
     protected void loadAdditional(CompoundTag tag, HolderLookup.Provider registries) {
         super.loadAdditional(tag, registries);
         items.deserializeNBT(registries, tag.getCompound("Inventory"));
+        if (tag.contains("Upgrades")) {
+            upgradeHandler.deserializeNBT(registries, tag.getCompound("Upgrades"));
+        }
         burnTime = tag.getInt("BurnTime");
         maxBurnTime = tag.getInt("MaxBurnTime");
-        energy.receiveEnergy(tag.getInt("Energy"), false);
+        energy.setEnergy(tag.getInt("Energy"));
     }
 
     @Override

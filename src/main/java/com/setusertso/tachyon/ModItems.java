@@ -70,6 +70,16 @@ public class ModItems {
     public static final DeferredItem<Item> GRAVITON_CRYSTAL = ITEMS.register("graviton_crystal",
             () -> new Item(new Item.Properties().stacksTo(16).rarity(Rarity.EPIC)));
 
+    // Machine Upgrades
+    public static final DeferredItem<Item> SPEED_UPGRADE = ITEMS.register("speed_upgrade",
+            () -> new Item(new Item.Properties().stacksTo(32)));
+    public static final DeferredItem<Item> ENERGY_UPGRADE = ITEMS.register("energy_upgrade",
+            () -> new Item(new Item.Properties().stacksTo(32)));
+    public static final DeferredItem<Item> OUTPUT_UPGRADE = ITEMS.register("output_upgrade",
+            () -> new Item(new Item.Properties().stacksTo(32)));
+    public static final DeferredItem<Item> CAPACITY_UPGRADE = ITEMS.register("capacity_upgrade",
+            () -> new Item(new Item.Properties().stacksTo(32)));
+
     public static void register(IEventBus modEventBus) {
         ITEMS.register(modEventBus);
     }

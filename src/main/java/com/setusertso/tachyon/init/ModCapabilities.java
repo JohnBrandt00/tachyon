@@ -69,5 +69,25 @@ public class ModCapabilities {
                 ModBlockEntities.PHOTONIC_INJECTOR.get(),
                 (be, side) -> be.getItems()
         );
+
+        // Solar Collector item handler (output only)
+        event.registerBlockEntity(
+                Capabilities.ItemHandler.BLOCK,
+                ModBlockEntities.SOLAR_COLLECTOR.get(),
+                (be, side) -> be.getItemHandler()
+        );
+
+        // Photon Compressor
+        event.registerBlockEntity(
+                Capabilities.EnergyStorage.BLOCK,
+                ModBlockEntities.PHOTON_COMPRESSOR.get(),
+                (be, side) -> be.getEnergyStorage()
+        );
+
+        event.registerBlockEntity(
+                Capabilities.ItemHandler.BLOCK,
+                ModBlockEntities.PHOTON_COMPRESSOR.get(),
+                (be, side) -> be.getItemHandler()
+        );
     }
 }

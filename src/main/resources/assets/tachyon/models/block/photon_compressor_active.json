@@ -1,0 +1,8 @@
+{
+  "parent": "minecraft:block/orientable",
+  "textures": {
+    "top": "tachyon:block/photon_compressor_top",
+    "front": "tachyon:block/photon_compressor_front_active",
+    "side": "tachyon:block/photon_compressor_side"
+  }
+}

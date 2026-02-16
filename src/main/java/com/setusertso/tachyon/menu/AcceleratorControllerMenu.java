@@ -1,5 +1,7 @@
 package com.setusertso.tachyon.menu;
 
+import com.setusertso.tachyon.ModItems;
+import com.setusertso.tachyon.block.entity.IUpgradeable;
 import com.setusertso.tachyon.init.ModMenuTypes;
 import com.setusertso.tachyon.init.ModTags;
 
@@ -18,22 +20,29 @@ import net.neoforged.neoforge.items.SlotItemHandler;
 public class AcceleratorControllerMenu extends AbstractContainerMenu {
     private final ContainerData data;
 
+    private static final int MACHINE_SLOTS = 2;
+    private static final int UPGRADE_SLOTS = 3;
+    private static final int TE_SLOTS = MACHINE_SLOTS + UPGRADE_SLOTS; // 5
+    private static final int PLAYER_INV_START = TE_SLOTS;
+    private static final int PLAYER_INV_END = PLAYER_INV_START + 36; // 41
+
     // Client constructor
     public AcceleratorControllerMenu(int containerId, Inventory playerInventory) {
-        this(containerId, playerInventory, new ItemStackHandler(2), new SimpleContainerData(8));
+        this(containerId, playerInventory, new ItemStackHandler(2), new ItemStackHandler(3), new SimpleContainerData(8));
     }
 
     // Server constructor
     public AcceleratorControllerMenu(int containerId, Inventory playerInventory,
-                                      IItemHandler handler, ContainerData data) {
+                                      IItemHandler handler, IItemHandler upgradeHandler, ContainerData data) {
         super(ModMenuTypes.ACCELERATOR_CONTROLLER.get(), containerId);
         this.data = data;
 
-        // Input slot (thorium ingot or ender pearl)
+        // Input slot (thorium ingot, ender pearl, or raw photon)
         this.addSlot(new SlotItemHandler(handler, 0, 56, 35) {
             @Override
             public boolean mayPlace(ItemStack stack) {
-                return stack.is(ModTags.Items.INGOTS_THORIUM) || stack.is(Items.ENDER_PEARL);
+                return stack.is(ModTags.Items.INGOTS_THORIUM) || stack.is(Items.ENDER_PEARL)
+                        || stack.is(ModItems.RAW_PHOTON.get());
             }
         });
 
@@ -44,6 +53,21 @@ public class AcceleratorControllerMenu extends AbstractContainerMenu {
                 return false;
             }
         });
+
+        // Upgrade slots (horizontal row below machine area)
+        for (int i = 0; i < UPGRADE_SLOTS; i++) {
+            this.addSlot(new SlotItemHandler(upgradeHandler, i, 62 + i * 18, 62) {
+                @Override
+                public boolean mayPlace(ItemStack stack) {
+                    return IUpgradeable.isUpgradeItem(stack);
+                }
+
+                @Override
+                public int getMaxStackSize() {
+                    return 32;
+                }
+            });
+        }
 
         // Player inventory (3 rows)
         for (int row = 0; row < 3; row++) {
@@ -97,25 +121,31 @@ public class AcceleratorControllerMenu extends AbstractContainerMenu {
             ItemStack slotStack = slot.getItem();
             result = slotStack.copy();
 
-            // From machine slots (0-1) to player inventory (2-37)
-            if (index < 2) {
-                if (!this.moveItemStackTo(slotStack, 2, 38, true)) {
+            // From machine/upgrade slots to player inventory
+            if (index < TE_SLOTS) {
+                if (!this.moveItemStackTo(slotStack, PLAYER_INV_START, PLAYER_INV_END, true)) {
                     return ItemStack.EMPTY;
                 }
             }
-            // From player inventory to input slot
-            else if (slotStack.is(ModTags.Items.INGOTS_THORIUM) || slotStack.is(Items.ENDER_PEARL)) {
+            // From player inventory: try upgrade slots first, then input slot
+            else if (IUpgradeable.isUpgradeItem(slotStack)) {
+                if (!this.moveItemStackTo(slotStack, MACHINE_SLOTS, TE_SLOTS, false)) {
+                    return ItemStack.EMPTY;
+                }
+            }
+            else if (slotStack.is(ModTags.Items.INGOTS_THORIUM) || slotStack.is(Items.ENDER_PEARL)
+                    || slotStack.is(ModItems.RAW_PHOTON.get())) {
                 if (!this.moveItemStackTo(slotStack, 0, 1, false)) {
                     return ItemStack.EMPTY;
                 }
             }
             // Between inventory and hotbar
-            else if (index < 29) {
-                if (!this.moveItemStackTo(slotStack, 29, 38, false)) {
+            else if (index < PLAYER_INV_START + 27) {
+                if (!this.moveItemStackTo(slotStack, PLAYER_INV_START + 27, PLAYER_INV_END, false)) {
                     return ItemStack.EMPTY;
                 }
             } else {
-                if (!this.moveItemStackTo(slotStack, 2, 29, false)) {
+                if (!this.moveItemStackTo(slotStack, PLAYER_INV_START, PLAYER_INV_START + 27, false)) {
                     return ItemStack.EMPTY;
                 }
             }

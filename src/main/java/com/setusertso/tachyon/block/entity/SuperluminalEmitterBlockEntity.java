@@ -11,6 +11,7 @@ import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.protocol.game.ClientboundBlockEntityDataPacket;
+import net.minecraft.world.Containers;
 import net.minecraft.world.MenuProvider;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
@@ -23,11 +24,11 @@ import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import net.neoforged.neoforge.items.ItemStackHandler;
 
-public class SuperluminalEmitterBlockEntity extends BlockEntity implements MenuProvider {
+public class SuperluminalEmitterBlockEntity extends BlockEntity implements MenuProvider, IUpgradeable {
     public static final int FUEL_SLOT = 0;
-    public static final int SLOT_COUNT = 4; // 1 fuel + 3 locked upgrade slots
+    public static final int SLOT_COUNT = 1;
     public static final int SHARD_BURN_TIME = 1600;
-    private static final int SCAN_RADIUS = 16;
+    private static final int BASE_SCAN_RADIUS = 16;
 
     private final ItemStackHandler items = new ItemStackHandler(SLOT_COUNT) {
         @Override
@@ -37,12 +38,11 @@ public class SuperluminalEmitterBlockEntity extends BlockEntity implements MenuP
 
         @Override
         public boolean isItemValid(int slot, ItemStack stack) {
-            if (slot == FUEL_SLOT) {
-                return stack.is(ModItems.TACHYON_SHARD.get());
-            }
-            return false; // upgrade slots locked
+            return slot == FUEL_SLOT && stack.is(ModItems.TACHYON_SHARD.get());
         }
     };
+
+    private final ItemStackHandler upgradeHandler = IUpgradeable.createUpgradeHandler(this::setChanged);
 
     private int litTime = 0;
     private int litDuration = 0;
@@ -81,12 +81,22 @@ public class SuperluminalEmitterBlockEntity extends BlockEntity implements MenuP
         return items;
     }
 
+    @Override
+    public ItemStackHandler getUpgradeHandler() {
+        return upgradeHandler;
+    }
+
     public ContainerData getDataAccess() {
         return dataAccess;
     }
 
     public boolean isActive() {
         return litTime > 0 && !redstonePowered;
+    }
+
+    public int getScanRadius() {
+        // Speed upgrade increases scan radius: 16 -> 20 -> 24 -> 28 -> 32
+        return BASE_SCAN_RADIUS + 4 * countUpgrade(ModItems.SPEED_UPGRADE.get());
     }
 
     public void setRedstonePowered(boolean powered) {
@@ -111,12 +121,13 @@ public class SuperluminalEmitterBlockEntity extends BlockEntity implements MenuP
             be.litTime--;
         }
 
-        // 2. Try consume new fuel
+        // 2. Try consume new fuel (energy upgrade extends burn duration)
         if (be.litTime == 0 && !be.redstonePowered) {
             ItemStack fuel = be.items.getStackInSlot(FUEL_SLOT);
             if (!fuel.isEmpty() && fuel.is(ModItems.TACHYON_SHARD.get())) {
-                be.litTime = SHARD_BURN_TIME;
-                be.litDuration = SHARD_BURN_TIME;
+                int burnDuration = Math.round(SHARD_BURN_TIME / be.getEnergyMultiplier());
+                be.litTime = burnDuration;
+                be.litDuration = burnDuration;
                 fuel.shrink(1);
                 be.setChanged();
             }
@@ -147,11 +158,12 @@ public class SuperluminalEmitterBlockEntity extends BlockEntity implements MenuP
         if (level == null) return;
         long gameTime = level.getGameTime();
         BlockPos center = worldPosition;
+        int radius = getScanRadius();
 
-        for (int x = -SCAN_RADIUS; x <= SCAN_RADIUS; x++) {
-            for (int y = -SCAN_RADIUS; y <= SCAN_RADIUS; y++) {
-                for (int z = -SCAN_RADIUS; z <= SCAN_RADIUS; z++) {
-                    if (x * x + y * y + z * z > SCAN_RADIUS * SCAN_RADIUS) continue;
+        for (int x = -radius; x <= radius; x++) {
+            for (int y = -radius; y <= radius; y++) {
+                for (int z = -radius; z <= radius; z++) {
+                    if (x * x + y * y + z * z > radius * radius) continue;
                     BlockPos checkPos = center.offset(x, y, z);
                     BlockState checkState = level.getBlockState(checkPos);
                     if (checkState.getBlock() instanceof TachyonLightGeneratorBlock) {
@@ -170,11 +182,12 @@ public class SuperluminalEmitterBlockEntity extends BlockEntity implements MenuP
     public void deactivateAllGenerators() {
         if (level == null) return;
         BlockPos center = worldPosition;
+        int radius = getScanRadius();
 
-        for (int x = -SCAN_RADIUS; x <= SCAN_RADIUS; x++) {
-            for (int y = -SCAN_RADIUS; y <= SCAN_RADIUS; y++) {
-                for (int z = -SCAN_RADIUS; z <= SCAN_RADIUS; z++) {
-                    if (x * x + y * y + z * z > SCAN_RADIUS * SCAN_RADIUS) continue;
+        for (int x = -radius; x <= radius; x++) {
+            for (int y = -radius; y <= radius; y++) {
+                for (int z = -radius; z <= radius; z++) {
+                    if (x * x + y * y + z * z > radius * radius) continue;
                     BlockPos checkPos = center.offset(x, y, z);
                     BlockState checkState = level.getBlockState(checkPos);
                     if (checkState.getBlock() instanceof TachyonLightGeneratorBlock
@@ -186,6 +199,22 @@ public class SuperluminalEmitterBlockEntity extends BlockEntity implements MenuP
         }
     }
 
+    public void dropContents() {
+        if (level == null) return;
+        for (int i = 0; i < items.getSlots(); i++) {
+            ItemStack stack = items.getStackInSlot(i);
+            if (!stack.isEmpty()) {
+                Containers.dropItemStack(level, worldPosition.getX(), worldPosition.getY(), worldPosition.getZ(), stack);
+            }
+        }
+        for (int i = 0; i < upgradeHandler.getSlots(); i++) {
+            ItemStack stack = upgradeHandler.getStackInSlot(i);
+            if (!stack.isEmpty()) {
+                Containers.dropItemStack(level, worldPosition.getX(), worldPosition.getY(), worldPosition.getZ(), stack);
+            }
+        }
+    }
+
     @Override
     public Component getDisplayName() {
         return Component.translatable("menu.tachyon.superluminal_emitter");
@@ -193,13 +222,14 @@ public class SuperluminalEmitterBlockEntity extends BlockEntity implements MenuP
 
     @Override
     public AbstractContainerMenu createMenu(int containerId, Inventory playerInventory, Player player) {
-        return new SuperluminalEmitterMenu(containerId, playerInventory, items, dataAccess);
+        return new SuperluminalEmitterMenu(containerId, playerInventory, items, upgradeHandler, dataAccess);
     }
 
     @Override
     protected void saveAdditional(CompoundTag tag, HolderLookup.Provider registries) {
         super.saveAdditional(tag, registries);
         tag.put("Inventory", items.serializeNBT(registries));
+        tag.put("Upgrades", upgradeHandler.serializeNBT(registries));
         tag.putInt("LitTime", litTime);
         tag.putInt("LitDuration", litDuration);
         tag.putBoolean("RedstonePowered", redstonePowered);
@@ -209,6 +239,9 @@ public class SuperluminalEmitterBlockEntity extends BlockEntity implements MenuP
     protected void loadAdditional(CompoundTag tag, HolderLookup.Provider registries) {
         super.loadAdditional(tag, registries);
         items.deserializeNBT(registries, tag.getCompound("Inventory"));
+        if (tag.contains("Upgrades")) {
+            upgradeHandler.deserializeNBT(registries, tag.getCompound("Upgrades"));
+        }
         litTime = tag.getInt("LitTime");
         litDuration = tag.getInt("LitDuration");
         redstonePowered = tag.getBoolean("RedstonePowered");

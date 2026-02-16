@@ -10,6 +10,8 @@ import com.setusertso.tachyon.menu.SingularityControllerMenu;
 import com.setusertso.tachyon.menu.SingularityPortMenu;
 import com.setusertso.tachyon.menu.SuperluminalEmitterMenu;
 import com.setusertso.tachyon.menu.ThoriumReactorMenu;
+import com.setusertso.tachyon.menu.SolarCollectorMenu;
+import com.setusertso.tachyon.menu.PhotonCompressorMenu;
 
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.world.flag.FeatureFlags;
@@ -53,6 +55,14 @@ public class ModMenuTypes {
     public static final Supplier<MenuType<ThoriumReactorMenu>> THORIUM_REACTOR =
             MENUS.register("thorium_reactor",
                     () -> new MenuType<>(ThoriumReactorMenu::new, FeatureFlags.DEFAULT_FLAGS));
+
+    public static final Supplier<MenuType<SolarCollectorMenu>> SOLAR_COLLECTOR =
+            MENUS.register("solar_collector",
+                    () -> new MenuType<>(SolarCollectorMenu::new, FeatureFlags.DEFAULT_FLAGS));
+
+    public static final Supplier<MenuType<PhotonCompressorMenu>> PHOTON_COMPRESSOR =
+            MENUS.register("photon_compressor",
+                    () -> new MenuType<>(PhotonCompressorMenu::new, FeatureFlags.DEFAULT_FLAGS));
 
     public static void register(IEventBus modEventBus) {
         MENUS.register(modEventBus);

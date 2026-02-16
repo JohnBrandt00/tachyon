@@ -144,8 +144,15 @@ public class tachyon {
                 output.accept(ModItems.EXCITED_PHOTON.get());
                 // Graviton Crystal
                 output.accept(ModItems.GRAVITON_CRYSTAL.get());
+                // Machine Upgrades
+                output.accept(ModItems.SPEED_UPGRADE.get());
+                output.accept(ModItems.ENERGY_UPGRADE.get());
+                output.accept(ModItems.OUTPUT_UPGRADE.get());
+                output.accept(ModItems.CAPACITY_UPGRADE.get());
                 // Machines
                 output.accept(ModBlocks.THORIUM_REACTOR_ITEM.get());
+                output.accept(ModBlocks.SOLAR_COLLECTOR_ITEM.get());
+                output.accept(ModBlocks.PHOTON_COMPRESSOR_ITEM.get());
                 // Creative / Testing
                 output.accept(ModBlocks.CREATIVE_POWER_SOURCE_ITEM.get());
                 output.accept(ModBlocks.CREATIVE_POWER_SINK_ITEM.get());
