@@ -4,6 +4,7 @@ import org.slf4j.Logger;
 
 import com.mojang.logging.LogUtils;
 import com.setusertso.tachyon.command.ModCommands;
+import com.setusertso.tachyon.init.ModArmorMaterials;
 import com.setusertso.tachyon.init.ModBlockEntities;
 import com.setusertso.tachyon.init.ModCapabilities;
 import com.setusertso.tachyon.init.ModFluids;
@@ -172,6 +173,17 @@ public class tachyon {
                 output.accept(ModItems.EXOTIC_ATTUNEMENT_MODULE.get());
                 output.accept(ModItems.SPEED_MODULE.get());
                 output.accept(ModItems.FORTUNE_MODULE.get());
+                // Tachyon Tools & Wrench
+                output.accept(ModItems.TACHYON_WRENCH.get());
+                output.accept(ModItems.TACHYON_PICKAXE.get());
+                output.accept(ModItems.TACHYON_SWORD.get());
+                output.accept(ModItems.TACHYON_AXE.get());
+                output.accept(ModItems.TACHYON_SHOVEL.get());
+                // Tachyon Armor
+                output.accept(ModItems.TACHYON_HELMET.get());
+                output.accept(ModItems.TACHYON_CHESTPLATE.get());
+                output.accept(ModItems.TACHYON_LEGGINGS.get());
+                output.accept(ModItems.TACHYON_BOOTS.get());
                 // Creative / Testing
                 output.accept(ModBlocks.CREATIVE_POWER_SOURCE_ITEM.get());
                 output.accept(ModBlocks.CREATIVE_POWER_SINK_ITEM.get());
@@ -190,6 +202,9 @@ public class tachyon {
         ITEMS.register(modEventBus);
         // Register the Deferred Register to the mod event bus so tabs get registered
         CREATIVE_MODE_TABS.register(modEventBus);
+
+        // Register armor materials (must be before items)
+        ModArmorMaterials.register(modEventBus);
 
         // Register ore blocks and items
         ModBlocks.register(modEventBus);

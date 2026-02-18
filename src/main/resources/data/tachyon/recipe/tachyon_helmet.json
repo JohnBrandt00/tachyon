@@ -1,0 +1,16 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "equipment",
+  "key": {
+    "T": { "item": "tachyon:tachyon_alloy_ingot" }
+  },
+  "pattern": [
+    "TTT",
+    "T T",
+    "   "
+  ],
+  "result": {
+    "count": 1,
+    "id": "tachyon:tachyon_helmet"
+  }
+}

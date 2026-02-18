@@ -1,0 +1,17 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "equipment",
+  "key": {
+    "T": { "item": "tachyon:tachyon_alloy_ingot" },
+    "I": { "item": "minecraft:iron_ingot" }
+  },
+  "pattern": [
+    "T T",
+    " I ",
+    " I "
+  ],
+  "result": {
+    "count": 1,
+    "id": "tachyon:tachyon_wrench"
+  }
+}

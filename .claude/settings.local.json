@@ -38,7 +38,11 @@
       "Bash(powershell -Command:*)",
       "WebFetch(domain:mcasset.cloud)",
       "WebFetch(domain:forums.minecraftforge.net)",
-      "WebFetch(domain:nekoyue.github.io)"
+      "WebFetch(domain:nekoyue.github.io)",
+      "WebFetch(domain:docs.neoforged.net)",
+      "WebFetch(domain:gist.github.com)",
+      "WebFetch(domain:lexxie.dev)",
+      "Bash(echo:*)"
     ]
   }
 }

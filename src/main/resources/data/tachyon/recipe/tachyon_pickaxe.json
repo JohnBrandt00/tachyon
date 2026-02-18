@@ -1,0 +1,17 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "equipment",
+  "key": {
+    "T": { "item": "tachyon:tachyon_alloy_ingot" },
+    "S": { "item": "minecraft:stick" }
+  },
+  "pattern": [
+    "TTT",
+    " S ",
+    " S "
+  ],
+  "result": {
+    "count": 1,
+    "id": "tachyon:tachyon_pickaxe"
+  }
+}

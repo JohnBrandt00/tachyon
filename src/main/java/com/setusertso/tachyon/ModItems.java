@@ -1,10 +1,20 @@
 package com.setusertso.tachyon;
 
+import com.setusertso.tachyon.init.ModArmorMaterials;
 import com.setusertso.tachyon.init.ModFluids;
+import com.setusertso.tachyon.item.ModToolTier;
+import com.setusertso.tachyon.item.TachyonArmorItem;
+import com.setusertso.tachyon.item.TachyonAxeItem;
+import com.setusertso.tachyon.item.TachyonPickaxeItem;
+import com.setusertso.tachyon.item.TachyonShovelItem;
+import com.setusertso.tachyon.item.TachyonWrenchItem;
 
+import net.minecraft.world.item.ArmorItem;
 import net.minecraft.world.item.BucketItem;
+import net.minecraft.world.item.DiggerItem;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.Rarity;
+import net.minecraft.world.item.SwordItem;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.neoforge.registries.DeferredItem;
 import net.neoforged.neoforge.registries.DeferredRegister;
@@ -97,6 +107,38 @@ public class ModItems {
             () -> new Item(new Item.Properties().stacksTo(64)));
     public static final DeferredItem<Item> FORTUNE_MODULE = ITEMS.register("fortune_module",
             () -> new Item(new Item.Properties().stacksTo(64)));
+
+    // Tachyon Wrench
+    public static final DeferredItem<Item> TACHYON_WRENCH = ITEMS.register("tachyon_wrench",
+            () -> new TachyonWrenchItem(new Item.Properties().stacksTo(1)));
+
+    // Tachyon Tools
+    public static final DeferredItem<Item> TACHYON_PICKAXE = ITEMS.register("tachyon_pickaxe",
+            () -> new TachyonPickaxeItem(new Item.Properties()
+                    .attributes(DiggerItem.createAttributes(ModToolTier.TACHYON_ALLOY, 1.0f, -2.8f))));
+    public static final DeferredItem<Item> TACHYON_SWORD = ITEMS.register("tachyon_sword",
+            () -> new SwordItem(ModToolTier.TACHYON_ALLOY, new Item.Properties()
+                    .attributes(SwordItem.createAttributes(ModToolTier.TACHYON_ALLOY, 3, -1.7f))));
+    public static final DeferredItem<Item> TACHYON_AXE = ITEMS.register("tachyon_axe",
+            () -> new TachyonAxeItem(new Item.Properties()
+                    .attributes(DiggerItem.createAttributes(ModToolTier.TACHYON_ALLOY, 5.0f, -3.0f))));
+    public static final DeferredItem<Item> TACHYON_SHOVEL = ITEMS.register("tachyon_shovel",
+            () -> new TachyonShovelItem(new Item.Properties()
+                    .attributes(DiggerItem.createAttributes(ModToolTier.TACHYON_ALLOY, 1.5f, -3.0f))));
+
+    // Tachyon Armor
+    public static final DeferredItem<ArmorItem> TACHYON_HELMET = ITEMS.register("tachyon_helmet",
+            () -> new TachyonArmorItem(ModArmorMaterials.TACHYON_ALLOY, ArmorItem.Type.HELMET,
+                    new Item.Properties().durability(ArmorItem.Type.HELMET.getDurability(41))));
+    public static final DeferredItem<ArmorItem> TACHYON_CHESTPLATE = ITEMS.register("tachyon_chestplate",
+            () -> new TachyonArmorItem(ModArmorMaterials.TACHYON_ALLOY, ArmorItem.Type.CHESTPLATE,
+                    new Item.Properties().durability(ArmorItem.Type.CHESTPLATE.getDurability(41))));
+    public static final DeferredItem<ArmorItem> TACHYON_LEGGINGS = ITEMS.register("tachyon_leggings",
+            () -> new TachyonArmorItem(ModArmorMaterials.TACHYON_ALLOY, ArmorItem.Type.LEGGINGS,
+                    new Item.Properties().durability(ArmorItem.Type.LEGGINGS.getDurability(40))));
+    public static final DeferredItem<ArmorItem> TACHYON_BOOTS = ITEMS.register("tachyon_boots",
+            () -> new TachyonArmorItem(ModArmorMaterials.TACHYON_ALLOY, ArmorItem.Type.BOOTS,
+                    new Item.Properties().durability(ArmorItem.Type.BOOTS.getDurability(38))));
 
     public static void register(IEventBus modEventBus) {
         ITEMS.register(modEventBus);
