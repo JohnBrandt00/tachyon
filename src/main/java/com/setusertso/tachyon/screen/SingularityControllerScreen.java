@@ -102,7 +102,7 @@ public class SingularityControllerScreen extends AbstractContainerScreen<Singula
 
         // Row 1: Mass + RF output
         int textX = this.leftPos + 44;
-        int y1 = this.topPos + 55;
+        int y1 = this.topPos + 53;
         double bhEnergy = this.menu.getBlackHoleEnergy() / 10.0;
         double bhMax = this.menu.getMaxBlackHoleEnergy() / 10.0;
         double stability = this.menu.getStability() / 100.0;

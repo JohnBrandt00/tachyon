@@ -1,0 +1,23 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+    "TIT",
+    "IHI",
+    "TIT"
+  ],
+  "key": {
+    "T": {
+      "item": "tachyon:tachyon_alloy_ingot"
+    },
+    "I": {
+      "item": "minecraft:iron_ingot"
+    },
+    "H": {
+      "item": "minecraft:hopper"
+    }
+  },
+  "result": {
+    "id": "tachyon:condenser_port",
+    "count": 2
+  }
+}

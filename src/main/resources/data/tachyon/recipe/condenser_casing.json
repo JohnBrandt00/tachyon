@@ -1,0 +1,20 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+    "TIT",
+    "I I",
+    "TIT"
+  ],
+  "key": {
+    "T": {
+      "item": "tachyon:tachyon_alloy_ingot"
+    },
+    "I": {
+      "item": "minecraft:iron_ingot"
+    }
+  },
+  "result": {
+    "id": "tachyon:condenser_casing",
+    "count": 4
+  }
+}

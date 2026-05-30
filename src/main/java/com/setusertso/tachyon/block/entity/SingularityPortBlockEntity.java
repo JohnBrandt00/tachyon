@@ -84,7 +84,7 @@ public class SingularityPortBlockEntity extends BlockEntity implements MenuProvi
             level.invalidateCapabilities(worldPosition);
             BlockState newState = getBlockState().setValue(
                     com.setusertso.tachyon.block.SingularityPortBlock.MODE, mode);
-            level.setBlock(worldPosition, newState, Block.UPDATE_CLIENTS);
+            level.setBlock(worldPosition, newState, Block.UPDATE_ALL);
 
             // Notify controller to update its cached port mode for rendering
             if (masterPos != null && level.getBlockEntity(masterPos) instanceof SingularityControllerBlockEntity controller) {

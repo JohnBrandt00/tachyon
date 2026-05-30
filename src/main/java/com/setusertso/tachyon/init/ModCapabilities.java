@@ -141,5 +141,62 @@ public class ModCapabilities {
                 ModBlockEntities.VOID_MINER_PORT.get(),
                 (be, side) -> be.getEnergyHandler()
         );
+
+        // Tachyon Condenser Port
+        event.registerBlockEntity(
+                Capabilities.ItemHandler.BLOCK,
+                ModBlockEntities.CONDENSER_PORT.get(),
+                (be, side) -> be.getItemCapHandler()
+        );
+
+        event.registerBlockEntity(
+                Capabilities.FluidHandler.BLOCK,
+                ModBlockEntities.CONDENSER_PORT.get(),
+                (be, side) -> be.getFluidHandler()
+        );
+
+        event.registerBlockEntity(
+                Capabilities.EnergyStorage.BLOCK,
+                ModBlockEntities.CONDENSER_PORT.get(),
+                (be, side) -> be.getEnergyHandler()
+        );
+
+        // Tachyon Conduit
+        event.registerBlockEntity(
+                Capabilities.EnergyStorage.BLOCK,
+                ModBlockEntities.TACHYON_CONDUIT.get(),
+                (be, side) -> be.getEnergyForSide(side)
+        );
+
+        event.registerBlockEntity(
+                Capabilities.ItemHandler.BLOCK,
+                ModBlockEntities.TACHYON_CONDUIT.get(),
+                (be, side) -> be.getItemsForSide(side)
+        );
+
+        event.registerBlockEntity(
+                Capabilities.FluidHandler.BLOCK,
+                ModBlockEntities.TACHYON_CONDUIT.get(),
+                (be, side) -> be.getFluidForSide(side)
+        );
+
+        // Tachyon Relay
+        event.registerBlockEntity(
+                Capabilities.EnergyStorage.BLOCK,
+                ModBlockEntities.TACHYON_RELAY.get(),
+                (be, side) -> be.getEnergyForSide(side)
+        );
+
+        event.registerBlockEntity(
+                Capabilities.ItemHandler.BLOCK,
+                ModBlockEntities.TACHYON_RELAY.get(),
+                (be, side) -> be.getItemsForSide(side)
+        );
+
+        event.registerBlockEntity(
+                Capabilities.FluidHandler.BLOCK,
+                ModBlockEntities.TACHYON_RELAY.get(),
+                (be, side) -> be.getFluidForSide(side)
+        );
     }
 }

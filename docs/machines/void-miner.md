@@ -100,7 +100,7 @@ Place a "focus" item in the filter slot to bias output:
 - Pauses without power (progress preserved)
 
 ### Dimensional Effects
-- Works in any dimension
+- Works in any dimension![alt text](image.png)
 - Nether: +20% chance of nether materials (quartz, netherrack, ancient debris)
 - End: +20% chance of ender materials (ender pearls, end stone, shulker shells)
 - Overworld: Default table

@@ -324,12 +324,12 @@ def make_alloy_forge_gui():
     # Player inventory
     draw_inv(draw, ox, oy)
 
-    # UV extras: energy bar fill (orange-red gradient for forge)
+    # UV extras: energy bar fill (red gradient)
     for y in range(52):
         t = y / 51.0
-        r = int(220 + 35 * (1 - t))
-        g = int(100 + 60 * (1 - t))
-        b = int(20 + 10 * t)
+        r = int(200 + 55 * (1 - t))
+        g = int(30 + 20 * t)
+        b = int(30 + 20 * t)
         draw.line([(176, y), (191, y)], fill=(r, g, b, 255))
 
     # UV extras: arrow fill (white)

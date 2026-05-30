@@ -31,7 +31,7 @@ public class AcceleratorPortScreen extends AbstractContainerScreen<AcceleratorPo
         this.addRenderableWidget(Button.builder(
                 Component.translatable("gui.tachyon.cycle_mode"),
                 button -> PacketDistributor.sendToServer(new CyclePortModePacket(this.menu.getPortPos()))
-        ).bounds(this.leftPos + 58, this.topPos + 56, 60, 20).build());
+        ).bounds(this.leftPos + 58, this.topPos + 54, 60, 16).build());
     }
 
     @Override

@@ -1,6 +1,7 @@
 package com.setusertso.tachyon.network;
 
 import com.setusertso.tachyon.block.entity.AcceleratorPortBlockEntity;
+import com.setusertso.tachyon.block.entity.CondenserPortBlockEntity;
 import com.setusertso.tachyon.block.entity.SingularityPortBlockEntity;
 import com.setusertso.tachyon.tachyon;
 
@@ -37,6 +38,8 @@ public record CyclePortModePacket(BlockPos pos) implements CustomPacketPayload {
                     if (sp.level().getBlockEntity(packet.pos) instanceof AcceleratorPortBlockEntity port) {
                         port.cycleMode();
                     } else if (sp.level().getBlockEntity(packet.pos) instanceof SingularityPortBlockEntity port) {
+                        port.cycleMode();
+                    } else if (sp.level().getBlockEntity(packet.pos) instanceof CondenserPortBlockEntity port) {
                         port.cycleMode();
                     }
                 }

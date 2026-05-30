@@ -259,7 +259,12 @@ def make_singularity_controller_gui():
     draw_slot(draw, ox+116, oy+34)
     draw_arrow_outline(draw, ox+79, oy+34)
     draw_inv(draw, ox, oy)
-    draw.rectangle([176, 0, 191, 51], fill=(0, 100, 255, 255))
+    for y in range(52):
+        t = y / 51.0
+        r = int(200 + 55 * (1 - t))
+        g = int(30 + 20 * t)
+        b = int(30 + 20 * t)
+        draw.line([(176, y), (191, y)], fill=(r, g, b, 255))
     draw.rectangle([192, 0, 201, 51], fill=(0, 200, 60, 255))
     draw_arrow_filled(draw, 176, 52)
     img.save(os.path.join(GD, "singularity_controller.png"))

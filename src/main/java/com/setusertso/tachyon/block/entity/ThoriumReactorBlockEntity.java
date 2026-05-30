@@ -1,7 +1,11 @@
 package com.setusertso.tachyon.block.entity;
 
+import java.util.Set;
+
 import com.setusertso.tachyon.ModItems;
 import com.setusertso.tachyon.block.ThoriumReactorBlock;
+
+import net.minecraft.world.item.Item;
 import com.setusertso.tachyon.init.ModBlockEntities;
 import com.setusertso.tachyon.menu.ThoriumReactorMenu;
 
@@ -44,7 +48,7 @@ public class ThoriumReactorBlockEntity extends BlockEntity implements MenuProvid
         }
     };
 
-    private final ItemStackHandler upgradeHandler = IUpgradeable.createUpgradeHandler(this::setChanged);
+    private final ItemStackHandler upgradeHandler = IUpgradeable.createUpgradeHandler(this::setChanged, getAllowedUpgrades());
 
     private final CustomEnergyStorage energy = new CustomEnergyStorage(MAX_ENERGY, 0, MAX_EXTRACT);
 
@@ -96,6 +100,11 @@ public class ThoriumReactorBlockEntity extends BlockEntity implements MenuProvid
     @Override
     public ItemStackHandler getUpgradeHandler() {
         return upgradeHandler;
+    }
+
+    @Override
+    public Set<Item> getAllowedUpgrades() {
+        return Set.of(ModItems.SPEED_UPGRADE.get(), ModItems.ENERGY_UPGRADE.get());
     }
 
     public static void serverTick(Level level, BlockPos pos, BlockState state, ThoriumReactorBlockEntity be) {

@@ -1,5 +1,7 @@
 package com.setusertso.tachyon.block.entity;
 
+import java.util.Set;
+
 import com.setusertso.tachyon.ModItems;
 import com.setusertso.tachyon.block.AlloyForgeBlock;
 import com.setusertso.tachyon.init.ModBlockEntities;
@@ -76,7 +78,7 @@ public class AlloyForgeBlockEntity extends BlockEntity implements MenuProvider, 
         }
     };
 
-    private final ItemStackHandler upgradeHandler = IUpgradeable.createUpgradeHandler(this::setChanged);
+    private final ItemStackHandler upgradeHandler = IUpgradeable.createUpgradeHandler(this::setChanged, getAllowedUpgrades());
     private final CustomEnergyStorage energy = new CustomEnergyStorage(ENERGY_CAPACITY, MAX_ENERGY_RECEIVE, 0);
 
     private int progress = 0;
@@ -127,6 +129,11 @@ public class AlloyForgeBlockEntity extends BlockEntity implements MenuProvider, 
     @Override
     public ItemStackHandler getUpgradeHandler() {
         return upgradeHandler;
+    }
+
+    @Override
+    public Set<Item> getAllowedUpgrades() {
+        return Set.of(ModItems.SPEED_UPGRADE.get(), ModItems.ENERGY_UPGRADE.get(), ModItems.OUTPUT_UPGRADE.get());
     }
 
     public CustomEnergyStorage getEnergyStorage() {

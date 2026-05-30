@@ -36,6 +36,11 @@
     "tachyon:stabilized_void_frame",
     "tachyon:reinforced_void_frame",
     "tachyon:quantum_void_frame",
-    "tachyon:void_miner_port"
+    "tachyon:void_miner_port",
+    "tachyon:condenser_controller",
+    "tachyon:condenser_casing",
+    "tachyon:condenser_port",
+    "tachyon:tachyon_conduit",
+    "tachyon:tachyon_relay"
   ]
 }

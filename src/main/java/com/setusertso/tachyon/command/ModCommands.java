@@ -13,6 +13,11 @@ import com.setusertso.tachyon.block.SingularityPortBlock;
 import com.setusertso.tachyon.block.VoidMinerControllerBlock;
 import com.setusertso.tachyon.block.VoidMinerPattern;
 import com.setusertso.tachyon.block.VoidMinerPortBlock;
+import com.setusertso.tachyon.block.CondenserControllerBlock;
+import com.setusertso.tachyon.block.CondenserPattern;
+import com.setusertso.tachyon.block.CondenserPortBlock;
+import com.setusertso.tachyon.block.entity.CondenserControllerBlockEntity;
+import com.setusertso.tachyon.block.entity.CondenserPortMode;
 import com.setusertso.tachyon.block.entity.PhotonicInjectorBlockEntity;
 import com.setusertso.tachyon.block.entity.PortMode;
 import com.setusertso.tachyon.block.entity.SingularityControllerBlockEntity;
@@ -52,6 +57,10 @@ public class ModCommands {
                                 .executes(ModCommands::buildVoidMiner)))
                 .then(Commands.literal("void_miner_clear")
                         .executes(ModCommands::clearVoidMiner))
+                .then(Commands.literal("condenser_build")
+                        .executes(ModCommands::buildCondenser))
+                .then(Commands.literal("condenser_clear")
+                        .executes(ModCommands::clearCondenser))
         );
     }
 
@@ -594,6 +603,160 @@ public class ModCommands {
 
         int totalRemoved = removed;
         source.sendSuccess(() -> Component.literal("Cleared " + totalRemoved + " void miner blocks"), true);
+        return 1;
+    }
+
+    private static int buildCondenser(CommandContext<CommandSourceStack> context) {
+        CommandSourceStack source = context.getSource();
+        ServerPlayer player = source.getPlayer();
+        if (player == null) {
+            source.sendFailure(Component.literal("Must be run by a player"));
+            return 0;
+        }
+
+        HitResult hit = player.pick(20.0, 0.0f, false);
+        if (!(hit instanceof BlockHitResult blockHit) || hit.getType() == HitResult.Type.MISS) {
+            source.sendFailure(Component.literal("Look at a Condenser Controller block"));
+            return 0;
+        }
+
+        BlockPos controllerPos = blockHit.getBlockPos();
+        Level level = player.level();
+        BlockState state = level.getBlockState(controllerPos);
+
+        if (!(state.getBlock() instanceof CondenserControllerBlock)) {
+            source.sendFailure(Component.literal("Look at a Condenser Controller block"));
+            return 0;
+        }
+
+        Direction facing = state.getValue(CondenserControllerBlock.FACING);
+        Direction right = facing.getClockWise();
+        Direction back = facing.getOpposite();
+
+        int placed = 0;
+
+        // Build the 3x3x5 structure around the controller
+        for (int ly = 0; ly < 5; ly++) {
+            for (int lx = -1; lx <= 1; lx++) {
+                for (int lz = 0; lz < 3; lz++) {
+                    BlockPos worldPos = controllerPos
+                            .relative(right, lx)
+                            .relative(back, lz)
+                            .above(ly);
+
+                    if (worldPos.equals(controllerPos)) continue;
+
+                    // Interior air column: center (lx=0, lz=1) at y=1,2,3
+                    boolean isInterior = (lx == 0 && lz == 1 && ly >= 1 && ly <= 3);
+                    if (isInterior) {
+                        if (!level.getBlockState(worldPos).isAir()) {
+                            level.setBlock(worldPos, Blocks.AIR.defaultBlockState(), Block.UPDATE_ALL);
+                        }
+                        continue;
+                    }
+
+                    if (!level.getBlockState(worldPos).canBeReplaced()) continue;
+
+                    level.setBlock(worldPos, ModBlocks.CONDENSER_CASING.get().defaultBlockState(), Block.UPDATE_ALL);
+                    placed++;
+                }
+            }
+        }
+
+        // Place ports: energy input on bottom back-center, fluid output on top, item input on a side
+        // Energy input port at bottom-back-center (lx=0, lz=2, ly=0)
+        BlockPos energyPortPos = controllerPos.relative(back, 2);
+        if (level.getBlockState(energyPortPos).getBlock() == ModBlocks.CONDENSER_CASING.get()) {
+            level.setBlock(energyPortPos, ModBlocks.CONDENSER_PORT.get().defaultBlockState()
+                    .setValue(CondenserPortBlock.MODE, CondenserPortMode.ENERGY_INPUT), Block.UPDATE_ALL);
+        }
+
+        // Fluid output port at top-back-center (lx=0, lz=2, ly=4)
+        BlockPos fluidPortPos = controllerPos.relative(back, 2).above(4);
+        if (level.getBlockState(fluidPortPos).getBlock() == ModBlocks.CONDENSER_CASING.get()) {
+            level.setBlock(fluidPortPos, ModBlocks.CONDENSER_PORT.get().defaultBlockState()
+                    .setValue(CondenserPortBlock.MODE, CondenserPortMode.FLUID_OUTPUT), Block.UPDATE_ALL);
+        }
+
+        // Item input port on the right side (lx=1, lz=1, ly=0)
+        BlockPos itemPortPos = controllerPos.relative(right, 1).relative(back, 1);
+        if (level.getBlockState(itemPortPos).getBlock() == ModBlocks.CONDENSER_CASING.get()) {
+            level.setBlock(itemPortPos, ModBlocks.CONDENSER_PORT.get().defaultBlockState()
+                    .setValue(CondenserPortBlock.MODE, CondenserPortMode.ITEM_INPUT), Block.UPDATE_ALL);
+        }
+
+        // Place Creative Power Source adjacent to energy port
+        BlockPos powerSourcePos = energyPortPos.relative(back, 1);
+        if (level.getBlockState(powerSourcePos).canBeReplaced()) {
+            level.setBlock(powerSourcePos, ModBlocks.CREATIVE_POWER_SOURCE.get().defaultBlockState(), Block.UPDATE_ALL);
+            placed++;
+        }
+
+        // Auto-form the structure
+        int totalPlaced = placed;
+        if (level.getBlockEntity(controllerPos) instanceof CondenserControllerBlockEntity be) {
+            be.tryFormStructure();
+            if (be.isFormed()) {
+                source.sendSuccess(() -> Component.literal("Built and formed Tachyon Condenser (" + totalPlaced + " blocks). Power source placed."), true);
+            } else {
+                source.sendSuccess(() -> Component.literal("Placed " + totalPlaced + " blocks but formation failed - check structure"), true);
+            }
+        } else {
+            source.sendSuccess(() -> Component.literal("Placed " + totalPlaced + " blocks for Tachyon Condenser"), true);
+        }
+
+        return 1;
+    }
+
+    private static int clearCondenser(CommandContext<CommandSourceStack> context) {
+        CommandSourceStack source = context.getSource();
+        ServerPlayer player = source.getPlayer();
+        if (player == null) {
+            source.sendFailure(Component.literal("Must be run by a player"));
+            return 0;
+        }
+
+        HitResult hit = player.pick(20.0, 0.0f, false);
+        if (!(hit instanceof BlockHitResult blockHit) || hit.getType() == HitResult.Type.MISS) {
+            source.sendFailure(Component.literal("Look at a Condenser Controller block"));
+            return 0;
+        }
+
+        BlockPos controllerPos = blockHit.getBlockPos();
+        Level level = player.level();
+        BlockState state = level.getBlockState(controllerPos);
+
+        if (!(state.getBlock() instanceof CondenserControllerBlock)) {
+            source.sendFailure(Component.literal("Look at a Condenser Controller block"));
+            return 0;
+        }
+
+        // Disassemble first
+        if (level.getBlockEntity(controllerPos) instanceof CondenserControllerBlockEntity be) {
+            be.disassembleStructure();
+        }
+
+        Direction facing = state.getValue(CondenserControllerBlock.FACING);
+        var positions = CondenserPattern.getStructurePositions(controllerPos, facing);
+
+        int removed = 0;
+        for (BlockPos pos : positions) {
+            if (!level.getBlockState(pos).isAir()) {
+                level.destroyBlock(pos, false);
+                removed++;
+            }
+        }
+
+        // Also remove creative power source if placed behind the back
+        Direction back = facing.getOpposite();
+        BlockPos powerSourcePos = controllerPos.relative(back, 3);
+        if (level.getBlockState(powerSourcePos).getBlock() == ModBlocks.CREATIVE_POWER_SOURCE.get()) {
+            level.destroyBlock(powerSourcePos, false);
+            removed++;
+        }
+
+        int totalRemoved = removed;
+        source.sendSuccess(() -> Component.literal("Cleared " + totalRemoved + " condenser blocks"), true);
         return 1;
     }
 }

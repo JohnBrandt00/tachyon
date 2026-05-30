@@ -464,11 +464,10 @@ def draw_energy_bar_outline(draw, x, y, w=16, h=52):
 def draw_energy_bar_fill(draw, x, y, w=16, h=52):
     """Draw the energy bar fill sprite (red gradient) for UV area."""
     for row in range(h):
-        # Gradient from bright red at bottom to dark red at top
         t = row / max(1, h - 1)  # 0 at top, 1 at bottom
-        r = int(180 + 75 * t)
-        g = int(20 + 30 * t)
-        b = int(20 + 10 * t)
+        r = int(200 + 55 * (1 - t))
+        g = int(30 + 20 * t)
+        b = int(30 + 20 * t)
         draw.line([(x, y + row), (x + w - 1, y + row)], fill=(r, g, b))
 
 

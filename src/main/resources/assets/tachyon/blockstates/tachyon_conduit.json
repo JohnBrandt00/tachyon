@@ -1,0 +1,31 @@
+{
+  "multipart": [
+    {
+      "apply": { "model": "tachyon:block/tachyon_conduit_core" }
+    },
+    {
+      "when": { "north": "true" },
+      "apply": { "model": "tachyon:block/tachyon_conduit_arm", "y": 0 }
+    },
+    {
+      "when": { "south": "true" },
+      "apply": { "model": "tachyon:block/tachyon_conduit_arm", "y": 180 }
+    },
+    {
+      "when": { "east": "true" },
+      "apply": { "model": "tachyon:block/tachyon_conduit_arm", "y": 90 }
+    },
+    {
+      "when": { "west": "true" },
+      "apply": { "model": "tachyon:block/tachyon_conduit_arm", "y": 270 }
+    },
+    {
+      "when": { "up": "true" },
+      "apply": { "model": "tachyon:block/tachyon_conduit_arm_vertical", "x": 270 }
+    },
+    {
+      "when": { "down": "true" },
+      "apply": { "model": "tachyon:block/tachyon_conduit_arm_vertical", "x": 90 }
+    }
+  ]
+}

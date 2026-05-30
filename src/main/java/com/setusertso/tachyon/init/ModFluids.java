@@ -44,6 +44,29 @@ public class ModFluids {
                 .bucket(ModItems.HELIUM_BUCKET);
     }
 
+    // Tachyon Flux - dense purple liquid, signature tachyon resource
+    public static final Supplier<FluidType> TACHYON_FLUX_TYPE = FLUID_TYPES.register("tachyon_flux",
+            () -> new FluidType(FluidType.Properties.create()
+                    .descriptionId("fluid_type.tachyon.tachyon_flux")
+                    .density(1200)
+                    .viscosity(800)
+                    .temperature(5000)
+            ));
+
+    public static final DeferredHolder<Fluid, BaseFlowingFluid.Source> TACHYON_FLUX_SOURCE =
+            FLUIDS.register("tachyon_flux",
+                    () -> new BaseFlowingFluid.Source(tachyonFluxProperties()));
+
+    public static final DeferredHolder<Fluid, BaseFlowingFluid.Flowing> TACHYON_FLUX_FLOWING =
+            FLUIDS.register("tachyon_flux_flowing",
+                    () -> new BaseFlowingFluid.Flowing(tachyonFluxProperties()));
+
+    private static BaseFlowingFluid.Properties tachyonFluxProperties() {
+        return new BaseFlowingFluid.Properties(TACHYON_FLUX_TYPE, TACHYON_FLUX_SOURCE, TACHYON_FLUX_FLOWING)
+                .block(ModBlocks.TACHYON_FLUX_BLOCK)
+                .bucket(ModItems.TACHYON_FLUX_BUCKET);
+    }
+
     public static void register(IEventBus modEventBus) {
         FLUID_TYPES.register(modEventBus);
         FLUIDS.register(modEventBus);

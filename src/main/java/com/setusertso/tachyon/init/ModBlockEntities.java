@@ -25,6 +25,11 @@ import com.setusertso.tachyon.block.entity.AlloyForgeBlockEntity;
 import com.setusertso.tachyon.block.entity.VoidMinerControllerBlockEntity;
 import com.setusertso.tachyon.block.entity.VoidFrameBlockEntity;
 import com.setusertso.tachyon.block.entity.VoidMinerPortBlockEntity;
+import com.setusertso.tachyon.block.entity.CondenserControllerBlockEntity;
+import com.setusertso.tachyon.block.entity.CondenserCasingBlockEntity;
+import com.setusertso.tachyon.block.entity.CondenserPortBlockEntity;
+import com.setusertso.tachyon.block.entity.TachyonConduitBlockEntity;
+import com.setusertso.tachyon.block.entity.TachyonRelayBlockEntity;
 
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.world.level.block.entity.BlockEntityType;
@@ -141,6 +146,34 @@ public class ModBlockEntities {
             BLOCK_ENTITIES.register("void_miner_port",
                     () -> BlockEntityType.Builder.of(VoidMinerPortBlockEntity::new,
                             ModBlocks.VOID_MINER_PORT.get()).build(null));
+
+    // Tachyon Condenser
+    public static final Supplier<BlockEntityType<CondenserControllerBlockEntity>> CONDENSER_CONTROLLER =
+            BLOCK_ENTITIES.register("condenser_controller",
+                    () -> BlockEntityType.Builder.of(CondenserControllerBlockEntity::new,
+                            ModBlocks.CONDENSER_CONTROLLER.get()).build(null));
+
+    public static final Supplier<BlockEntityType<CondenserCasingBlockEntity>> CONDENSER_CASING =
+            BLOCK_ENTITIES.register("condenser_casing",
+                    () -> BlockEntityType.Builder.of(CondenserCasingBlockEntity::new,
+                            ModBlocks.CONDENSER_CASING.get()).build(null));
+
+    public static final Supplier<BlockEntityType<CondenserPortBlockEntity>> CONDENSER_PORT =
+            BLOCK_ENTITIES.register("condenser_port",
+                    () -> BlockEntityType.Builder.of(CondenserPortBlockEntity::new,
+                            ModBlocks.CONDENSER_PORT.get()).build(null));
+
+    // Tachyon Conduit
+    public static final Supplier<BlockEntityType<TachyonConduitBlockEntity>> TACHYON_CONDUIT =
+            BLOCK_ENTITIES.register("tachyon_conduit",
+                    () -> BlockEntityType.Builder.of(TachyonConduitBlockEntity::new,
+                            ModBlocks.TACHYON_CONDUIT.get()).build(null));
+
+    // Tachyon Relay
+    public static final Supplier<BlockEntityType<TachyonRelayBlockEntity>> TACHYON_RELAY =
+            BLOCK_ENTITIES.register("tachyon_relay",
+                    () -> BlockEntityType.Builder.of(TachyonRelayBlockEntity::new,
+                            ModBlocks.TACHYON_RELAY.get()).build(null));
 
     public static void register(IEventBus modEventBus) {
         BLOCK_ENTITIES.register(modEventBus);

@@ -1,6 +1,6 @@
 package com.setusertso.tachyon.menu;
 
-import com.setusertso.tachyon.block.entity.IUpgradeable;
+import com.setusertso.tachyon.ModItems;
 import com.setusertso.tachyon.init.ModMenuTypes;
 
 import net.minecraft.world.entity.player.Inventory;
@@ -16,6 +16,10 @@ import net.neoforged.neoforge.items.SlotItemHandler;
 
 public class SolarCollectorMenu extends AbstractContainerMenu {
     private final ContainerData data;
+
+    private static boolean isAllowedUpgrade(ItemStack stack) {
+        return stack.is(ModItems.SPEED_UPGRADE.get());
+    }
 
     private static final int MACHINE_SLOTS = 1;
     private static final int UPGRADE_SLOTS = 3;
@@ -47,7 +51,7 @@ public class SolarCollectorMenu extends AbstractContainerMenu {
             this.addSlot(new SlotItemHandler(upgradeHandler, i, 152, 8 + i * 18) {
                 @Override
                 public boolean mayPlace(ItemStack stack) {
-                    return IUpgradeable.isUpgradeItem(stack);
+                    return isAllowedUpgrade(stack);
                 }
 
                 @Override
@@ -93,7 +97,7 @@ public class SolarCollectorMenu extends AbstractContainerMenu {
                     return ItemStack.EMPTY;
                 }
             }
-            else if (IUpgradeable.isUpgradeItem(slotStack)) {
+            else if (isAllowedUpgrade(slotStack)) {
                 if (!this.moveItemStackTo(slotStack, MACHINE_SLOTS, TE_SLOTS, false)) {
                     return ItemStack.EMPTY;
                 }

@@ -1,0 +1,17 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "T": { "item": "tachyon:tachyon_alloy_ingot" },
+    "G": { "item": "minecraft:glass" }
+  },
+  "pattern": [
+    "TGT",
+    "G G",
+    "TGT"
+  ],
+  "result": {
+    "count": 8,
+    "id": "tachyon:tachyon_conduit"
+  }
+}

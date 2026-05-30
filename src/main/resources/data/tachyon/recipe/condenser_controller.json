@@ -1,0 +1,23 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+    "TAT",
+    "ACA",
+    "TAT"
+  ],
+  "key": {
+    "T": {
+      "item": "tachyon:tachyon_alloy_ingot"
+    },
+    "A": {
+      "item": "tachyon:tachyon_core"
+    },
+    "C": {
+      "item": "tachyon:quantum_processor"
+    }
+  },
+  "result": {
+    "id": "tachyon:condenser_controller",
+    "count": 1
+  }
+}

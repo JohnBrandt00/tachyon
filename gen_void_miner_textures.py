@@ -444,12 +444,12 @@ def make_void_miner_gui():
     # Player inventory
     draw_inv(draw, ox, oy)
 
-    # UV extras: energy bar fill (purple gradient for void theme)
+    # UV extras: energy bar fill (red gradient)
     for y in range(52):
         t = y / 51.0  # 0 = top (full), 1 = bottom (empty)
-        r = int(120 + 80 * (1 - t))
+        r = int(200 + 55 * (1 - t))
         g = int(30 + 20 * t)
-        b = int(180 + 75 * (1 - t))
+        b = int(30 + 20 * t)
         draw.line([(176, y), (191, y)], fill=(r, g, b, 255))
 
     # UV extras: arrow fill (white)

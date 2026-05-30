@@ -139,11 +139,34 @@
   "item.tachyon.tachyon_leggings": "Tachyon Leggings",
   "item.tachyon.tachyon_boots": "Tachyon Boots",
 
+  "block.tachyon.condenser_controller": "Condenser Controller",
+  "block.tachyon.condenser_casing": "Condenser Casing",
+  "block.tachyon.condenser_port": "Condenser Port",
+  "menu.tachyon.condenser_controller": "Tachyon Condenser",
+  "message.tachyon.condenser_not_formed": "Structure is not complete!",
+  "gui.tachyon.condenser_port_mode.item_input": "Item Input",
+  "gui.tachyon.condenser_port_mode.fluid_output": "Fluid Output",
+  "gui.tachyon.condenser_port_mode.energy_input": "Energy Input",
+  "fluid_type.tachyon.tachyon_flux": "Tachyon Flux",
+  "item.tachyon.tachyon_flux_bucket": "Tachyon Flux Bucket",
+
   "tachyon.configuration.title": "tachyon Configs",
   "tachyon.configuration.section.tachyon.common.toml": "tachyon Configs",
   "tachyon.configuration.section.tachyon.common.toml.title": "tachyon Configs",
   "tachyon.configuration.items": "Item List",
   "tachyon.configuration.logDirtBlock": "Log Dirt Block",
   "tachyon.configuration.magicNumberIntroduction": "Magic Number Text",
-  "tachyon.configuration.magicNumber": "Magic Number"
+  "tachyon.configuration.magicNumber": "Magic Number",
+
+  "block.tachyon.tachyon_conduit": "Tachyon Conduit",
+  "block.tachyon.tachyon_relay": "Tachyon Relay",
+  "item.tachyon.tachyon_linker": "Tachyon Linker",
+  "message.tachyon.linker_first": "First relay selected.",
+  "message.tachyon.linker_linked": "Relays linked!",
+  "message.tachyon.linker_cleared": "Selection cleared.",
+  "message.tachyon.linker_too_far": "Relays are too far apart! (Max 64 blocks)",
+  "message.tachyon.linker_same": "Cannot link a relay to itself!",
+  "message.tachyon.linker_missing": "First relay no longer exists!",
+  "message.tachyon.side_config": "%s: %s",
+  "tooltip.tachyon.linker_stored": "Stored: [%d, %d, %d]"
 }

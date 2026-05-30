@@ -1,5 +1,8 @@
 package com.setusertso.tachyon.screen;
 
+import java.util.List;
+
+import com.setusertso.tachyon.ModItems;
 import com.setusertso.tachyon.menu.SolarCollectorMenu;
 import com.setusertso.tachyon.tachyon;
 
@@ -28,6 +31,9 @@ public class SolarCollectorScreen extends AbstractContainerScreen<SolarCollector
             graphics.blit(TEXTURE, this.leftPos + 80, this.topPos + 17,
                     176, 0, 14, 14);
         }
+
+        UpgradeSlotRenderer.renderGhostUpgrades(graphics, this.menu, this.leftPos, this.topPos,
+                1, 3, List.of(ModItems.SPEED_UPGRADE.get()));
     }
 
     @Override

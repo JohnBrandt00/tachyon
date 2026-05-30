@@ -1,7 +1,6 @@
 package com.setusertso.tachyon.menu;
 
 import com.setusertso.tachyon.ModItems;
-import com.setusertso.tachyon.block.entity.IUpgradeable;
 import com.setusertso.tachyon.block.entity.ThoriumReactorBlockEntity;
 import com.setusertso.tachyon.init.ModMenuTypes;
 
@@ -18,6 +17,11 @@ import net.neoforged.neoforge.items.SlotItemHandler;
 
 public class ThoriumReactorMenu extends AbstractContainerMenu {
     private final ContainerData data;
+
+    private static boolean isAllowedUpgrade(ItemStack stack) {
+        return stack.is(ModItems.SPEED_UPGRADE.get())
+                || stack.is(ModItems.ENERGY_UPGRADE.get());
+    }
 
     private static final int MACHINE_SLOTS = 1;
     private static final int UPGRADE_SLOTS = 3;
@@ -55,7 +59,7 @@ public class ThoriumReactorMenu extends AbstractContainerMenu {
             this.addSlot(new SlotItemHandler(upgradeHandler, i, 152, 8 + i * 18) {
                 @Override
                 public boolean mayPlace(ItemStack stack) {
-                    return IUpgradeable.isUpgradeItem(stack);
+                    return isAllowedUpgrade(stack);
                 }
 
                 @Override
@@ -127,7 +131,7 @@ public class ThoriumReactorMenu extends AbstractContainerMenu {
                 }
             }
             // From player inventory: try upgrade slots first, then fuel slot
-            else if (IUpgradeable.isUpgradeItem(slotStack)) {
+            else if (isAllowedUpgrade(slotStack)) {
                 if (!this.moveItemStackTo(slotStack, MACHINE_SLOTS, TE_SLOTS, false)) {
                     return ItemStack.EMPTY;
                 }

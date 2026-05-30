@@ -15,6 +15,7 @@ import com.setusertso.tachyon.menu.PhotonCompressorMenu;
 import com.setusertso.tachyon.menu.OreCrusherMenu;
 import com.setusertso.tachyon.menu.AlloyForgeMenu;
 import com.setusertso.tachyon.menu.VoidMinerMenu;
+import com.setusertso.tachyon.menu.CondenserControllerMenu;
 
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.world.flag.FeatureFlags;
@@ -78,6 +79,10 @@ public class ModMenuTypes {
     public static final Supplier<MenuType<VoidMinerMenu>> VOID_MINER =
             MENUS.register("void_miner",
                     () -> new MenuType<>(VoidMinerMenu::new, FeatureFlags.DEFAULT_FLAGS));
+
+    public static final Supplier<MenuType<CondenserControllerMenu>> CONDENSER_CONTROLLER =
+            MENUS.register("condenser_controller",
+                    () -> new MenuType<>(CondenserControllerMenu::new, FeatureFlags.DEFAULT_FLAGS));
 
     public static void register(IEventBus modEventBus) {
         MENUS.register(modEventBus);

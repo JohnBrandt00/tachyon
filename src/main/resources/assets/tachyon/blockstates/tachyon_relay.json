@@ -1,0 +1,6 @@
+{
+  "variants": {
+    "linked=false": { "model": "tachyon:block/tachyon_relay" },
+    "linked=true": { "model": "tachyon:block/tachyon_relay_linked" }
+  }
+}

@@ -2,8 +2,11 @@ package com.setusertso.tachyon.block.entity;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 
 import com.setusertso.tachyon.ModItems;
+
+import net.minecraft.world.item.Item;
 import com.setusertso.tachyon.block.AcceleratorControllerBlock;
 import com.setusertso.tachyon.block.AcceleratorPattern;
 import com.setusertso.tachyon.init.ModBlockEntities;
@@ -68,7 +71,7 @@ public class AcceleratorControllerBlockEntity extends BlockEntity implements Men
         }
     };
 
-    private final ItemStackHandler upgradeHandler = IUpgradeable.createUpgradeHandler(this::setChanged);
+    private final ItemStackHandler upgradeHandler = IUpgradeable.createUpgradeHandler(this::setChanged, getAllowedUpgrades());
 
     private final CustomEnergyStorage energy = new CustomEnergyStorage(ENERGY_CAPACITY, MAX_ENERGY_RECEIVE, 0);
 
@@ -160,6 +163,11 @@ public class AcceleratorControllerBlockEntity extends BlockEntity implements Men
     @Override
     public ItemStackHandler getUpgradeHandler() {
         return upgradeHandler;
+    }
+
+    @Override
+    public Set<Item> getAllowedUpgrades() {
+        return Set.of(ModItems.SPEED_UPGRADE.get(), ModItems.ENERGY_UPGRADE.get(), ModItems.OUTPUT_UPGRADE.get());
     }
 
     public float getSpeedMultiplier() {

@@ -1,5 +1,8 @@
 package com.setusertso.tachyon.screen;
 
+import java.util.List;
+
+import com.setusertso.tachyon.ModItems;
 import com.setusertso.tachyon.menu.SuperluminalEmitterMenu;
 import com.setusertso.tachyon.tachyon;
 
@@ -32,6 +35,8 @@ public class SuperluminalEmitterScreen extends AbstractContainerScreen<Superlumi
                     176, 14 - flameHeight, 14, flameHeight);
         }
 
+        UpgradeSlotRenderer.renderGhostUpgrades(graphics, this.menu, this.leftPos, this.topPos,
+                1, 3, List.of(ModItems.SPEED_UPGRADE.get(), ModItems.ENERGY_UPGRADE.get()));
     }
 
     @Override

@@ -22,6 +22,11 @@ import com.setusertso.tachyon.block.ThoriumReactorBlock;
 import com.setusertso.tachyon.block.VoidFrameBlock;
 import com.setusertso.tachyon.block.VoidMinerControllerBlock;
 import com.setusertso.tachyon.block.VoidMinerPortBlock;
+import com.setusertso.tachyon.block.CondenserControllerBlock;
+import com.setusertso.tachyon.block.CondenserCasingBlock;
+import com.setusertso.tachyon.block.CondenserPortBlock;
+import com.setusertso.tachyon.block.TachyonConduitBlock;
+import com.setusertso.tachyon.block.TachyonRelayBlock;
 import com.setusertso.tachyon.init.ModFluids;
 
 import net.minecraft.world.item.BlockItem;
@@ -141,6 +146,12 @@ public class ModBlocks {
                     .mapColor(MapColor.NONE).replaceable().noCollission()
                     .randomTicks().strength(-1.0F).liquid().noLootTable()));
 
+    // Tachyon Flux fluid block
+    public static final DeferredBlock<LiquidBlock> TACHYON_FLUX_BLOCK = BLOCKS.register("tachyon_flux",
+            () -> new LiquidBlock(ModFluids.TACHYON_FLUX_SOURCE.get(), BlockBehaviour.Properties.of()
+                    .mapColor(MapColor.COLOR_PURPLE).replaceable().noCollission()
+                    .randomTicks().strength(-1.0F).liquid().noLootTable()));
+
     // Singularity Debug (visual test block)
     public static final DeferredBlock<SingularityDebugBlock> SINGULARITY_DEBUG = BLOCKS.register("singularity_debug",
             () -> new SingularityDebugBlock(BlockBehaviour.Properties.of()
@@ -258,6 +269,25 @@ public class ModBlocks {
     public static final DeferredItem<BlockItem> VOID_MINER_PORT_ITEM = BLOCK_ITEMS.register("void_miner_port",
             () -> new BlockItem(VOID_MINER_PORT.get(), new Item.Properties()));
 
+    // Tachyon Condenser
+    public static final DeferredBlock<CondenserControllerBlock> CONDENSER_CONTROLLER = BLOCKS.register("condenser_controller",
+            () -> new CondenserControllerBlock(BlockBehaviour.Properties.of()
+                    .mapColor(MapColor.METAL).strength(5.0F, 6.0F).sound(SoundType.METAL).requiresCorrectToolForDrops()));
+    public static final DeferredItem<BlockItem> CONDENSER_CONTROLLER_ITEM = BLOCK_ITEMS.register("condenser_controller",
+            () -> new BlockItem(CONDENSER_CONTROLLER.get(), new Item.Properties()));
+
+    public static final DeferredBlock<CondenserCasingBlock> CONDENSER_CASING = BLOCKS.register("condenser_casing",
+            () -> new CondenserCasingBlock(BlockBehaviour.Properties.of()
+                    .mapColor(MapColor.METAL).strength(5.0F, 6.0F).sound(SoundType.METAL).requiresCorrectToolForDrops()));
+    public static final DeferredItem<BlockItem> CONDENSER_CASING_ITEM = BLOCK_ITEMS.register("condenser_casing",
+            () -> new BlockItem(CONDENSER_CASING.get(), new Item.Properties()));
+
+    public static final DeferredBlock<CondenserPortBlock> CONDENSER_PORT = BLOCKS.register("condenser_port",
+            () -> new CondenserPortBlock(BlockBehaviour.Properties.of()
+                    .mapColor(MapColor.METAL).strength(5.0F, 6.0F).sound(SoundType.METAL).requiresCorrectToolForDrops()));
+    public static final DeferredItem<BlockItem> CONDENSER_PORT_ITEM = BLOCK_ITEMS.register("condenser_port",
+            () -> new BlockItem(CONDENSER_PORT.get(), new Item.Properties()));
+
     // Creative Power Source (test block)
     public static final DeferredBlock<CreativePowerBlock> CREATIVE_POWER_SOURCE = BLOCKS.register("creative_power_source",
             () -> new CreativePowerBlock(BlockBehaviour.Properties.of()
@@ -271,6 +301,22 @@ public class ModBlocks {
                     .mapColor(MapColor.COLOR_PURPLE).strength(3.0F, 6.0F).sound(SoundType.METAL)));
     public static final DeferredItem<BlockItem> CREATIVE_POWER_SINK_ITEM = BLOCK_ITEMS.register("creative_power_sink",
             () -> new BlockItem(CREATIVE_POWER_SINK.get(), new Item.Properties()));
+
+    // Tachyon Conduit (logistics)
+    public static final DeferredBlock<TachyonConduitBlock> TACHYON_CONDUIT = BLOCKS.register("tachyon_conduit",
+            () -> new TachyonConduitBlock(BlockBehaviour.Properties.of()
+                    .mapColor(MapColor.COLOR_PURPLE).strength(3.5F, 3.5F).sound(SoundType.METAL)
+                    .requiresCorrectToolForDrops().noOcclusion()));
+    public static final DeferredItem<BlockItem> TACHYON_CONDUIT_ITEM = BLOCK_ITEMS.register("tachyon_conduit",
+            () -> new BlockItem(TACHYON_CONDUIT.get(), new Item.Properties()));
+
+    // Tachyon Relay (wireless logistics)
+    public static final DeferredBlock<TachyonRelayBlock> TACHYON_RELAY = BLOCKS.register("tachyon_relay",
+            () -> new TachyonRelayBlock(BlockBehaviour.Properties.of()
+                    .mapColor(MapColor.COLOR_PURPLE).strength(5.0F, 6.0F).sound(SoundType.METAL)
+                    .requiresCorrectToolForDrops()));
+    public static final DeferredItem<BlockItem> TACHYON_RELAY_ITEM = BLOCK_ITEMS.register("tachyon_relay",
+            () -> new BlockItem(TACHYON_RELAY.get(), new Item.Properties()));
 
     public static void register(IEventBus modEventBus) {
         BLOCKS.register(modEventBus);

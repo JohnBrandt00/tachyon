@@ -1,7 +1,11 @@
 package com.setusertso.tachyon.block.entity;
 
+import java.util.Set;
+
 import com.setusertso.tachyon.ModItems;
 import com.setusertso.tachyon.block.SuperluminalEmitterBlock;
+
+import net.minecraft.world.item.Item;
 import com.setusertso.tachyon.block.TachyonLightGeneratorBlock;
 import com.setusertso.tachyon.init.ModBlockEntities;
 import com.setusertso.tachyon.menu.SuperluminalEmitterMenu;
@@ -42,7 +46,7 @@ public class SuperluminalEmitterBlockEntity extends BlockEntity implements MenuP
         }
     };
 
-    private final ItemStackHandler upgradeHandler = IUpgradeable.createUpgradeHandler(this::setChanged);
+    private final ItemStackHandler upgradeHandler = IUpgradeable.createUpgradeHandler(this::setChanged, getAllowedUpgrades());
 
     private int litTime = 0;
     private int litDuration = 0;
@@ -84,6 +88,11 @@ public class SuperluminalEmitterBlockEntity extends BlockEntity implements MenuP
     @Override
     public ItemStackHandler getUpgradeHandler() {
         return upgradeHandler;
+    }
+
+    @Override
+    public Set<Item> getAllowedUpgrades() {
+        return Set.of(ModItems.SPEED_UPGRADE.get(), ModItems.ENERGY_UPGRADE.get());
     }
 
     public ContainerData getDataAccess() {

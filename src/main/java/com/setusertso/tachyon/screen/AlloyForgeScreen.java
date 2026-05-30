@@ -1,5 +1,8 @@
 package com.setusertso.tachyon.screen;
 
+import java.util.List;
+
+import com.setusertso.tachyon.ModItems;
 import com.setusertso.tachyon.menu.AlloyForgeMenu;
 import com.setusertso.tachyon.tachyon;
 
@@ -36,6 +39,9 @@ public class AlloyForgeScreen extends AbstractContainerScreen<AlloyForgeMenu> {
             graphics.blit(TEXTURE, this.leftPos + 79, this.topPos + 34,
                     176, 52, arrowWidth, 17);
         }
+
+        UpgradeSlotRenderer.renderGhostUpgrades(graphics, this.menu, this.leftPos, this.topPos,
+                3, 3, List.of(ModItems.SPEED_UPGRADE.get(), ModItems.ENERGY_UPGRADE.get(), ModItems.OUTPUT_UPGRADE.get()));
     }
 
     @Override

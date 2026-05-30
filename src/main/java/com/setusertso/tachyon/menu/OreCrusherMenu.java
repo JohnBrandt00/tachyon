@@ -1,6 +1,6 @@
 package com.setusertso.tachyon.menu;
 
-import com.setusertso.tachyon.block.entity.IUpgradeable;
+import com.setusertso.tachyon.ModItems;
 import com.setusertso.tachyon.block.entity.OreCrusherBlockEntity;
 import com.setusertso.tachyon.init.ModMenuTypes;
 
@@ -49,7 +49,9 @@ public class OreCrusherMenu extends AbstractContainerMenu {
             this.addSlot(new SlotItemHandler(upgradeHandler, i, 62 + i * 18, 62) {
                 @Override
                 public boolean mayPlace(ItemStack stack) {
-                    return IUpgradeable.isUpgradeItem(stack);
+                    return stack.is(ModItems.SPEED_UPGRADE.get())
+                            || stack.is(ModItems.ENERGY_UPGRADE.get())
+                            || stack.is(ModItems.OUTPUT_UPGRADE.get());
                 }
 
                 @Override
@@ -100,7 +102,9 @@ public class OreCrusherMenu extends AbstractContainerMenu {
                     return ItemStack.EMPTY;
                 }
             }
-            else if (IUpgradeable.isUpgradeItem(slotStack)) {
+            else if (slotStack.is(ModItems.SPEED_UPGRADE.get())
+                    || slotStack.is(ModItems.ENERGY_UPGRADE.get())
+                    || slotStack.is(ModItems.OUTPUT_UPGRADE.get())) {
                 if (!this.moveItemStackTo(slotStack, MACHINE_SLOTS, TE_SLOTS, false)) {
                     return ItemStack.EMPTY;
                 }

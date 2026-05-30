@@ -1,7 +1,11 @@
 package com.setusertso.tachyon.block.entity;
 
+import java.util.Set;
+
 import com.setusertso.tachyon.ModItems;
 import com.setusertso.tachyon.block.SolarCollectorBlock;
+
+import net.minecraft.world.item.Item;
 import com.setusertso.tachyon.init.ModBlockEntities;
 import com.setusertso.tachyon.menu.SolarCollectorMenu;
 
@@ -46,7 +50,7 @@ public class SolarCollectorBlockEntity extends BlockEntity implements MenuProvid
         }
     };
 
-    private final ItemStackHandler upgradeHandler = IUpgradeable.createUpgradeHandler(this::setChanged);
+    private final ItemStackHandler upgradeHandler = IUpgradeable.createUpgradeHandler(this::setChanged, getAllowedUpgrades());
 
     private float productionAccumulator = 0.0f;
 
@@ -82,6 +86,11 @@ public class SolarCollectorBlockEntity extends BlockEntity implements MenuProvid
     @Override
     public ItemStackHandler getUpgradeHandler() {
         return upgradeHandler;
+    }
+
+    @Override
+    public Set<Item> getAllowedUpgrades() {
+        return Set.of(ModItems.SPEED_UPGRADE.get());
     }
 
     @Override

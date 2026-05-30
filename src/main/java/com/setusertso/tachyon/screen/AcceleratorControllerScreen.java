@@ -1,18 +1,17 @@
 package com.setusertso.tachyon.screen;
 
+import java.util.List;
+
+import com.setusertso.tachyon.ModItems;
 import com.setusertso.tachyon.init.ModFluids;
 import com.setusertso.tachyon.menu.AcceleratorControllerMenu;
 import com.setusertso.tachyon.tachyon;
 
-import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
-import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.player.Inventory;
-import net.minecraft.world.inventory.InventoryMenu;
-import net.neoforged.neoforge.client.extensions.common.IClientFluidTypeExtensions;
 
 public class AcceleratorControllerScreen extends AbstractContainerScreen<AcceleratorControllerMenu> {
     private static final ResourceLocation TEXTURE =
@@ -37,35 +36,8 @@ public class AcceleratorControllerScreen extends AbstractContainerScreen<Acceler
         }
 
         // Fluid tank (right side, 16x52 pixels, position: 150, 16)
-        float fluidScaled = this.menu.getFluidScaled();
-        if (fluidScaled > 0) {
-            int barHeight = (int) (fluidScaled * 52);
-
-            // Get helium fluid texture
-            var fluidExtensions = IClientFluidTypeExtensions.of(ModFluids.HELIUM_SOURCE.get());
-            ResourceLocation stillTexture = fluidExtensions.getStillTexture();
-            TextureAtlasSprite sprite = Minecraft.getInstance()
-                    .getTextureAtlas(InventoryMenu.BLOCK_ATLAS)
-                    .apply(stillTexture);
-
-            // Get fluid color
-            int color = fluidExtensions.getTintColor();
-            float red = ((color >> 16) & 0xFF) / 255f;
-            float green = ((color >> 8) & 0xFF) / 255f;
-            float blue = (color & 0xFF) / 255f;
-
-            // Render fluid texture
-            int tankX = this.leftPos + 150;
-            int tankY = this.topPos + 16 + 52 - barHeight;
-
-            // Tile the texture to fill the bar height
-            for (int i = 0; i < barHeight; i += 16) {
-                int renderHeight = Math.min(16, barHeight - i);
-                graphics.setColor(red, green, blue, 1.0f);
-                graphics.blit(tankX, tankY + i, 0, 16, renderHeight, sprite);
-            }
-            graphics.setColor(1.0f, 1.0f, 1.0f, 1.0f);
-        }
+        FluidTankRenderer.renderFluidTank(graphics, ModFluids.HELIUM_SOURCE.get(),
+                this.leftPos + 150, this.topPos + 16, 16, 52, this.menu.getFluidScaled());
 
         // Progress arrow (between slots, 24x17 pixels, position: 79, 34)
         float progressScaled = this.menu.getProgressScaled();
@@ -74,6 +46,9 @@ public class AcceleratorControllerScreen extends AbstractContainerScreen<Acceler
             graphics.blit(TEXTURE, this.leftPos + 79, this.topPos + 34,
                     176, 52, arrowWidth, 17);
         }
+
+        UpgradeSlotRenderer.renderGhostUpgrades(graphics, this.menu, this.leftPos, this.topPos,
+                2, 3, List.of(ModItems.SPEED_UPGRADE.get(), ModItems.ENERGY_UPGRADE.get(), ModItems.OUTPUT_UPGRADE.get()));
     }
 
     @Override

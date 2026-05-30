@@ -7,6 +7,7 @@ import com.setusertso.tachyon.item.TachyonArmorItem;
 import com.setusertso.tachyon.item.TachyonAxeItem;
 import com.setusertso.tachyon.item.TachyonPickaxeItem;
 import com.setusertso.tachyon.item.TachyonShovelItem;
+import com.setusertso.tachyon.item.TachyonLinkerItem;
 import com.setusertso.tachyon.item.TachyonWrenchItem;
 
 import net.minecraft.world.item.ArmorItem;
@@ -44,6 +45,10 @@ public class ModItems {
     // Helium Bucket
     public static final DeferredItem<BucketItem> HELIUM_BUCKET = ITEMS.register("helium_bucket",
             () -> new BucketItem(ModFluids.HELIUM_SOURCE.get(), new Item.Properties().stacksTo(1)));
+
+    // Tachyon Flux Bucket
+    public static final DeferredItem<BucketItem> TACHYON_FLUX_BUCKET = ITEMS.register("tachyon_flux_bucket",
+            () -> new BucketItem(ModFluids.TACHYON_FLUX_SOURCE.get(), new Item.Properties().stacksTo(1)));
 
     // Singularity Engine
     public static final DeferredItem<Item> PHOTONIC_MATRIX = ITEMS.registerSimpleItem("photonic_matrix");
@@ -111,6 +116,10 @@ public class ModItems {
     // Tachyon Wrench
     public static final DeferredItem<Item> TACHYON_WRENCH = ITEMS.register("tachyon_wrench",
             () -> new TachyonWrenchItem(new Item.Properties().stacksTo(1)));
+
+    // Tachyon Linker (relay pairing tool)
+    public static final DeferredItem<Item> TACHYON_LINKER = ITEMS.register("tachyon_linker",
+            () -> new TachyonLinkerItem(new Item.Properties().stacksTo(1)));
 
     // Tachyon Tools
     public static final DeferredItem<Item> TACHYON_PICKAXE = ITEMS.register("tachyon_pickaxe",

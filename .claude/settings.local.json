@@ -42,7 +42,15 @@
       "WebFetch(domain:docs.neoforged.net)",
       "WebFetch(domain:gist.github.com)",
       "WebFetch(domain:lexxie.dev)",
-      "Bash(echo:*)"
+      "Bash(echo:*)",
+      "Bash(./gradlew compileJava:*)",
+      "Bash(gh api:*)",
+      "Bash(gh auth status:*)",
+      "Bash(\"C:/Users/notjo/anaconda3/python.exe\" -c:*)",
+      "Bash(\"C:/Users/notjo/anaconda3/python.exe\" -c \"\nfrom PIL import Image\nimg = Image.open\\(''src/main/resources/assets/tachyon/textures/gui/accelerator_controller.png''\\).convert\\(''RGBA''\\)\npixels = img.load\\(\\)\n\n# Check exactly where the tank well starts/ends\n# The well should be at x=149-166 \\(border at 149, 166, inner 150-165\\), y=15-68\n# Let me check the exact boundaries\n\n# Check x=149 \\(left border of tank\\) from y=0 to y=80\nprint\\(''Column x=149:''\\)\nfor y in range\\(0, 80\\):\n    r, g, b, a = pixels[149, y]\n    print\\(f''  y={y}: \\({r},{g},{b},{a}\\)''\\)\n\nprint\\(\\)\nprint\\(''Column x=166 \\(right border of tank\\):''\\)\nfor y in range\\(0, 80\\):\n    r, g, b, a = pixels[166, y]\n    print\\(f''  y={y}: \\({r},{g},{b},{a}\\)''\\)\n\")",
+      "Bash(\"C:/Users/notjo/anaconda3/python.exe\":*)",
+      "Bash(\"C:/Users/notjo/anaconda3/python.exe\" -c \"\nfrom PIL import Image\nimg = Image.open\\(''src/main/resources/assets/tachyon/textures/gui/accelerator_controller.png''\\).convert\\(''RGBA''\\)\npixels = img.load\\(\\)\n\n# Fix the fluid tank well to match the energy bar style\n# Energy bar: x=9-26 \\(18px\\), y=15-68 \\(54px\\)\n#   Border \\(60,60,60\\) on edges, inner \\(40,40,40\\)\n# Tank well should be: x=149-166 \\(18px\\), y=15-68 \\(54px\\)\n#   Same style\n\nBORDER = \\(60, 60, 60, 255\\)\nINNER = \\(40, 40, 40, 255\\)\nBG = \\(198, 198, 198, 255\\)\n\n# Tank well area: x=149 to x=166, y=15 to y=68\nfor y in range\\(15, 69\\):\n    for x in range\\(149, 167\\):\n        # Top/bottom border rows\n        if y == 15 or y == 68:\n            pixels[x, y] = BORDER\n        # Left/right border columns\n        elif x == 149 or x == 166:\n            pixels[x, y] = BORDER\n        # Inner area\n        else:\n            pixels[x, y] = INNER\n\nimg.save\\(''src/main/resources/assets/tachyon/textures/gui/accelerator_controller.png''\\)\nprint\\(''Fixed accelerator_controller.png tank well''\\)\n\")",
+      "Bash(\"C:/Users/notjo/anaconda3/python.exe\" -c \"\nfrom PIL import Image\n\nBORDER = \\(60, 60, 60, 255\\)\nINNER = \\(40, 40, 40, 255\\)\n\nimg = Image.open\\(''src/main/resources/assets/tachyon/textures/gui/condenser_controller.png''\\).convert\\(''RGBA''\\)\npixels = img.load\\(\\)\n\n# Fix tank well: x=149-166, y=15-68 \\(same layout as accelerator\\)\nfor y in range\\(15, 69\\):\n    for x in range\\(149, 167\\):\n        if y == 15 or y == 68:\n            pixels[x, y] = BORDER\n        elif x == 149 or x == 166:\n            pixels[x, y] = BORDER\n        else:\n            pixels[x, y] = INNER\n\nimg.save\\(''src/main/resources/assets/tachyon/textures/gui/condenser_controller.png''\\)\nprint\\(''Fixed condenser_controller.png tank well''\\)\n\")"
     ]
   }
 }

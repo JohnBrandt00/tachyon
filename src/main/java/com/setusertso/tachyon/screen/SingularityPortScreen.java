@@ -36,10 +36,10 @@ public class SingularityPortScreen extends AbstractContainerScreen<SingularityPo
         this.addRenderableWidget(Button.builder(
                 Component.translatable("gui.tachyon.cycle_mode"),
                 button -> PacketDistributor.sendToServer(new CyclePortModePacket(this.menu.getPortPos()))
-        ).bounds(this.leftPos + 58, this.topPos + 56, 60, 20).build());
+        ).bounds(this.leftPos + 58, this.topPos + 32, 60, 14).build());
 
         // Shield power buttons: -1k, -100, -10, +10, +100, +1k
-        int btnY = this.topPos + 38;
+        int btnY = this.topPos + 56;
         shieldButtons[0] = Button.builder(Component.literal("-1k"),
                 b -> sendShield(-1000)).bounds(this.leftPos + 8, btnY, 24, 14).build();
         shieldButtons[1] = Button.builder(Component.literal("-100"),
@@ -86,14 +86,14 @@ public class SingularityPortScreen extends AbstractContainerScreen<SingularityPo
         Component modeText = Component.translatable("gui.tachyon.port_mode." + mode.getSerializedName());
         int textWidth = this.font.width(modeText);
         graphics.drawString(this.font, modeText,
-                this.leftPos + (this.imageWidth - textWidth) / 2, this.topPos + 26, 0xFFFFFF);
+                this.leftPos + (this.imageWidth - textWidth) / 2, this.topPos + 21, 0xFFFFFF);
 
         // Shield power display (only in ENERGY_INPUT mode)
         if (mode == PortMode.ENERGY_INPUT) {
             String shieldText = "Shield: " + this.menu.getShieldPowerRate() + " RF/t";
             int shieldWidth = this.font.width(shieldText);
             graphics.drawString(this.font, shieldText,
-                    this.leftPos + (this.imageWidth - shieldWidth) / 2, this.topPos + 42, 0x40C0FF, false);
+                    this.leftPos + (this.imageWidth - shieldWidth) / 2, this.topPos + 48, 0x40C0FF, false);
         }
 
         this.renderTooltip(graphics, mouseX, mouseY);

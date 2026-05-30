@@ -2,6 +2,8 @@ package com.setusertso.tachyon.block.entity;
 
 import com.setusertso.tachyon.ModItems;
 
+import java.util.Set;
+
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.neoforged.neoforge.items.ItemStackHandler;
@@ -10,6 +12,9 @@ public interface IUpgradeable {
     int UPGRADE_SLOT_COUNT = 3;
 
     ItemStackHandler getUpgradeHandler();
+
+    /** Returns the set of upgrade items this machine accepts. */
+    Set<Item> getAllowedUpgrades();
 
     default int countUpgrade(Item upgradeItem) {
         ItemStackHandler handler = getUpgradeHandler();
@@ -47,7 +52,16 @@ public interface IUpgradeable {
                 || stack.is(ModItems.CAPACITY_UPGRADE.get());
     }
 
+    /** Check if a stack is a valid upgrade for a specific set of allowed upgrades. */
+    static boolean isAllowedUpgrade(ItemStack stack, Set<Item> allowed) {
+        return allowed.stream().anyMatch(stack::is);
+    }
+
     static ItemStackHandler createUpgradeHandler(Runnable onChange) {
+        return createUpgradeHandler(onChange, null);
+    }
+
+    static ItemStackHandler createUpgradeHandler(Runnable onChange, Set<Item> allowedUpgrades) {
         return new ItemStackHandler(UPGRADE_SLOT_COUNT) {
             @Override
             protected void onContentsChanged(int slot) {
@@ -56,6 +70,9 @@ public interface IUpgradeable {
 
             @Override
             public boolean isItemValid(int slot, ItemStack stack) {
+                if (allowedUpgrades != null) {
+                    return isAllowedUpgrade(stack, allowedUpgrades);
+                }
                 return isUpgradeItem(stack);
             }
 

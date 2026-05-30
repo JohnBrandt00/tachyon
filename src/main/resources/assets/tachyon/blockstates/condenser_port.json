@@ -1,0 +1,7 @@
+{
+  "variants": {
+    "mode=item_input": { "model": "tachyon:block/condenser_port_item_input" },
+    "mode=fluid_output": { "model": "tachyon:block/condenser_port_fluid_output" },
+    "mode=energy_input": { "model": "tachyon:block/condenser_port_energy_input" }
+  }
+}

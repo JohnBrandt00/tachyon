@@ -4,6 +4,8 @@ import com.setusertso.tachyon.client.AcceleratorControllerRenderer;
 import com.setusertso.tachyon.client.PhotonicInjectorRenderer;
 import com.setusertso.tachyon.client.SingularityControllerRenderer;
 import com.setusertso.tachyon.client.SingularityDebugRenderer;
+import com.setusertso.tachyon.client.TachyonConduitRenderer;
+import com.setusertso.tachyon.client.TachyonRelayRenderer;
 import com.setusertso.tachyon.client.VoidMinerRiftRenderer;
 import com.setusertso.tachyon.client.particle.AccretionDiskParticle;
 import com.setusertso.tachyon.init.ModBlockEntities;
@@ -22,6 +24,7 @@ import com.setusertso.tachyon.screen.PhotonCompressorScreen;
 import com.setusertso.tachyon.screen.OreCrusherScreen;
 import com.setusertso.tachyon.screen.AlloyForgeScreen;
 import com.setusertso.tachyon.screen.VoidMinerScreen;
+import com.setusertso.tachyon.screen.CondenserControllerScreen;
 
 import net.minecraft.client.Minecraft;
 import net.minecraft.resources.ResourceLocation;
@@ -69,6 +72,7 @@ public class tachyonClient {
         event.register(ModMenuTypes.ORE_CRUSHER.get(), OreCrusherScreen::new);
         event.register(ModMenuTypes.ALLOY_FORGE.get(), AlloyForgeScreen::new);
         event.register(ModMenuTypes.VOID_MINER.get(), VoidMinerScreen::new);
+        event.register(ModMenuTypes.CONDENSER_CONTROLLER.get(), CondenserControllerScreen::new);
     }
 
     private void onRegisterRenderers(EntityRenderersEvent.RegisterRenderers event) {
@@ -82,6 +86,10 @@ public class tachyonClient {
                 PhotonicInjectorRenderer::new);
         event.registerBlockEntityRenderer(ModBlockEntities.VOID_MINER_CONTROLLER.get(),
                 VoidMinerRiftRenderer::new);
+        event.registerBlockEntityRenderer(ModBlockEntities.TACHYON_CONDUIT.get(),
+                TachyonConduitRenderer::new);
+        event.registerBlockEntityRenderer(ModBlockEntities.TACHYON_RELAY.get(),
+                TachyonRelayRenderer::new);
     }
 
     private void onRegisterParticleProviders(RegisterParticleProvidersEvent event) {
@@ -105,5 +113,22 @@ public class tachyonClient {
                 return 0xCC9955DD; // Translucent purple for helium gas
             }
         }, ModFluids.HELIUM_TYPE.get());
+
+        event.registerFluidType(new IClientFluidTypeExtensions() {
+            @Override
+            public ResourceLocation getStillTexture() {
+                return ResourceLocation.fromNamespaceAndPath("minecraft", "block/water_still");
+            }
+
+            @Override
+            public ResourceLocation getFlowingTexture() {
+                return ResourceLocation.fromNamespaceAndPath("minecraft", "block/water_flow");
+            }
+
+            @Override
+            public int getTintColor() {
+                return 0xDD6A3C9E; // Deep purple for tachyon flux
+            }
+        }, ModFluids.TACHYON_FLUX_TYPE.get());
     }
 }

@@ -14,6 +14,9 @@
     "tachyon:tachyon_light_generator",
     "tachyon:accelerator_controller",
     "tachyon:accelerator_casing",
-    "tachyon:accelerator_port"
+    "tachyon:accelerator_port",
+    "tachyon:condenser_controller",
+    "tachyon:condenser_casing",
+    "tachyon:condenser_port"
   ]
 }

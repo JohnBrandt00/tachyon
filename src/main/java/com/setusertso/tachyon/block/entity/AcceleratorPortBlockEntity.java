@@ -69,7 +69,7 @@ public class AcceleratorPortBlockEntity extends BlockEntity implements MenuProvi
             level.invalidateCapabilities(worldPosition);
             BlockState newState = getBlockState().setValue(
                     com.setusertso.tachyon.block.AcceleratorPortBlock.MODE, mode);
-            level.setBlock(worldPosition, newState, Block.UPDATE_CLIENTS);
+            level.setBlock(worldPosition, newState, Block.UPDATE_ALL);
         }
     }
 

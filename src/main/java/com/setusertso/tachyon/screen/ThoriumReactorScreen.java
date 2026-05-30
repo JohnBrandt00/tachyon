@@ -1,5 +1,8 @@
 package com.setusertso.tachyon.screen;
 
+import java.util.List;
+
+import com.setusertso.tachyon.ModItems;
 import com.setusertso.tachyon.menu.ThoriumReactorMenu;
 import com.setusertso.tachyon.tachyon;
 
@@ -38,6 +41,9 @@ public class ThoriumReactorScreen extends AbstractContainerScreen<ThoriumReactor
             graphics.blit(TEXTURE, this.leftPos + 80, this.topPos + 28 + 14 - flameHeight,
                     176, 52 + 14 - flameHeight, 14, flameHeight);
         }
+
+        UpgradeSlotRenderer.renderGhostUpgrades(graphics, this.menu, this.leftPos, this.topPos,
+                1, 3, List.of(ModItems.SPEED_UPGRADE.get(), ModItems.ENERGY_UPGRADE.get()));
     }
 
     @Override

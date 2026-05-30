@@ -1,0 +1,18 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "T": { "item": "tachyon:tachyon_alloy_ingot" },
+    "E": { "item": "tachyon:energy_crystal" },
+    "C": { "item": "tachyon:tachyon_core" }
+  },
+  "pattern": [
+    "TET",
+    "ECE",
+    "TET"
+  ],
+  "result": {
+    "count": 2,
+    "id": "tachyon:tachyon_relay"
+  }
+}

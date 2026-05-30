@@ -179,6 +179,16 @@ public class tachyon {
                 output.accept(ModItems.TACHYON_SWORD.get());
                 output.accept(ModItems.TACHYON_AXE.get());
                 output.accept(ModItems.TACHYON_SHOVEL.get());
+                // Tachyon Condenser
+                output.accept(ModBlocks.CONDENSER_CONTROLLER_ITEM.get());
+                output.accept(ModBlocks.CONDENSER_CASING_ITEM.get());
+                output.accept(ModBlocks.CONDENSER_PORT_ITEM.get());
+                // Tachyon Flux
+                output.accept(ModItems.TACHYON_FLUX_BUCKET.get());
+                // Tachyon Conduit & Relay
+                output.accept(ModBlocks.TACHYON_CONDUIT_ITEM.get());
+                output.accept(ModBlocks.TACHYON_RELAY_ITEM.get());
+                output.accept(ModItems.TACHYON_LINKER.get());
                 // Tachyon Armor
                 output.accept(ModItems.TACHYON_HELMET.get());
                 output.accept(ModItems.TACHYON_CHESTPLATE.get());
